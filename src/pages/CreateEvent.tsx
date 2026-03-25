@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, ArrowRight, Check, CreditCard, Calendar, Users, LogIn, Mail } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, CreditCard, Calendar, Users, LogIn, Mail, Loader2 } from "lucide-react";
 import { useAuth } from "../components/AuthProvider";
 import { db, handleFirestoreError, OperationType, signInWithApple, signUpWithEmail, signInWithEmail } from "../firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements } from '@stripe/react-stripe-js';
+import CheckoutForm from '../components/CheckoutForm';
+
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_live_51TEmXMLJ8vfPX22QkXdW7GDFcWjf11FaIpQoWxafS1mr7B4qcGcNKHbUJNCW9b4DxHJ6iEwvUlGPMKDgoNOuCd6l00qbVmXCkV');
 
 type Plan = 'basic' | 'plus' | 'premium';
 
@@ -34,8 +39,37 @@ export default function CreateEvent() {
   const [discountCode, setDiscountCode] = useState('');
   const [discountApplied, setDiscountApplied] = useState(false);
   const [discountError, setDiscountError] = useState('');
+  const [clientSecret, setClientSecret] = useState('');
 
-  const handleNext = () => setStep(s => Math.min(s + 1, 3));
+  const plans = {
+    basic: { name: 'Basic', price: 29 },
+    plus: { name: 'Plus', price: 49 },
+    premium: { name: 'Premium', price: 79 }
+  };
+
+  const handleNext = async () => {
+    const originalPrice = plans[formData.plan].price;
+    const currentFinalPrice = discountApplied ? 0 : originalPrice;
+
+    if (step === 2 && currentFinalPrice > 0) {
+      setIsProcessing(true);
+      try {
+        const res = await fetch('/api/create-payment-intent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ plan: formData.plan, discountCode: discountApplied ? 'test99' : '' })
+        });
+        const data = await res.json();
+        if (data.clientSecret) {
+          setClientSecret(data.clientSecret);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+      setIsProcessing(false);
+    }
+    setStep(s => Math.min(s + 1, 3));
+  };
   const handleBack = () => setStep(s => Math.max(s - 1, 1));
 
   const handleEmailAuth = async (e: React.FormEvent) => {
@@ -60,16 +94,13 @@ export default function CreateEvent() {
     }
   };
 
-  const handlePayment = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSuccess = async () => {
     if (!user || user.isAnonymous) {
       setAuthError("Prosimo, prijavite se za nadaljevanje.");
       return;
     }
     
     setIsProcessing(true);
-    // Simulate Stripe payment delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
     
     try {
       const docRef = await addDoc(collection(db, "events"), {
@@ -87,12 +118,6 @@ export default function CreateEvent() {
       setIsProcessing(false);
       handleFirestoreError(error, OperationType.CREATE, "events");
     }
-  };
-
-  const plans = {
-    basic: { name: 'Basic', price: 29 },
-    plus: { name: 'Plus', price: 49 },
-    premium: { name: 'Premium', price: 79 }
   };
 
   const originalPrice = plans[formData.plan].price;
@@ -431,66 +456,32 @@ export default function CreateEvent() {
                   </div>
                 </div>
 
-                <form onSubmit={handlePayment} className="space-y-6">
-                  {finalPrice > 0 && (
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium mb-2">Številka kartice</label>
-                        <div className="relative">
-                          <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                          <input 
-                            type="text" 
-                            placeholder="4242 4242 4242 4242"
-                            className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-[var(--color-wedding-gold)] focus:ring-1 focus:ring-[var(--color-wedding-gold)] outline-none transition-all font-mono"
-                            required
-                          />
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium mb-2">Veljavnost</label>
-                          <input 
-                            type="text" 
-                            placeholder="MM/YY"
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[var(--color-wedding-gold)] focus:ring-1 focus:ring-[var(--color-wedding-gold)] outline-none transition-all font-mono"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium mb-2">CVC</label>
-                          <input 
-                            type="text" 
-                            placeholder="123"
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[var(--color-wedding-gold)] focus:ring-1 focus:ring-[var(--color-wedding-gold)] outline-none transition-all font-mono"
-                            required
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
+                {finalPrice === 0 ? (
                   <button 
-                    type="submit"
+                    onClick={handleSuccess}
                     disabled={isProcessing || !user || user.isAnonymous}
                     className="w-full bg-[var(--color-wedding-dark)] text-white py-4 rounded-xl font-medium hover:bg-black transition-colors flex items-center justify-center gap-2 mt-8 disabled:opacity-70"
                   >
                     {isProcessing ? (
                       <span className="flex items-center gap-2">
-                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <Loader2 className="w-5 h-5 animate-spin" />
                         Obdelujem...
                       </span>
                     ) : (
                       <span className="flex items-center gap-2">
-                        {finalPrice > 0 ? `Plačaj ${finalPrice}€` : 'Ustvari dogodek brezplačno'} <Check className="w-5 h-5" />
+                        Ustvari dogodek brezplačno <Check className="w-5 h-5" />
                       </span>
                     )}
                   </button>
-                  {finalPrice > 0 && (
-                    <p className="text-center text-xs text-gray-400 mt-4 flex items-center justify-center gap-1">
-                      Varno plačilo zagotavlja Stripe
-                    </p>
-                  )}
-                </form>
+                ) : clientSecret ? (
+                  <Elements stripe={stripePromise} options={{ clientSecret, appearance: { theme: 'stripe' } }}>
+                    <CheckoutForm amount={finalPrice} onSuccess={handleSuccess} isProcessing={isProcessing} setIsProcessing={setIsProcessing} />
+                  </Elements>
+                ) : (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="w-8 h-8 animate-spin text-[var(--color-wedding-gold)]" />
+                  </div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>

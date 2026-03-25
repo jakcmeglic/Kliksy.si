@@ -1,12 +1,8 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // ===============================================================
-    // Helper Functions
-    // ===============================================================
-    
+    // Helper functions
     function isAuthenticated() {
       return request.auth != null;
     }
@@ -14,115 +10,34 @@ service cloud.firestore {
     function isOwner(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
-    
-    function isDocOwner() {
-      return isAuthenticated() && request.auth.uid == resource.data.ownerId;
-    }
-    
-    function uidUnchanged() {
-      return !('ownerId' in request.resource.data) ||
-        request.resource.data.ownerId == request.auth.uid;
-    }
-    
-    function uidNotModified() {
-      return !('ownerId' in request.resource.data) ||
-        request.resource.data.ownerId == resource.data.ownerId;
-    }
-    
-    function hasRequiredFields(fields) {
-      return request.resource.data.keys().hasAll(fields);
-    }
-    
-    function hasOnlyAllowedFields(fields) {
-      return request.resource.data.keys().hasOnly(fields);
-    }
-    
-    function validStringLength(field, minLen, maxLen) {
-      return request.resource.data[field] is string &&
-        request.resource.data[field].size() >= minLen &&
-        request.resource.data[field].size() <= maxLen;
-    }
-    
-    function isValidUrl(url) {
-      return url is string &&
-        (url.matches("^https://.*") || url.matches("^http://.*") || url.matches("^data:image/.*"));
-    }
-    
-    function isValidEmail(email) {
-      return email is string &&
-        email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
-    }
-    
-    // ===============================================================
-    // Domain Validators
-    // ===============================================================
-    
-    function isValidEvent(data) {
-      return hasOnlyAllowedFields(['partner1', 'partner2', 'date', 'email', 'plan', 'ownerId', 'createdAt']) &&
-             data.partner1 is string && data.partner1.size() > 0 && data.partner1.size() < 50 &&
-             data.partner2 is string && data.partner2.size() > 0 && data.partner2.size() < 50 &&
-             data.date is string && data.date.size() > 0 && data.date.size() < 20 &&
-             data.email is string && isValidEmail(data.email) &&
-             data.plan in ['basic', 'plus', 'premium'] &&
-             data.ownerId is string && data.ownerId.size() > 0 && data.ownerId.size() < 50 &&
-             data.createdAt is timestamp;
-    }
-    
-    function isValidPhoto(data) {
-      return hasOnlyAllowedFields(['url', 'guestName', 'deviceId', 'eventId', 'createdAt']) &&
-             isValidUrl(data.url) &&
-             (!('guestName' in data) || (data.guestName is string && data.guestName.size() <= 50)) &&
-             (!('deviceId' in data) || (data.deviceId is string && data.deviceId.size() <= 100)) &&
-             data.eventId is string && data.eventId.size() > 0 && data.eventId.size() < 50 &&
-             data.createdAt is timestamp;
-    }
 
-    // ===============================================================
-    // Rules
-    // ===============================================================
-
+    // Users Collection
     match /users/{userId} {
+      // Users can only read and write their own profile data
       allow read, write: if isOwner(userId);
     }
 
+    // Events Collection
     match /events/{eventId} {
-      // Anyone can read the event details (needed for guest view)
+      // Anyone can read event details (needed for guests to see the welcome screen)
       allow read: if true;
       
-      // Only authenticated users can create an event
-      allow create: if isAuthenticated() && 
-                    isValidEvent(request.resource.data) && 
-                    uidUnchanged();
-                    
-      // Only the owner can update the event
-      allow update: if isDocOwner() && 
-                    isValidEvent(request.resource.data) && 
-                    uidNotModified() &&
-                    request.resource.data.createdAt == resource.data.createdAt;
-                    
-      // Only the owner can delete the event
-      allow delete: if isDocOwner();
+      // Only authenticated users can create an event, and they must set themselves as the owner
+      allow create: if isAuthenticated() && request.resource.data.ownerId == request.auth.uid;
       
-      // Photos subcollection
+      // Only the owner can update or delete their event
+      allow update, delete: if isOwner(resource.data.ownerId);
+
+      // Photos Subcollection (inside an event)
       match /photos/{photoId} {
-        // Anyone can read photos (for live gallery)
+        // Anyone can view the photos for an event
         allow read: if true;
         
-        // Anyone can upload a photo (guests don't need to login)
-        // We verify that the parent event exists
-        allow create: if exists(/databases/$(database)/documents/events/$(eventId)) &&
-                      isValidPhoto(request.resource.data) &&
-                      request.resource.data.eventId == eventId;
-                      
-        // Only the event owner can update or delete photos
-        allow update: if isAuthenticated() && 
-                      get(/databases/$(database)/documents/events/$(eventId)).data.ownerId == request.auth.uid &&
-                      isValidPhoto(request.resource.data) &&
-                      request.resource.data.createdAt == resource.data.createdAt &&
-                      request.resource.data.eventId == resource.data.eventId;
-                      
-        allow delete: if isAuthenticated() && 
-                      get(/databases/$(database)/documents/events/$(eventId)).data.ownerId == request.auth.uid;
+        // Anyone (including anonymous guests) can upload a photo
+        allow create: if isAuthenticated();
+        
+        // Only the event owner can delete photos
+        allow update, delete: if isAuthenticated() && get(/databases/$(database)/documents/events/$(eventId)).data.ownerId == request.auth.uid;
       }
     }
   }
