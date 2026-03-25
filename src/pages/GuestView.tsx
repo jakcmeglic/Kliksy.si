@@ -16,6 +16,7 @@ export default function GuestView() {
   const [loading, setLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [uploadError, setUploadError] = useState('');
   const [recentPhotos, setRecentPhotos] = useState<any[]>([]);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   
@@ -143,15 +144,16 @@ export default function GuestView() {
       
       if (successCount > 0) {
         setUploadSuccess(true);
+        setUploadError('');
         // Reset success state after 3 seconds
         setTimeout(() => setUploadSuccess(false), 3000);
       } else {
-        alert("Nobene slike ni bilo mogoče naložiti. Poskusite znova.");
+        setUploadError("Nobene slike ni bilo mogoče naložiti. Poskusite znova.");
       }
     } catch (error: any) {
       setIsUploading(false);
       const errorMessage = error.message ? `Napaka: ${error.message}` : "Prišlo je do napake pri nalaganju. Poskusite znova.";
-      alert(errorMessage);
+      setUploadError(errorMessage);
       console.error("Upload error:", error);
     }
     
@@ -272,6 +274,12 @@ export default function GuestView() {
                 </div>
                 <span className="text-xl font-serif">Naloži iz galerije</span>
               </button>
+
+              {uploadError && (
+                <div className="mt-4 p-4 bg-red-50 text-red-600 rounded-xl border border-red-100 text-sm text-center">
+                  {uploadError}
+                </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>

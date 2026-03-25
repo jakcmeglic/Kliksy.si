@@ -63,7 +63,7 @@ export default function CreateEvent() {
   const handlePayment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || user.isAnonymous) {
-      alert("Prosimo, prijavite se za nadaljevanje.");
+      setAuthError("Prosimo, prijavite se za nadaljevanje.");
       return;
     }
     
@@ -346,7 +346,15 @@ export default function CreateEvent() {
 
                     <div className="grid grid-cols-2 gap-3">
                       <button 
-                        onClick={signIn}
+                        type="button"
+                        onClick={async () => {
+                          try {
+                            setAuthError('');
+                            await signIn();
+                          } catch (error: any) {
+                            setAuthError(error.message || 'Prišlo je do napake pri prijavi z Google.');
+                          }
+                        }}
                         className="flex items-center justify-center gap-2 border border-gray-200 bg-white text-black px-4 py-3 rounded-xl font-medium hover:bg-gray-50 transition-colors"
                       >
                         <svg className="w-5 h-5" viewBox="0 0 24 24">

@@ -20,6 +20,7 @@ export default function Dashboard() {
   const [photos, setPhotos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState('');
 
   useEffect(() => {
     if (authLoading) return;
@@ -152,9 +153,10 @@ export default function Dashboard() {
       
       const content = await zip.generateAsync({ type: "blob" });
       saveAs(content, `Kliksy-${event.partner1}-${event.partner2}.zip`);
+      setDownloadError('');
     } catch (error) {
       console.error("Error creating zip file:", error);
-      alert("Prišlo je do napake pri prenosu. Poskusite znova.");
+      setDownloadError("Prišlo je do napake pri prenosu. Poskusite znova.");
     } finally {
       setIsDownloading(false);
     }
@@ -246,6 +248,12 @@ export default function Dashboard() {
               </button>
             </div>
           </header>
+
+          {downloadError && (
+            <div className="mb-8 p-4 bg-red-50 text-red-600 rounded-xl border border-red-100 text-sm">
+              {downloadError}
+            </div>
+          )}
 
           {activeTab === 'overview' && (
             <motion.div 
