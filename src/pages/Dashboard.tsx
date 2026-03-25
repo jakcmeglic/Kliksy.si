@@ -103,9 +103,9 @@ export default function Dashboard() {
     );
   }
 
-  // Ensure the QR code uses the public shared URL (ais-pre-) instead of the private dev URL (ais-dev-)
+  // Ensure the QR code uses the correct URL format for BrowserRouter
   const baseUrl = window.location.origin.replace('ais-dev-', 'ais-pre-');
-  const eventUrl = `${baseUrl}/#/event/${event.id}`;
+  const eventUrl = `${baseUrl}/event/${event.id}`;
   
   const stats = [
     { label: "Naložene slike", value: photos.length.toString(), icon: ImageIcon },
