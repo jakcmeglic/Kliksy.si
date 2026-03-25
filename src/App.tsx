@@ -1,4 +1,4 @@
-import { HashRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Landing from './pages/Landing';
 import CreateEvent from './pages/CreateEvent';
 import GuestView from './pages/GuestView';
@@ -11,7 +11,7 @@ export default function App() {
   return (
     <ErrorBoundary>
       <AuthProvider>
-        <HashRouter>
+        <BrowserRouter>
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/create" element={<CreateEvent />} />
@@ -19,7 +19,7 @@ export default function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/login" element={<Login />} />
           </Routes>
-        </HashRouter>
+        </BrowserRouter>
       </AuthProvider>
     </ErrorBoundary>
   );
