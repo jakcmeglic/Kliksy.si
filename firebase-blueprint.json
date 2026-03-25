@@ -1,0 +1,41 @@
+{
+  "entities": {
+    "Event": {
+      "title": "Event",
+      "description": "A wedding event created by a couple.",
+      "type": "object",
+      "properties": {
+        "partner1": { "type": "string", "description": "Name of the first partner" },
+        "partner2": { "type": "string", "description": "Name of the second partner" },
+        "date": { "type": "string", "description": "Date of the wedding" },
+        "email": { "type": "string", "description": "Email of the couple" },
+        "plan": { "type": "string", "description": "Selected pricing plan" },
+        "ownerId": { "type": "string", "description": "Firebase Auth UID of the creator" },
+        "createdAt": { "type": "timestamp", "description": "When the event was created" }
+      },
+      "required": ["partner1", "partner2", "date", "email", "plan", "ownerId", "createdAt"]
+    },
+    "Photo": {
+      "title": "Photo",
+      "description": "A photo uploaded by a guest.",
+      "type": "object",
+      "properties": {
+        "url": { "type": "string", "description": "Firebase Storage URL of the image" },
+        "guestName": { "type": "string", "description": "Optional name of the guest" },
+        "eventId": { "type": "string", "description": "ID of the event this photo belongs to" },
+        "createdAt": { "type": "timestamp", "description": "When the photo was uploaded" }
+      },
+      "required": ["url", "eventId", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/events/{eventId}": {
+      "schema": { "$ref": "#/entities/Event" },
+      "description": "Collection of all wedding events."
+    },
+    "/events/{eventId}/photos/{photoId}": {
+      "schema": { "$ref": "#/entities/Photo" },
+      "description": "Collection of photos for a specific event."
+    }
+  }
+}
