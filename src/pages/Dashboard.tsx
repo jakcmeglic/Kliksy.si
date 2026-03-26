@@ -8,6 +8,7 @@ import { saveAs } from "file-saver";
 import { useAuth } from "../components/AuthProvider";
 import { db, handleFirestoreError, OperationType } from "../firebase";
 import { collection, query, where, getDocs, onSnapshot, doc, getDoc, orderBy } from "firebase/firestore";
+import QRModal from "../components/QRModal";
 
 export default function Dashboard() {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -21,6 +22,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState('');
+  const [isQRModalOpen, setIsQRModalOpen] = useState(false);
 
   useEffect(() => {
     if (authLoading) return;
@@ -104,7 +106,7 @@ export default function Dashboard() {
   }
 
   // Ensure the QR code uses the correct URL format for BrowserRouter
-  const baseUrl = window.location.origin.replace('ais-dev-', 'ais-pre-');
+  const baseUrl = window.location.origin;
   const eventUrl = `${baseUrl}/event/${event.id}`;
   
   const stats = [
@@ -293,7 +295,10 @@ export default function Dashboard() {
                     />
                   </div>
                   
-                  <button className="w-full py-3 px-4 bg-[var(--color-wedding-beige)] text-[var(--color-wedding-dark)] rounded-xl text-sm font-medium hover:bg-[var(--color-wedding-sand)]/50 transition-colors flex items-center justify-center gap-2">
+                  <button 
+                    onClick={() => setIsQRModalOpen(true)}
+                    className="w-full py-3 px-4 bg-[var(--color-wedding-beige)] text-[var(--color-wedding-dark)] rounded-xl text-sm font-medium hover:bg-[var(--color-wedding-sand)]/50 transition-colors flex items-center justify-center gap-2"
+                  >
                     <Download className="w-4 h-4" /> Prenesi QR kodo
                   </button>
                 </div>
@@ -407,6 +412,13 @@ export default function Dashboard() {
 
         </div>
       </main>
+
+      <QRModal 
+        isOpen={isQRModalOpen} 
+        onClose={() => setIsQRModalOpen(false)} 
+        event={event} 
+        eventUrl={eventUrl} 
+      />
     </div>
   );
 }
