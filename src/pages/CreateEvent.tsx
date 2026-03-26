@@ -9,7 +9,7 @@ import { loadStripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
 import CheckoutForm from '../components/CheckoutForm';
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_live_51TEmXMLJ8vfPX22QkXdW7GDFcWjf11FaIpQoWxafS1mr7B4qcGcNKHbUJNCW9b4DxHJ6iEwvUlGPMKDgoNOuCd6l00qbVmXCkV');
+const stripePromise = loadStripe((import.meta as any).env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_live_51TEmXMLJ8vfPX22QkXdW7GDFcWjf11FaIpQoWxafS1mr7B4qcGcNKHbUJNCW9b4DxHJ6iEwvUlGPMKDgoNOuCd6l00qbVmXCkV');
 
 type Plan = 'basic' | 'plus' | 'premium';
 
