@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Download, Loader2 } from 'lucide-react';
-import { QRCodeSVG } from 'qrcode.react';
+import { QRCodeSVG, QRCodeCanvas } from 'qrcode.react';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 
@@ -67,14 +67,33 @@ export default function QRModal({ isOpen, onClose, event, eventUrl }: QRModalPro
       pdf.addImage(imgData, 'JPEG', 105, 148.5, cardW, cardH);
 
       const filename = `QR-Listici-${event.partner1}-${event.partner2}.pdf`;
+      const pdfBlob = pdf.output('blob');
       
-      // For better mobile compatibility, try to save directly,
-      // but if it fails, fallback to opening in a new tab
+      // For better mobile compatibility, try Web Share API first
+      if (navigator.canShare) {
+        const file = new File([pdfBlob], filename, { type: 'application/pdf' });
+        if (navigator.canShare({ files: [file] })) {
+          try {
+            await navigator.share({
+              files: [file],
+              title: 'QR Lističi',
+              text: 'Tukaj so QR lističi za najino poroko!',
+            });
+            onClose();
+            setIsGenerating(false);
+            return; // Successfully shared, exit early
+          } catch (shareError) {
+            console.log("Share cancelled or failed, falling back to download", shareError);
+            // Fall through to standard download
+          }
+        }
+      }
+      
+      // Standard save fallback
       try {
         pdf.save(filename);
       } catch (saveError) {
         console.warn("Standard save failed, trying fallback...", saveError);
-        const pdfBlob = pdf.output('blob');
         const url = URL.createObjectURL(pdfBlob);
         const link = document.createElement('a');
         link.href = url;
@@ -177,7 +196,7 @@ export default function QRModal({ isOpen, onClose, event, eventUrl }: QRModalPro
         </motion.div>
 
         {/* Hidden high-res container for html2canvas */}
-        <div className="absolute top-0 left-0 w-0 h-0 overflow-hidden pointer-events-none" aria-hidden="true">
+        <div style={{ position: 'fixed', top: 0, left: 0, opacity: 0.001, pointerEvents: 'none', zIndex: -50 }} aria-hidden="true">
           <div 
             ref={printRef} 
             className={`w-[400px] h-[566px] flex flex-col items-center justify-between p-10 text-center ${selected.container}`}
@@ -193,7 +212,7 @@ export default function QRModal({ isOpen, onClose, event, eventUrl }: QRModalPro
             </div>
             
             <div className="bg-white p-4 rounded-2xl shadow-sm">
-              <QRCodeSVG 
+              <QRCodeCanvas 
                 value={eventUrl} 
                 size={220}
                 bgColor="#ffffff"
