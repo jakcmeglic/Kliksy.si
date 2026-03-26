@@ -40,12 +40,13 @@ export default function QRModal({ isOpen, onClose, event, eventUrl }: QRModalPro
     try {
       // Capture the hidden element
       const canvas = await html2canvas(printRef.current, {
-        scale: 3, // High quality for printing
+        scale: 2, // Reduced from 3 to 2 for better mobile memory handling
         useCORS: true,
         logging: false,
+        backgroundColor: selected.container.includes('bg-') ? null : '#ffffff',
       });
 
-      const imgData = canvas.toDataURL('image/png');
+      const imgData = canvas.toDataURL('image/jpeg', 0.9); // Use JPEG to reduce size
       
       // Create A4 PDF
       const pdf = new jsPDF({
@@ -60,16 +61,34 @@ export default function QRModal({ isOpen, onClose, event, eventUrl }: QRModalPro
       const cardH = 148.5;
 
       // Add image 4 times (top-left, top-right, bottom-left, bottom-right)
-      pdf.addImage(imgData, 'PNG', 0, 0, cardW, cardH);
-      pdf.addImage(imgData, 'PNG', 105, 0, cardW, cardH);
-      pdf.addImage(imgData, 'PNG', 0, 148.5, cardW, cardH);
-      pdf.addImage(imgData, 'PNG', 105, 148.5, cardW, cardH);
+      pdf.addImage(imgData, 'JPEG', 0, 0, cardW, cardH);
+      pdf.addImage(imgData, 'JPEG', 105, 0, cardW, cardH);
+      pdf.addImage(imgData, 'JPEG', 0, 148.5, cardW, cardH);
+      pdf.addImage(imgData, 'JPEG', 105, 148.5, cardW, cardH);
 
-      pdf.save(`QR-Listici-${event.partner1}-${event.partner2}.pdf`);
+      const filename = `QR-Listici-${event.partner1}-${event.partner2}.pdf`;
+      
+      // For better mobile compatibility, try to save directly,
+      // but if it fails, fallback to opening in a new tab
+      try {
+        pdf.save(filename);
+      } catch (saveError) {
+        console.warn("Standard save failed, trying fallback...", saveError);
+        const pdfBlob = pdf.output('blob');
+        const url = URL.createObjectURL(pdfBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(url), 100);
+      }
+      
       onClose();
     } catch (error) {
       console.error("Napaka pri generiranju PDF:", error);
-      alert("Prišlo je do napake pri generiranju PDF-ja.");
+      alert("Prišlo je do napake pri generiranju PDF-ja. Poskusite znova ali uporabite računalnik.");
     } finally {
       setIsGenerating(false);
     }
@@ -158,7 +177,7 @@ export default function QRModal({ isOpen, onClose, event, eventUrl }: QRModalPro
         </motion.div>
 
         {/* Hidden high-res container for html2canvas */}
-        <div className="fixed top-[200vh] left-[200vw]">
+        <div className="absolute top-0 left-0 w-0 h-0 overflow-hidden pointer-events-none" aria-hidden="true">
           <div 
             ref={printRef} 
             className={`w-[400px] h-[566px] flex flex-col items-center justify-between p-10 text-center ${selected.container}`}
