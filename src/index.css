@@ -1,28 +1,27 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
 @import "tailwindcss";
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Playfair Display", ui-serif, Georgia, serif;
 
-  --color-wedding-beige: #F9F6F0;
-  --color-wedding-gold: #D4AF37;
-  --color-wedding-gold-light: #E8D38B;
-  --color-wedding-sand: #E5DCC5;
-  --color-wedding-dark: #2A2A2A;
-  --color-wedding-text: #4A4A4A;
+  --color-brand-primary: #4F46E5; /* indigo-600 */
+  --color-brand-primary-light: #EEF2FF; /* indigo-50 */
+  --color-brand-dark: #111827; /* gray-900 */
+  --color-brand-text: #4B5563; /* gray-600 */
+  --color-brand-bg: #FDFCFB;
 }
 
 body {
   font-family: var(--font-sans);
-  background-color: var(--color-wedding-beige);
-  color: var(--color-wedding-text);
+  background-color: var(--color-brand-bg);
+  color: var(--color-brand-dark);
   -webkit-font-smoothing: antialiased;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-serif);
-  color: var(--color-wedding-dark);
+  font-family: var(--font-sans); /* Switching to sans for modern look, can use serif for accents */
+  color: var(--color-brand-dark);
 }
 
 /* Hide scrollbar for clean look */
@@ -33,9 +32,9 @@ h1, h2, h3, h4, h5, h6 {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--color-wedding-sand);
+  background: #E5E7EB; /* gray-200 */
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-wedding-gold-light);
+  background: #D1D5DB; /* gray-300 */
 }

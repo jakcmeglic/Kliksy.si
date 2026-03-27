@@ -164,16 +164,16 @@ export default function GuestView() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--color-wedding-beige)]">
-        <Loader2 className="w-10 h-10 animate-spin text-[var(--color-wedding-gold)]" />
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <Loader2 className="w-10 h-10 animate-spin text-indigo-600" />
       </div>
     );
   }
 
   if (!event) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[var(--color-wedding-beige)] p-6 text-center">
-        <h2 className="text-3xl font-serif mb-4">Dogodek ne obstaja</h2>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white p-6 text-center">
+        <h2 className="text-3xl font-bold mb-4">Dogodek ne obstaja</h2>
         <p className="text-gray-600 mb-8">Preverite povezavo ali QR kodo.</p>
         <Link to="/" className="bg-gray-900 text-white px-8 py-4 rounded-full font-medium hover:bg-black transition-colors">
           Na prvo stran
@@ -183,7 +183,7 @@ export default function GuestView() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--color-wedding-beige)] flex flex-col font-sans">
+    <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
       {/* Hidden Inputs */}
       <input 
         type="file" 
@@ -203,12 +203,12 @@ export default function GuestView() {
       />
 
       {/* Header */}
-      <header className="px-6 py-8 text-center bg-white rounded-b-3xl shadow-sm border-b border-[var(--color-wedding-sand)]/30 relative z-10">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[var(--color-wedding-sand)]/30 mb-4">
-          <Heart className="w-6 h-6 text-[var(--color-wedding-gold)] fill-[var(--color-wedding-gold)]" />
+      <header className="px-6 py-8 text-center bg-white rounded-b-3xl shadow-sm border-b border-gray-100 relative z-10">
+        <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-indigo-50 mb-4">
+          <Heart className="w-6 h-6 text-indigo-600 fill-indigo-600" />
         </div>
-        <h1 className="text-3xl font-serif text-[var(--color-wedding-dark)] mb-2">{event.partner1} & {event.partner2}</h1>
-        <p className="text-[var(--color-wedding-text)]/70 text-sm">Hvala, ker deliš spomine z nama.</p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">{event.partner1} & {event.partner2}</h1>
+        <p className="text-gray-500 text-sm">Hvala, ker deliš spomine z nama.</p>
       </header>
 
       {/* Main Actions */}
@@ -222,9 +222,9 @@ export default function GuestView() {
               exit={{ opacity: 0, scale: 0.9 }}
               className="flex flex-col items-center justify-center py-12"
             >
-              <div className="w-16 h-16 border-4 border-[var(--color-wedding-sand)] border-t-[var(--color-wedding-gold)] rounded-full animate-spin mb-6" />
-              <h3 className="text-xl font-serif text-[var(--color-wedding-dark)]">Nalagam spomin...</h3>
-              <p className="text-sm text-[var(--color-wedding-text)]/60 mt-2">Prosimo, počakaj trenutek.</p>
+              <div className="w-16 h-16 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin mb-6" />
+              <h3 className="text-xl font-bold text-gray-900">Nalagam spomin...</h3>
+              <p className="text-sm text-gray-500 mt-2">Prosimo, počakaj trenutek.</p>
             </motion.div>
           ) : uploadSuccess ? (
             <motion.div 
@@ -237,12 +237,12 @@ export default function GuestView() {
               <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mb-6">
                 <CheckCircle2 className="w-10 h-10 text-green-500" />
               </div>
-              <h3 className="text-2xl font-serif text-[var(--color-wedding-dark)] mb-2">Uspešno naloženo!</h3>
-              <p className="text-[var(--color-wedding-text)]/70 mb-8">Tvoja slika je dodana v galerijo.</p>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Uspešno naloženo!</h3>
+              <p className="text-gray-600 mb-8">Tvoja slika je dodana v galerijo.</p>
               
               <button 
                 onClick={() => setUploadSuccess(false)}
-                className="flex items-center gap-2 bg-[var(--color-wedding-dark)] text-white px-8 py-4 rounded-full font-medium hover:bg-black transition-colors"
+                className="flex items-center gap-2 bg-gray-900 text-white px-8 py-4 rounded-full font-medium hover:bg-black transition-colors"
               >
                 <Plus className="w-5 h-5" /> Dodaj še eno
               </button>
@@ -257,22 +257,22 @@ export default function GuestView() {
             >
               <button 
                 onClick={() => cameraInputRef.current?.click()}
-                className="w-full bg-[var(--color-wedding-dark)] text-white p-6 rounded-3xl flex flex-col items-center justify-center gap-4 hover:bg-black transition-all active:scale-95 shadow-xl shadow-[var(--color-wedding-dark)]/10"
+                className="w-full bg-gray-900 text-white p-6 rounded-3xl flex flex-col items-center justify-center gap-4 hover:bg-black transition-all active:scale-95 shadow-xl shadow-gray-900/10"
               >
                 <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center">
                   <Camera className="w-8 h-8 text-white" />
                 </div>
-                <span className="text-xl font-serif">Slikaj zdaj</span>
+                <span className="text-xl font-bold">Slikaj zdaj</span>
               </button>
 
               <button 
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full bg-white text-[var(--color-wedding-dark)] p-6 rounded-3xl flex flex-col items-center justify-center gap-4 hover:bg-[var(--color-wedding-sand)]/20 transition-all active:scale-95 border-2 border-[var(--color-wedding-sand)]/50"
+                className="w-full bg-white text-gray-900 p-6 rounded-3xl flex flex-col items-center justify-center gap-4 hover:bg-gray-50 transition-all active:scale-95 border-2 border-gray-100"
               >
-                <div className="w-16 h-16 bg-[var(--color-wedding-beige)] rounded-full flex items-center justify-center">
-                  <Upload className="w-8 h-8 text-[var(--color-wedding-dark)]" />
+                <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center">
+                  <Upload className="w-8 h-8 text-gray-900" />
                 </div>
-                <span className="text-xl font-serif">Naloži iz galerije</span>
+                <span className="text-xl font-bold">Naloži iz galerije</span>
               </button>
 
               {uploadError && (
@@ -293,8 +293,8 @@ export default function GuestView() {
             className="w-full mt-12"
           >
             <div className="flex items-center justify-between mb-4 px-2">
-              <h3 className="font-serif text-lg text-[var(--color-wedding-dark)]">Zadnji spomini</h3>
-              <span className="text-xs font-medium bg-[var(--color-wedding-sand)]/50 px-2 py-1 rounded-full text-[var(--color-wedding-dark)]">V živo</span>
+              <h3 className="font-bold text-lg text-gray-900">Zadnji spomini</h3>
+              <span className="text-xs font-medium bg-indigo-50 px-2 py-1 rounded-full text-indigo-600">V živo</span>
             </div>
             <div className="grid grid-cols-3 gap-2">
               {recentPhotos.map((photo) => (

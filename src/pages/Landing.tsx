@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Camera, QrCode, Download, Heart, ArrowRight, Check, Star, Smartphone, Images, Sparkles, Play } from "lucide-react";
+import { LANDING_IMAGES } from "../config/images";
 
 const EVENT_TYPES = ["Poroke", "Zabave", "Rojstnega dne", "Dogodka"];
 
@@ -21,7 +22,11 @@ export default function Landing() {
       <nav className="fixed w-full top-0 z-50 bg-[#FDFCFB]/80 backdrop-blur-md border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <Link to="/" className="font-bold text-2xl tracking-tight text-gray-900 flex items-center gap-2">
-            Kliksy<span className="text-indigo-600">.</span>
+            {LANDING_IMAGES.logo ? (
+              <img src={LANDING_IMAGES.logo} alt="Kliksy Logo" className="h-8 w-auto" referrerPolicy="no-referrer" />
+            ) : (
+              <>Kliksy<span className="text-indigo-600">.</span></>
+            )}
           </Link>
           <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
             <a href="#kako-deluje" className="hover:text-gray-900 transition-colors">Kako deluje</a>
@@ -29,7 +34,7 @@ export default function Landing() {
             <a href="#paketi" className="hover:text-gray-900 transition-colors">Cenik</a>
           </div>
           <div className="flex items-center gap-4">
-            <Link to="/login" className="hidden md:block text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
+            <Link to="/login" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
               Prijava
             </Link>
             <Link to="/create" className="bg-gray-900 text-white px-5 py-2.5 rounded-full text-sm font-medium hover:bg-gray-800 transition-all shadow-sm hover:shadow-md">
@@ -45,81 +50,78 @@ export default function Landing() {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-[500px] bg-indigo-50/50 blur-[100px] rounded-full -z-10 pointer-events-none" />
         
         <div className="max-w-5xl mx-auto text-center z-10 relative">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-gray-200 text-sm font-medium mb-8 shadow-sm"
-          >
-            <Sparkles className="w-4 h-4 text-indigo-600" />
-            <span className="text-gray-700">Več kot 10.000 deljenih spominov</span>
-          </motion.div>
-          
-          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-gray-900 mb-8 leading-[1.1]">
-            Zberi vsako fotografijo s<br />
-            <span className="inline-block relative w-[280px] md:w-[400px] text-indigo-600 h-[1.2em] overflow-hidden align-bottom">
-              <AnimatePresence mode="popLayout">
-                <motion.span
-                  key={currentEventType}
-                  initial={{ y: 100, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  exit={{ y: -100, opacity: 0 }}
-                  transition={{ duration: 0.5, ease: "circOut" }}
-                  className="absolute left-0 right-0 text-center"
-                >
-                  {EVENT_TYPES[currentEventType]}
-                </motion.span>
-              </AnimatePresence>
-            </span>
-            <br />
-            z eno samo QR kodo.
-          </h1>
-          
-          <p className="text-lg md:text-xl text-gray-600 mb-10 max-w-2xl mx-auto leading-relaxed">
-            Kliksy je najlažji način za zbiranje fotografij in videoposnetkov vaših gostov. Brez prenašanja aplikacij, brez registracije.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link to="/create" className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-indigo-600 text-white px-8 py-4 rounded-full text-lg font-medium hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/20 hover:shadow-indigo-600/30 active:scale-95">
-              Ustvari dogodek brezplačno <ArrowRight className="w-5 h-5" />
-            </Link>
-            <Link to="/event/demo" className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white text-gray-900 border border-gray-200 px-8 py-4 rounded-full text-lg font-medium hover:bg-gray-50 transition-all shadow-sm active:scale-95">
-              <Play className="w-5 h-5" /> Poglej demo
-            </Link>
-          </div>
-
-          {/* Floating UI Elements Mockup */}
-          <motion.div 
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="mt-20 relative max-w-4xl mx-auto"
-          >
-            <div className="relative rounded-2xl md:rounded-[2.5rem] bg-gray-900 p-2 md:p-4 shadow-2xl border border-gray-800">
-              <img 
-                src="https://picsum.photos/seed/wedding-gallery/1200/800" 
-                alt="Kliksy Gallery Preview" 
-                className="rounded-xl md:rounded-[2rem] w-full h-auto object-cover opacity-90"
-                referrerPolicy="no-referrer"
-              />
-              
-              {/* Floating QR Code */}
-              <div className="absolute -bottom-6 -left-6 md:bottom-10 md:-left-12 bg-white p-4 rounded-2xl shadow-xl border border-gray-100 animate-bounce" style={{ animationDuration: '3s' }}>
-                <QrCode className="w-16 h-16 text-gray-900" />
-              </div>
-
-              {/* Floating Notification */}
-              <div className="absolute -top-6 -right-6 md:top-10 md:-right-12 bg-white p-4 rounded-2xl shadow-xl border border-gray-100 flex items-center gap-3">
-                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                  <Check className="w-5 h-5 text-green-600" />
-                </div>
-                <div className="text-left">
-                  <p className="text-sm font-bold text-gray-900">Nova slika!</p>
-                  <p className="text-xs text-gray-500">Gost je pravkar naložil sliko.</p>
-                </div>
-              </div>
+          {/* Hero Content */}
+          <div className="max-w-5xl mx-auto text-center z-10 relative">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-gray-200 text-sm font-medium mb-8 shadow-sm"
+            >
+              <Sparkles className="w-4 h-4 text-indigo-600" />
+              <span className="text-gray-700">Več kot 10.000 deljenih spominov</span>
+            </motion.div>
+            
+            <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-gray-900 mb-8 leading-[1.1]">
+              Zberi vsako fotografijo s<br />
+              <span className="inline-block relative w-[280px] md:w-[400px] text-indigo-600 h-[1.2em] overflow-hidden align-bottom">
+                <AnimatePresence mode="popLayout">
+                  <motion.span
+                    key={currentEventType}
+                    initial={{ y: 100, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: -100, opacity: 0 }}
+                    transition={{ duration: 0.5, ease: "circOut" }}
+                    className="absolute left-0 right-0 text-center"
+                  >
+                    {EVENT_TYPES[currentEventType]}
+                  </motion.span>
+                </AnimatePresence>
+              </span>
+              <br />
+              z eno samo QR kodo.
+            </h1>
+            
+            <p className="text-lg md:text-xl text-gray-600 mb-10 max-w-2xl mx-auto leading-relaxed">
+              Kliksy je najlažji način za zbiranje fotografij in videoposnetkov vaših gostov. Brez prenašanja aplikacij, brez registracije.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20">
+              <Link to="/create" className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-indigo-600 text-white px-8 py-4 rounded-full text-lg font-medium hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/20 hover:shadow-indigo-600/30 active:scale-95">
+                Ustvari dogodek brezplačno <ArrowRight className="w-5 h-5" />
+              </Link>
+              <Link to="/event/demo" className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white text-gray-900 border border-gray-200 px-8 py-4 rounded-full text-lg font-medium hover:bg-gray-50 transition-all shadow-sm active:scale-95">
+                <Play className="w-5 h-5" /> Poglej demo
+              </Link>
             </div>
-          </motion.div>
+
+            {LANDING_IMAGES.heroPhoneMockup && (
+              <motion.div 
+                initial={{ opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.2 }}
+                className="relative max-w-4xl mx-auto"
+              >
+                <div className="relative rounded-[2rem] overflow-hidden border border-gray-200/50 shadow-2xl shadow-indigo-900/10 bg-white">
+                  <div className="absolute top-0 left-0 w-full h-12 bg-gray-50/80 backdrop-blur-sm border-b border-gray-200/50 flex items-center px-4 gap-2 z-10">
+                    <div className="w-3 h-3 rounded-full bg-red-400"></div>
+                    <div className="w-3 h-3 rounded-full bg-amber-400"></div>
+                    <div className="w-3 h-3 rounded-full bg-green-400"></div>
+                    <div className="mx-auto bg-white px-4 py-1 rounded-full text-xs font-medium text-gray-500 border border-gray-200 shadow-sm flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                      Nova slika: Gost je pravkar naložil sliko
+                    </div>
+                  </div>
+                  <img 
+                    src={LANDING_IMAGES.heroPhoneMockup} 
+                    alt="Kliksy App Interface" 
+                    className="w-full h-auto object-cover pt-12"
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
+              </motion.div>
+            )}
+          </div>
         </div>
       </section>
 
@@ -180,13 +182,14 @@ export default function Landing() {
                 whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
                 viewport={{ once: true, margin: "-100px" }}
                 transition={{ duration: 0.5 }}
-                className="order-1 md:order-2 bg-gray-50 p-8 md:p-12 rounded-[2.5rem] shadow-2xl border border-gray-100 aspect-square flex items-center justify-center relative overflow-hidden group"
+                className="order-1 md:order-2 bg-gray-900 rounded-[2.5rem] shadow-2xl border border-gray-800 aspect-square flex items-center justify-center relative overflow-hidden group"
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="relative bg-white p-10 rounded-[2rem] shadow-xl border border-gray-100 flex flex-col items-center transform transition-transform duration-500 group-hover:scale-105">
-                  <QrCode className="w-40 h-40 text-gray-900 mb-6" />
-                  <p className="font-bold text-xl text-gray-900 tracking-tight">Skeniraj me</p>
-                  <p className="text-sm text-gray-500 mt-2">Za dostop do galerije</p>
+                <img src={LANDING_IMAGES.printQrCode} alt="Printed QR Code" className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-60 transition-opacity duration-500" referrerPolicy="no-referrer" />
+                <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent opacity-60" />
+                
+                <div className="relative bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 shadow-2xl flex flex-col items-center transform transition-transform duration-500 group-hover:scale-105">
+                  <QrCode className="w-12 h-12 text-white mb-3" />
+                  <p className="font-bold text-lg text-white tracking-tight">QR koda pripravljena</p>
                 </div>
               </motion.div>
             </div>
@@ -198,24 +201,15 @@ export default function Landing() {
                 whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
                 viewport={{ once: true, margin: "-100px" }}
                 transition={{ duration: 0.5 }}
-                className="bg-gray-900 p-8 rounded-[2.5rem] shadow-2xl border border-gray-800 aspect-square flex items-center justify-center relative overflow-hidden group"
+                className="bg-gray-900 rounded-[2.5rem] shadow-2xl border border-gray-800 aspect-square flex items-center justify-center relative overflow-hidden group"
               >
-                <img src="https://picsum.photos/seed/wedguest/800/800" alt="Guest taking photo" className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity duration-500" referrerPolicy="no-referrer" />
-                <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent opacity-80" />
+                <img src={LANDING_IMAGES.guestTakingPhoto} alt="Guest taking photo" className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-60 transition-opacity duration-500" referrerPolicy="no-referrer" />
+                <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent opacity-60" />
                 
-                <motion.div 
-                  animate={{ y: [0, -10, 0] }}
-                  transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-                  className="relative bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 shadow-2xl flex items-center gap-5 transform transition-transform duration-500 group-hover:scale-105"
-                >
-                  <div className="w-14 h-14 bg-indigo-600 rounded-full flex items-center justify-center shadow-lg shadow-indigo-600/30">
-                    <Camera className="w-7 h-7 text-white" />
-                  </div>
-                  <div>
-                    <p className="font-bold text-lg text-white tracking-tight">Slikaj zdaj</p>
-                    <p className="text-sm text-indigo-200">Brez aplikacije</p>
-                  </div>
-                </motion.div>
+                <div className="relative bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 shadow-2xl flex flex-col items-center transform transition-transform duration-500 group-hover:scale-105">
+                  <Camera className="w-12 h-12 text-white mb-3" />
+                  <p className="font-bold text-lg text-white tracking-tight">Gostje slikajo</p>
+                </div>
               </motion.div>
               <motion.div 
                 initial={{ opacity: 0, x: 20 }}
@@ -273,17 +267,14 @@ export default function Landing() {
                 whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
                 viewport={{ once: true, margin: "-100px" }}
                 transition={{ duration: 0.5 }}
-                className="order-1 md:order-2 bg-gray-50 p-6 md:p-8 rounded-[2.5rem] shadow-2xl border border-gray-100 aspect-square group"
+                className="order-1 md:order-2 bg-gray-900 rounded-[2.5rem] shadow-2xl border border-gray-800 aspect-square flex items-center justify-center relative overflow-hidden group"
               >
-                <div className="grid grid-cols-2 gap-4 h-full transform transition-transform duration-500 group-hover:scale-105">
-                  <div className="space-y-4">
-                    <img src="https://picsum.photos/seed/gal1/400/500" alt="Gallery" className="w-full h-48 md:h-64 object-cover rounded-[1.5rem] shadow-md" referrerPolicy="no-referrer" />
-                    <img src="https://picsum.photos/seed/gal2/400/400" alt="Gallery" className="w-full h-40 md:h-48 object-cover rounded-[1.5rem] shadow-md" referrerPolicy="no-referrer" />
-                  </div>
-                  <div className="space-y-4 pt-8 md:pt-12">
-                    <img src="https://picsum.photos/seed/gal3/400/400" alt="Gallery" className="w-full h-40 md:h-48 object-cover rounded-[1.5rem] shadow-md" referrerPolicy="no-referrer" />
-                    <img src="https://picsum.photos/seed/gal4/400/600" alt="Gallery" className="w-full h-56 md:h-72 object-cover rounded-[1.5rem] shadow-md" referrerPolicy="no-referrer" />
-                  </div>
+                <img src={LANDING_IMAGES.galleryGrid1} alt="Gallery" className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-60 transition-opacity duration-500" referrerPolicy="no-referrer" />
+                <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent opacity-60" />
+                
+                <div className="relative bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 shadow-2xl flex flex-col items-center transform transition-transform duration-500 group-hover:scale-105">
+                  <Images className="w-12 h-12 text-white mb-3" />
+                  <p className="font-bold text-lg text-white tracking-tight">Vse slike zbrane</p>
                 </div>
               </motion.div>
             </div>
@@ -385,7 +376,11 @@ export default function Landing() {
           <div className="grid md:grid-cols-4 gap-12 mb-16">
             <div className="col-span-2">
               <Link to="/" className="text-2xl font-extrabold tracking-tight text-gray-900 mb-4 block">
-                Kliksy<span className="text-indigo-600">.</span>
+                {LANDING_IMAGES.logo ? (
+                  <img src={LANDING_IMAGES.logo} alt="Kliksy Logo" className="h-8 w-auto" referrerPolicy="no-referrer" />
+                ) : (
+                  <>Kliksy<span className="text-indigo-600">.</span></>
+                )}
               </Link>
               <p className="text-gray-500 max-w-sm leading-relaxed">
                 Najboljši način za zbiranje fotografij vaših gostov. Preprosto, hitro in brez aplikacij.

@@ -1,5 +1,5 @@
 {
   "name": "Kliksy",
   "description": "Premium aplikacija za deljenje poročnih fotografij. Gostje naložijo slike preko QR kode, mladoporočenca pa jih zbereta na enem mestu.",
-  "requestFramePermissions": ["camera"]
+  "requestFramePermissions": []
 }

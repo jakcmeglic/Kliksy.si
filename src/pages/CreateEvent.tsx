@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, ArrowRight, Check, CreditCard, Calendar, Users, LogIn, Mail, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, CreditCard, Calendar, Users, LogIn, Mail, Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import { useAuth } from "../components/AuthProvider";
 import { db, handleFirestoreError, OperationType, signInWithApple, signUpWithEmail, signInWithEmail } from "../firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
@@ -24,9 +24,9 @@ export default function CreateEvent() {
     partner1: '',
     partner2: '',
     date: '',
-    email: '',
     plan: initialPlan
   });
+  const [expandedPlan, setExpandedPlan] = useState<Plan | null>(initialPlan);
   const [isProcessing, setIsProcessing] = useState(false);
   
   // Auth states
@@ -42,35 +42,90 @@ export default function CreateEvent() {
   const [clientSecret, setClientSecret] = useState('');
 
   const plans = {
-    basic: { name: 'Basic', price: 29 },
-    plus: { name: 'Plus', price: 49 },
-    premium: { name: 'Premium', price: 79 }
+    basic: { 
+      name: 'Basic', 
+      price: 29,
+      features: ['Unikatna QR koda', 'Do 50 gostov', 'Do 200 fotografij', 'Dostop do galerije 1 mesec', 'Prenos vseh slik (ZIP)']
+    },
+    plus: { 
+      name: 'Plus', 
+      price: 49,
+      features: ['Vse iz paketa BASIC', 'Neomejeno število gostov', 'Neomejeno fotografij', 'Live galerija (projekcija)', 'Personalizirana stran z imeni', 'Dostop do galerije 1 leto']
+    },
+    premium: { 
+      name: 'Premium', 
+      price: 79,
+      features: ['Vse iz paketa PLUS', 'Premium design predloge', 'Dostop do galerije 2 leti', 'Prioritetna podpora']
+    }
   };
 
   const handleNext = async () => {
-    const originalPrice = plans[formData.plan].price;
-    const currentFinalPrice = discountApplied ? 0 : originalPrice;
-
-    if (step === 2 && currentFinalPrice > 0) {
-      setIsProcessing(true);
-      try {
-        const res = await fetch('/api/create-payment-intent', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ plan: formData.plan, discountCode: discountApplied ? 'test99' : '' })
-        });
-        const data = await res.json();
-        if (data.clientSecret) {
-          setClientSecret(data.clientSecret);
-        }
-      } catch (e) {
-        console.error(e);
+    if (step === 1) {
+      if (user && !user.isAnonymous) {
+        setStep(3); // Skip auth if already logged in
+      } else {
+        setStep(2);
       }
-      setIsProcessing(false);
+      return;
     }
-    setStep(s => Math.min(s + 1, 3));
+
+    if (step === 2) {
+      if (user && !user.isAnonymous) {
+        setStep(3);
+      }
+      return;
+    }
+
+    if (step === 3) {
+      // Final success is handled by handleSuccess or CheckoutForm
+    }
   };
-  const handleBack = () => setStep(s => Math.max(s - 1, 1));
+
+  useEffect(() => {
+    // If user logs in while on step 2, move to step 3
+    if (step === 2 && user && !user.isAnonymous) {
+      setStep(3);
+    }
+  }, [user, step]);
+
+  useEffect(() => {
+    // Initialize payment intent when reaching step 3
+    const initPayment = async () => {
+      if (step === 3) {
+        const originalPrice = plans[formData.plan].price;
+        const currentFinalPrice = discountApplied ? 0 : originalPrice;
+
+        if (currentFinalPrice > 0) {
+          setIsProcessing(true);
+          try {
+            const res = await fetch('/api/create-payment-intent', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ plan: formData.plan, discountCode: discountApplied ? 'test99' : '' })
+            });
+            const data = await res.json();
+            if (data.clientSecret) {
+              setClientSecret(data.clientSecret);
+            }
+          } catch (e) {
+            console.error(e);
+          }
+          setIsProcessing(false);
+        }
+      }
+    };
+    initPayment();
+  }, [step, formData.plan, discountApplied]);
+
+  const handleBack = () => {
+    if (step === 3 && (!user || user.isAnonymous)) {
+      setStep(2);
+    } else if (step === 3 && user && !user.isAnonymous) {
+      setStep(1);
+    } else {
+      setStep(s => Math.max(s - 1, 1));
+    }
+  };
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -107,7 +162,7 @@ export default function CreateEvent() {
         partner1: formData.partner1,
         partner2: formData.partner2,
         date: formData.date,
-        email: formData.email,
+        email: user.email || '',
         plan: formData.plan,
         ownerId: user.uid,
         createdAt: serverTimestamp()
@@ -124,14 +179,14 @@ export default function CreateEvent() {
   const finalPrice = discountApplied ? 0 : originalPrice;
 
   return (
-    <div className="min-h-screen bg-[var(--color-wedding-beige)] flex flex-col">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
-      <header className="px-6 py-6 border-b border-[var(--color-wedding-sand)]/30 bg-white">
+      <header className="px-6 py-6 border-b border-gray-100 bg-white">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <Link to="/" className="font-serif text-2xl tracking-tight text-[var(--color-wedding-dark)]">
-            Kliksy<span className="text-[var(--color-wedding-gold)]">.</span>
+          <Link to="/" className="font-bold text-2xl tracking-tight text-gray-900">
+            Kliksy<span className="text-indigo-600">.</span>
           </Link>
-          <div className="text-sm font-medium text-[var(--color-wedding-text)]/60">
+          <div className="text-sm font-medium text-gray-500">
             Korak {step} od 3
           </div>
         </div>
@@ -147,11 +202,11 @@ export default function CreateEvent() {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                className="bg-white p-8 md:p-12 rounded-3xl shadow-xl shadow-[var(--color-wedding-sand)]/20 border border-[var(--color-wedding-sand)]/50"
+                className="bg-white p-8 md:p-12 rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100"
               >
                 <div className="mb-8">
-                  <h2 className="text-3xl font-serif mb-2">Vaš veliki dan</h2>
-                  <p className="text-[var(--color-wedding-text)]/70">Vnesite osnovne podatke o vajini poroki.</p>
+                  <h2 className="text-3xl font-bold mb-2">Vaš veliki dan</h2>
+                  <p className="text-gray-600">Vnesite osnovne podatke o vajini poroki.</p>
                 </div>
 
                 <div className="space-y-6">
@@ -197,22 +252,10 @@ export default function CreateEvent() {
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Email naslov</label>
-                    <input 
-                      type="email" 
-                      value={formData.email}
-                      onChange={e => setFormData({...formData, email: e.target.value})}
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[var(--color-wedding-gold)] focus:ring-1 focus:ring-[var(--color-wedding-gold)] outline-none transition-all"
-                      placeholder="ana.luka@primer.si"
-                    />
-                    <p className="text-xs text-gray-500 mt-2">Na ta naslov boste prejeli dostop do nadzorne plošče.</p>
-                  </div>
-
                   <button 
                     onClick={handleNext}
-                    disabled={!formData.partner1 || !formData.partner2 || !formData.date || !formData.email}
-                    className="w-full bg-[var(--color-wedding-dark)] text-white py-4 rounded-xl font-medium hover:bg-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-8"
+                    disabled={!formData.partner1 || !formData.partner2 || !formData.date}
+                    className="w-full bg-gray-900 text-white py-4 rounded-xl font-medium hover:bg-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-8"
                   >
                     Nadaljuj <ArrowRight className="w-5 h-5" />
                   </button>
@@ -226,63 +269,109 @@ export default function CreateEvent() {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                className="bg-white p-8 md:p-12 rounded-3xl shadow-xl shadow-[var(--color-wedding-sand)]/20 border border-[var(--color-wedding-sand)]/50"
+                className="bg-white p-8 md:p-12 rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100"
               >
                 <button onClick={handleBack} className="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-black mb-6 transition-colors">
                   <ArrowLeft className="w-4 h-4" /> Nazaj
                 </button>
 
-                <div className="mb-8">
-                  <h2 className="text-3xl font-serif mb-2">Izbira paketa</h2>
-                  <p className="text-[var(--color-wedding-text)]/70">Izberite paket, ki najbolj ustreza vajinim željam.</p>
+                <div className="mb-8 text-center">
+                  <h2 className="text-3xl font-bold mb-2">Ustvarite račun</h2>
+                  <p className="text-gray-600">Za upravljanje vašega dogodka potrebujemo vaš račun.</p>
                 </div>
 
-                <div className="space-y-4">
-                  {(Object.keys(plans) as Plan[]).map((planKey) => (
-                    <label 
-                      key={planKey}
-                      className={`block p-6 rounded-2xl border-2 cursor-pointer transition-all ${
-                        formData.plan === planKey 
-                          ? 'border-[var(--color-wedding-gold)] bg-[var(--color-wedding-gold)]/5' 
-                          : 'border-gray-100 hover:border-gray-200'
-                      }`}
+                <div className="bg-white border border-gray-200 p-6 rounded-2xl">
+                  <div className="flex gap-2 mb-6 p-1 bg-gray-100 rounded-xl">
+                    <button 
+                      onClick={() => setAuthMode('register')}
+                      className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${authMode === 'register' ? 'bg-white shadow-sm text-black' : 'text-gray-500 hover:text-black'}`}
                     >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                            formData.plan === planKey ? 'border-[var(--color-wedding-gold)]' : 'border-gray-300'
-                          }`}>
-                            {formData.plan === planKey && <div className="w-3 h-3 bg-[var(--color-wedding-gold)] rounded-full" />}
-                          </div>
-                          <div>
-                            <h3 className="font-serif text-lg uppercase">{plans[planKey].name}</h3>
-                            <p className="text-sm text-gray-500">
-                              {planKey === 'basic' && 'Osnovne funkcionalnosti'}
-                              {planKey === 'plus' && 'Live galerija + personalizacija'}
-                              {planKey === 'premium' && 'Vse + premium podpora'}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="text-2xl font-medium">{plans[planKey].price}€</div>
-                      </div>
-                      <input 
-                        type="radio" 
-                        name="plan" 
-                        value={planKey}
-                        checked={formData.plan === planKey}
-                        onChange={(e) => setFormData({...formData, plan: e.target.value as Plan})}
-                        className="hidden"
-                      />
-                    </label>
-                  ))}
-                </div>
+                      Registracija
+                    </button>
+                    <button 
+                      onClick={() => setAuthMode('login')}
+                      className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${authMode === 'login' ? 'bg-white shadow-sm text-black' : 'text-gray-500 hover:text-black'}`}
+                    >
+                      Prijava
+                    </button>
+                  </div>
 
-                <button 
-                  onClick={handleNext}
-                  className="w-full bg-[var(--color-wedding-dark)] text-white py-4 rounded-xl font-medium hover:bg-black transition-colors flex items-center justify-center gap-2 mt-8"
-                >
-                  Nadaljuj na plačilo <ArrowRight className="w-5 h-5" />
-                </button>
+                  {authError && (
+                    <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded-xl">
+                      {authError}
+                    </div>
+                  )}
+
+                  <form onSubmit={handleEmailAuth} className="space-y-4 mb-6">
+                    <div>
+                      <input 
+                        type="email" 
+                        placeholder="Email naslov"
+                        value={authEmail}
+                        onChange={e => setAuthEmail(e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-all"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <input 
+                        type="password" 
+                        placeholder="Geslo"
+                        value={authPassword}
+                        onChange={e => setAuthPassword(e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-all"
+                        required
+                      />
+                    </div>
+                    <button 
+                      type="submit"
+                      className="w-full bg-black text-white py-3 rounded-xl font-medium hover:bg-gray-800 transition-colors"
+                    >
+                      {authMode === 'register' ? 'Ustvari račun' : 'Prijavi se'}
+                    </button>
+                  </form>
+
+                  <div className="relative mb-6">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-gray-200"></div>
+                    </div>
+                    <div className="relative flex justify-center text-sm">
+                      <span className="px-2 bg-white text-gray-500">ali nadaljujte z</span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <button 
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          setAuthError('');
+                          await signIn();
+                        } catch (error: any) {
+                          setAuthError(error.message || 'Prišlo je do napake pri prijavi z Google.');
+                        }
+                      }}
+                      className="flex items-center justify-center gap-2 border border-gray-200 bg-white text-black px-4 py-3 rounded-xl font-medium hover:bg-gray-50 transition-colors"
+                    >
+                      <svg className="w-5 h-5" viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                      </svg>
+                      Google
+                    </button>
+                    <button 
+                      onClick={handleAppleAuth}
+                      className="flex items-center justify-center gap-2 border border-gray-200 bg-white text-black px-4 py-3 rounded-xl font-medium hover:bg-gray-50 transition-colors"
+                    >
+                      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.04 2.26-.79 3.59-.76 1.56.04 2.87.74 3.65 1.9-3.13 1.86-2.61 5.98.43 7.21-.73 1.76-1.66 3.04-2.75 3.82zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
+                      </svg>
+                      Apple
+                    </button>
+                  </div>
+                </div>
               </motion.div>
             )}
 
@@ -292,124 +381,85 @@ export default function CreateEvent() {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                className="bg-white p-8 md:p-12 rounded-3xl shadow-xl shadow-[var(--color-wedding-sand)]/20 border border-[var(--color-wedding-sand)]/50"
+                className="bg-white p-8 md:p-12 rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100"
               >
                 <button onClick={handleBack} className="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-black mb-6 transition-colors">
                   <ArrowLeft className="w-4 h-4" /> Nazaj
                 </button>
 
                 <div className="mb-8">
-                  <h2 className="text-3xl font-serif mb-2">Zaključek nakupa</h2>
-                  <p className="text-[var(--color-wedding-text)]/70">Varno plačilo preko Stripe.</p>
+                  <h2 className="text-3xl font-bold mb-2">Izbira paketa in plačilo</h2>
+                  <p className="text-gray-600">Izberite paket in zaključite nakup.</p>
                 </div>
 
-                {(!user || user.isAnonymous) && (
-                  <div className="bg-white border border-gray-200 p-6 rounded-2xl mb-8">
-                    <div className="text-center mb-6">
-                      <h3 className="font-serif text-xl mb-2">Ustvarite profil</h3>
-                      <p className="text-sm text-gray-500">Za dostop do nadzorne plošče in upravljanje dogodka.</p>
-                    </div>
-
-                    <div className="flex gap-2 mb-6 p-1 bg-gray-100 rounded-xl">
-                      <button 
-                        onClick={() => setAuthMode('register')}
-                        className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${authMode === 'register' ? 'bg-white shadow-sm text-black' : 'text-gray-500 hover:text-black'}`}
-                      >
-                        Registracija
-                      </button>
-                      <button 
-                        onClick={() => setAuthMode('login')}
-                        className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${authMode === 'login' ? 'bg-white shadow-sm text-black' : 'text-gray-500 hover:text-black'}`}
-                      >
-                        Prijava
-                      </button>
-                    </div>
-
-                    {authError && (
-                      <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded-xl">
-                        {authError}
-                      </div>
-                    )}
-
-                    <form onSubmit={handleEmailAuth} className="space-y-4 mb-6">
-                      <div>
-                        <input 
-                          type="email" 
-                          placeholder="Email naslov"
-                          value={authEmail}
-                          onChange={e => setAuthEmail(e.target.value)}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[var(--color-wedding-gold)] focus:ring-1 focus:ring-[var(--color-wedding-gold)] outline-none transition-all"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <input 
-                          type="password" 
-                          placeholder="Geslo"
-                          value={authPassword}
-                          onChange={e => setAuthPassword(e.target.value)}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[var(--color-wedding-gold)] focus:ring-1 focus:ring-[var(--color-wedding-gold)] outline-none transition-all"
-                          required
-                        />
-                      </div>
-                      <button 
-                        type="submit"
-                        className="w-full bg-black text-white py-3 rounded-xl font-medium hover:bg-gray-800 transition-colors"
-                      >
-                        {authMode === 'register' ? 'Ustvari račun' : 'Prijavi se'}
-                      </button>
-                    </form>
-
-                    <div className="relative mb-6">
-                      <div className="absolute inset-0 flex items-center">
-                        <div className="w-full border-t border-gray-200"></div>
-                      </div>
-                      <div className="relative flex justify-center text-sm">
-                        <span className="px-2 bg-white text-gray-500">ali nadaljujte z</span>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <button 
-                        type="button"
-                        onClick={async () => {
-                          try {
-                            setAuthError('');
-                            await signIn();
-                          } catch (error: any) {
-                            setAuthError(error.message || 'Prišlo je do napake pri prijavi z Google.');
-                          }
+                <div className="space-y-4 mb-8">
+                  {(Object.keys(plans) as Plan[]).map((planKey) => (
+                    <div 
+                      key={planKey}
+                      className={`block rounded-2xl border-2 transition-all overflow-hidden ${
+                        formData.plan === planKey 
+                          ? 'border-indigo-600 bg-indigo-50/50' 
+                          : 'border-gray-100 hover:border-gray-200 bg-white'
+                      }`}
+                    >
+                      <div 
+                        className="p-6 flex items-center justify-between cursor-pointer"
+                        onClick={() => {
+                          setFormData({...formData, plan: planKey});
+                          setExpandedPlan(expandedPlan === planKey ? null : planKey);
                         }}
-                        className="flex items-center justify-center gap-2 border border-gray-200 bg-white text-black px-4 py-3 rounded-xl font-medium hover:bg-gray-50 transition-colors"
                       >
-                        <svg className="w-5 h-5" viewBox="0 0 24 24">
-                          <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                        </svg>
-                        Google
-                      </button>
-                      <button 
-                        onClick={handleAppleAuth}
-                        className="flex items-center justify-center gap-2 border border-gray-200 bg-white text-black px-4 py-3 rounded-xl font-medium hover:bg-gray-50 transition-colors"
-                      >
-                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.04 2.26-.79 3.59-.76 1.56.04 2.87.74 3.65 1.9-3.13 1.86-2.61 5.98.43 7.21-.73 1.76-1.66 3.04-2.75 3.82zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
-                        </svg>
-                        Apple
-                      </button>
+                        <div className="flex items-center gap-4">
+                          <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                            formData.plan === planKey ? 'border-indigo-600' : 'border-gray-300'
+                          }`}>
+                            {formData.plan === planKey && <div className="w-3 h-3 bg-indigo-600 rounded-full" />}
+                          </div>
+                          <div>
+                            <h3 className="font-bold text-lg uppercase">{plans[planKey].name}</h3>
+                            <p className="text-sm text-gray-500">
+                              {planKey === 'basic' && 'Osnovne funkcionalnosti'}
+                              {planKey === 'plus' && 'Live galerija + personalizacija'}
+                              {planKey === 'premium' && 'Vse + premium podpora'}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <div className="text-2xl font-bold">{plans[planKey].price}€</div>
+                          {expandedPlan === planKey ? <ChevronUp className="w-5 h-5 text-gray-400" /> : <ChevronDown className="w-5 h-5 text-gray-400" />}
+                        </div>
+                      </div>
+                      
+                      <AnimatePresence>
+                        {expandedPlan === planKey && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="px-6 pb-6 border-t border-indigo-100/50 pt-4"
+                          >
+                            <ul className="space-y-2">
+                              {plans[planKey].features.map((feature, i) => (
+                                <li key={i} className="flex items-center gap-2 text-sm text-gray-600">
+                                  <Check className="w-4 h-4 text-indigo-500" />
+                                  {feature}
+                                </li>
+                              ))}
+                            </ul>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
-                  </div>
-                )}
+                  ))}
+                </div>
 
-                <div className="bg-[var(--color-wedding-beige)] p-6 rounded-2xl mb-8">
-                  <div className="flex justify-between items-center mb-4 pb-4 border-b border-[var(--color-wedding-sand)]/50">
+                <div className="bg-gray-50 p-6 rounded-2xl mb-8">
+                  <div className="flex justify-between items-center mb-4 pb-4 border-b border-gray-200">
                     <span className="font-medium">Paket {plans[formData.plan].name}</span>
                     <span className="font-medium">{originalPrice}€</span>
                   </div>
 
-                  <div className="mb-4 pb-4 border-b border-[var(--color-wedding-sand)]/50">
+                  <div className="mb-4 pb-4 border-b border-gray-200">
                     <label className="block text-sm font-medium mb-2">Koda za popust</label>
                     <div className="flex gap-2">
                       <input 
@@ -421,7 +471,7 @@ export default function CreateEvent() {
                         }}
                         disabled={discountApplied}
                         placeholder="Vnesite kodo"
-                        className="flex-1 px-4 py-2 rounded-xl border border-gray-200 focus:border-[var(--color-wedding-gold)] focus:ring-1 focus:ring-[var(--color-wedding-gold)] outline-none transition-all uppercase"
+                        className="flex-1 px-4 py-2 rounded-xl border border-gray-200 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-all uppercase"
                       />
                       <button 
                         type="button"
@@ -451,7 +501,7 @@ export default function CreateEvent() {
                     <span>Skupaj za plačilo</span>
                     <div className="text-right">
                       {discountApplied && <span className="text-gray-400 line-through mr-2">{originalPrice}€</span>}
-                      <span className="text-xl font-medium text-black">{finalPrice}€</span>
+                      <span className="text-xl font-bold text-black">{finalPrice}€</span>
                     </div>
                   </div>
                 </div>
@@ -460,7 +510,7 @@ export default function CreateEvent() {
                   <button 
                     onClick={handleSuccess}
                     disabled={isProcessing || !user || user.isAnonymous}
-                    className="w-full bg-[var(--color-wedding-dark)] text-white py-4 rounded-xl font-medium hover:bg-black transition-colors flex items-center justify-center gap-2 mt-8 disabled:opacity-70"
+                    className="w-full bg-gray-900 text-white py-4 rounded-xl font-medium hover:bg-black transition-colors flex items-center justify-center gap-2 mt-8 disabled:opacity-70"
                   >
                     {isProcessing ? (
                       <span className="flex items-center gap-2">
@@ -479,7 +529,7 @@ export default function CreateEvent() {
                   </Elements>
                 ) : (
                   <div className="flex justify-center py-8">
-                    <Loader2 className="w-8 h-8 animate-spin text-[var(--color-wedding-gold)]" />
+                    <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
                   </div>
                 )}
               </motion.div>
