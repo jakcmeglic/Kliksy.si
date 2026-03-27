@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-import { Mail, ArrowRight, Loader2 } from "lucide-react";
+import { Mail, ArrowRight, ArrowLeft, Loader2 } from "lucide-react";
 import { useAuth } from "../components/AuthProvider";
 import { signInWithGoogle, signInWithApple, signInWithEmail } from "../firebase";
 
@@ -9,6 +9,7 @@ export default function Login() {
   const { user } = useAuth();
   const navigate = useNavigate();
   
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -21,16 +22,21 @@ export default function Login() {
     }
   }, [user, navigate]);
 
-  const handleEmailLogin = async (e: React.FormEvent) => {
+  const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
     try {
-      await signInWithEmail(email, password);
+      if (authMode === 'register') {
+        const { signUpWithEmail } = await import('../firebase');
+        await signUpWithEmail(email, password);
+      } else {
+        await signInWithEmail(email, password);
+      }
       navigate("/dashboard");
     } catch (err: any) {
-      console.error("Login error:", err);
-      setError("Neveljaven e-poštni naslov ali geslo.");
+      console.error("Auth error:", err);
+      setError(authMode === 'register' ? "Napaka pri registraciji. Morda račun že obstaja." : "Neveljaven e-poštni naslov ali geslo.");
     } finally {
       setLoading(false);
     }
@@ -66,7 +72,13 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] flex flex-col font-sans">
-      <nav className="w-full p-6 flex justify-center border-b border-gray-100 bg-white">
+      <nav className="w-full p-6 flex justify-center border-b border-gray-100 bg-white relative">
+        <button 
+          onClick={() => navigate(-1)}
+          className="absolute left-6 top-1/2 -translate-y-1/2 p-2 hover:bg-gray-100 rounded-full transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </button>
         <Link to="/" className="font-serif text-2xl tracking-tight text-gray-900">
           Kliksy<span className="text-[var(--color-wedding-gold)]">.</span>
         </Link>
@@ -79,8 +91,27 @@ export default function Login() {
           className="w-full max-w-md bg-white p-8 rounded-3xl shadow-xl border border-gray-100"
         >
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-serif text-gray-900 mb-2">Dobrodošli nazaj</h1>
-            <p className="text-gray-500">Prijavite se za dostop do vašega dogodka</p>
+            <h1 className="text-3xl font-serif text-gray-900 mb-2">
+              {authMode === 'login' ? 'Dobrodošli nazaj' : 'Ustvarite račun'}
+            </h1>
+            <p className="text-gray-500">
+              {authMode === 'login' ? 'Prijavite se za dostop do vašega dogodka' : 'Pridružite se nam in ustvarite nepozabne spomine'}
+            </p>
+          </div>
+
+          <div className="flex gap-2 mb-8 p-1 bg-gray-100 rounded-xl">
+            <button 
+              onClick={() => { setAuthMode('login'); setError(null); }}
+              className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${authMode === 'login' ? 'bg-white shadow-sm text-black' : 'text-gray-500 hover:text-black'}`}
+            >
+              Prijava
+            </button>
+            <button 
+              onClick={() => { setAuthMode('register'); setError(null); }}
+              className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${authMode === 'register' ? 'bg-white shadow-sm text-black' : 'text-gray-500 hover:text-black'}`}
+            >
+              Registracija
+            </button>
           </div>
 
           {error && (
@@ -101,7 +132,7 @@ export default function Login() {
                 <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
                 <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
               </svg>
-              Prijava z Google
+              {authMode === 'login' ? 'Prijava z Google' : 'Registracija z Google'}
             </button>
             
             <button
@@ -112,7 +143,7 @@ export default function Login() {
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.04 2.26-.79 3.59-.76 1.56.04 2.87.68 3.64 1.83-3.15 1.87-2.61 5.91.31 7.1-1.01 2.59-2.58 4.09-3.62 3.99zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
               </svg>
-              Prijava z Apple
+              {authMode === 'login' ? 'Prijava z Apple' : 'Registracija z Apple'}
             </button>
           </div>
 
@@ -123,7 +154,7 @@ export default function Login() {
             <span className="relative bg-white px-4 text-sm text-gray-500">ali z e-pošto</span>
           </div>
 
-          <form onSubmit={handleEmailLogin} className="space-y-4">
+          <form onSubmit={handleEmailAuth} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">E-poštni naslov</label>
               <input
@@ -151,7 +182,7 @@ export default function Login() {
               disabled={loading}
               className="w-full py-3 px-4 bg-gray-900 text-white rounded-xl font-medium hover:bg-black transition-colors flex items-center justify-center gap-2 disabled:opacity-50 mt-2"
             >
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Prijava"}
+              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (authMode === 'login' ? 'Prijava' : 'Registracija')}
             </button>
           </form>
 

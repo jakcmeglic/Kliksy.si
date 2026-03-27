@@ -40,22 +40,23 @@ export default function CreateEvent() {
   const [discountApplied, setDiscountApplied] = useState(false);
   const [discountError, setDiscountError] = useState('');
   const [clientSecret, setClientSecret] = useState('');
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
 
   const plans = {
     basic: { 
       name: 'Basic', 
-      price: 29,
+      price: 39,
       features: ['Unikatna QR koda', 'Do 50 gostov', 'Do 200 fotografij', 'Dostop do galerije 1 mesec', 'Prenos vseh slik (ZIP)']
     },
     plus: { 
       name: 'Plus', 
       price: 49,
-      features: ['Vse iz paketa BASIC', 'Neomejeno število gostov', 'Neomejeno fotografij', 'Live galerija (projekcija)', 'Personalizirana stran z imeni', 'Dostop do galerije 1 leto']
+      features: ['Unikatna QR koda', 'Neomejeno število gostov', 'Neomejeno fotografij', 'Dostop do galerije 1 leto', 'Prenos vseh slik (ZIP)', 'Live galerija (projekcija)', 'Personalizirana stran z imeni']
     },
     premium: { 
       name: 'Premium', 
       price: 79,
-      features: ['Vse iz paketa PLUS', 'Premium design predloge', 'Dostop do galerije 2 leti', 'Prioritetna podpora']
+      features: ['Unikatna QR koda', 'Neomejeno število gostov', 'Neomejeno fotografij', 'Dostop do galerije 2 leti', 'Prenos vseh slik (ZIP)', 'Live galerija (projekcija)', 'Personalizirana stran z imeni', 'Premium design predloge', 'Prioritetna podpora']
     }
   };
 
@@ -168,7 +169,10 @@ export default function CreateEvent() {
         createdAt: serverTimestamp()
       });
       setIsProcessing(false);
-      navigate(`/dashboard?eventId=${docRef.id}&success=true`);
+      setPaymentSuccess(true);
+      setTimeout(() => {
+        navigate(`/dashboard?eventId=${docRef.id}&success=true`);
+      }, 3000);
     } catch (error) {
       setIsProcessing(false);
       handleFirestoreError(error, OperationType.CREATE, "events");
@@ -183,9 +187,23 @@ export default function CreateEvent() {
       {/* Header */}
       <header className="px-6 py-6 border-b border-gray-100 bg-white">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <Link to="/" className="font-bold text-2xl tracking-tight text-gray-900">
-            Kliksy<span className="text-indigo-600">.</span>
-          </Link>
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => {
+                if (step > 1) {
+                  setStep(step - 1);
+                } else {
+                  navigate(-1);
+                }
+              }}
+              className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <Link to="/" className="font-bold text-2xl tracking-tight text-gray-900">
+              Kliksy<span className="text-indigo-600">.</span>
+            </Link>
+          </div>
           <div className="text-sm font-medium text-gray-500">
             Korak {step} od 3
           </div>
@@ -471,7 +489,7 @@ export default function CreateEvent() {
                         }}
                         disabled={discountApplied}
                         placeholder="Vnesite kodo"
-                        className="flex-1 px-4 py-2 rounded-xl border border-gray-200 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-all uppercase"
+                        className="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-all uppercase"
                       />
                       <button 
                         type="button"
@@ -488,7 +506,7 @@ export default function CreateEvent() {
                             }
                           }
                         }}
-                        className={`px-4 py-2 rounded-xl font-medium transition-colors ${discountApplied ? 'bg-red-100 text-red-600 hover:bg-red-200' : 'bg-gray-900 text-white hover:bg-black'}`}
+                        className={`px-6 py-3 rounded-xl font-medium transition-colors whitespace-nowrap ${discountApplied ? 'bg-red-100 text-red-600 hover:bg-red-200' : 'bg-gray-900 text-white hover:bg-black'}`}
                       >
                         {discountApplied ? 'Odstrani' : 'Uporabi'}
                       </button>
@@ -506,7 +524,19 @@ export default function CreateEvent() {
                   </div>
                 </div>
 
-                {finalPrice === 0 ? (
+                {paymentSuccess ? (
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="flex flex-col items-center justify-center py-12 text-center"
+                  >
+                    <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6">
+                      <Check className="w-10 h-10 text-green-600" />
+                    </div>
+                    <h3 className="text-2xl font-bold mb-2">Plačilo uspešno!</h3>
+                    <p className="text-gray-600">Pripravljamo vaš dogodek...</p>
+                  </motion.div>
+                ) : finalPrice === 0 ? (
                   <button 
                     onClick={handleSuccess}
                     disabled={isProcessing || !user || user.isAnonymous}

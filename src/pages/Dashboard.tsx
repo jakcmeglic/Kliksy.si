@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { QRCodeSVG } from "qrcode.react";
-import { Download, Image as ImageIcon, Users, Clock, Settings, ExternalLink, LogOut, Heart, Loader2 } from "lucide-react";
+import { Download, Image as ImageIcon, Users, Clock, Settings, ExternalLink, LogOut, Heart, Loader2, ArrowLeft } from "lucide-react";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import { useAuth } from "../components/AuthProvider";
@@ -217,13 +217,21 @@ export default function Dashboard() {
           
           {/* Header Actions */}
           <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-12">
-            <div>
-              <h1 className="text-3xl font-serif text-[var(--color-wedding-dark)] mb-2">
-                {activeTab === 'overview' && 'Pregled dogodka'}
-                {activeTab === 'gallery' && 'Vse fotografije'}
-                {activeTab === 'settings' && 'Nastavitve'}
-              </h1>
-              <p className="text-[var(--color-wedding-text)]/70">Upravljaj svoje poročne spomine.</p>
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={() => navigate(-1)}
+                className="p-2 -ml-2 hover:bg-white rounded-full transition-colors border border-transparent hover:border-[var(--color-wedding-sand)]"
+              >
+                <ArrowLeft className="w-5 h-5 text-[var(--color-wedding-dark)]" />
+              </button>
+              <div>
+                <h1 className="text-3xl font-serif text-[var(--color-wedding-dark)] mb-2">
+                  {activeTab === 'overview' && 'Pregled dogodka'}
+                  {activeTab === 'gallery' && 'Vse fotografije'}
+                  {activeTab === 'settings' && 'Nastavitve'}
+                </h1>
+                <p className="text-[var(--color-wedding-text)]/70">Upravljaj svoje poročne spomine.</p>
+              </div>
             </div>
             
             <div className="flex items-center gap-3">

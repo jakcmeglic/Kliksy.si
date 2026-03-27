@@ -15,7 +15,7 @@ async function startServer() {
       const { plan, discountCode } = req.body;
       
       const plans = {
-        basic: 2900, // in cents (29.00 EUR)
+        basic: 3900, // in cents (39.00 EUR)
         plus: 4900,
         premium: 7900
       };
@@ -40,9 +40,7 @@ async function startServer() {
       const paymentIntent = await stripe.paymentIntents.create({
         amount,
         currency: "eur",
-        automatic_payment_methods: {
-          enabled: true,
-        },
+        payment_method_types: ['card'],
       });
 
       res.json({ clientSecret: paymentIntent.client_secret });
