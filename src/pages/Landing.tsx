@@ -4,7 +4,12 @@ import { Link } from "react-router-dom";
 import { Camera, QrCode, Download, Heart, ArrowRight, Check, Star, Smartphone, Images, Sparkles, Play } from "lucide-react";
 import { LANDING_IMAGES } from "../config/images";
 
-const EVENT_TYPES = ["Poroke", "Zabave", "Rojstnega dne", "Dogodka"];
+const EVENT_TYPES = [
+  { word: "Poroke", prep: "s" },
+  { word: "Zabave", prep: "z" },
+  { word: "Rojstnega dne", prep: "z" },
+  { word: "Dogodka", prep: "z" }
+];
 
 export default function Landing() {
   const [currentEventType, setCurrentEventType] = useState(0);
@@ -63,8 +68,8 @@ export default function Landing() {
             </motion.div>
             
             <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-gray-900 mb-8 leading-[1.1]">
-              Zberi vsako fotografijo s<br />
-              <span className="inline-block relative w-[280px] md:w-[400px] text-indigo-600 h-[1.2em] overflow-hidden align-bottom">
+              Zberi vsako fotografijo<br />
+              <span className="inline-block relative w-[320px] md:w-[450px] text-indigo-600 h-[1.2em] overflow-hidden align-bottom">
                 <AnimatePresence mode="popLayout">
                   <motion.span
                     key={currentEventType}
@@ -74,7 +79,7 @@ export default function Landing() {
                     transition={{ duration: 0.5, ease: "circOut" }}
                     className="absolute left-0 right-0 text-center"
                   >
-                    {EVENT_TYPES[currentEventType]}
+                    {EVENT_TYPES[currentEventType].prep} {EVENT_TYPES[currentEventType].word}
                   </motion.span>
                 </AnimatePresence>
               </span>
@@ -212,9 +217,9 @@ export default function Landing() {
                 whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
                 viewport={{ once: true, margin: "-100px" }}
                 transition={{ duration: 0.5 }}
-                className="order-2 md:order-1 bg-gray-900 rounded-[2.5rem] shadow-2xl border border-gray-800 flex items-center justify-center relative overflow-hidden max-w-sm mx-auto"
+                className="order-2 md:order-1 bg-gray-900 rounded-[2.5rem] shadow-2xl border border-gray-800 flex items-center justify-center relative overflow-hidden max-w-sm mx-auto aspect-[4/5] w-full"
               >
-                <img src={LANDING_IMAGES.guestTakingPhoto} alt="Guest taking photo" className="w-full h-auto object-contain" referrerPolicy="no-referrer" />
+                <img src={LANDING_IMAGES.guestTakingPhoto} alt="Guest taking photo" className="absolute inset-0 w-full h-full object-contain p-4" referrerPolicy="no-referrer" />
               </motion.div>
               <motion.div 
                 initial={{ opacity: 0, x: 20 }}
@@ -301,7 +306,7 @@ export default function Landing() {
             <div className="bg-white p-8 md:p-10 rounded-[2rem] border border-gray-100 shadow-lg hover:shadow-xl transition-shadow">
               <h3 className="text-xl font-bold mb-2 text-gray-900">BASIC</h3>
               <p className="text-gray-500 text-sm mb-6">Za manjše poroke in zabave.</p>
-              <div className="text-5xl font-extrabold mb-8 text-gray-900 tracking-tight">29€</div>
+              <div className="text-5xl font-extrabold mb-8 text-gray-900 tracking-tight">39€</div>
               <ul className="space-y-4 mb-10">
                 {['Unikatna QR koda', 'Do 50 gostov', 'Do 200 fotografij', 'Dostop do galerije 1 mesec', 'Prenos vseh slik (ZIP)'].map((f, i) => (
                   <li key={i} className="flex items-start gap-3 text-sm text-gray-700 font-medium">
@@ -324,7 +329,7 @@ export default function Landing() {
               <p className="text-indigo-200 text-sm mb-6">Vse kar potrebujete za popoln dan.</p>
               <div className="text-5xl font-extrabold mb-8 text-white tracking-tight">49€</div>
               <ul className="space-y-4 mb-10">
-                {['Vse iz paketa BASIC', 'Neomejeno število gostov', 'Neomejeno fotografij', 'Live galerija (projekcija)', 'Personalizirana stran z imeni', 'Dostop do galerije 1 leto'].map((f, i) => (
+                {['Unikatna QR koda', 'Neomejeno število gostov', 'Neomejeno fotografij', 'Dostop do galerije 1 leto', 'Prenos vseh slik (ZIP)', 'Live galerija (projekcija)', 'Personalizirana stran z imeni'].map((f, i) => (
                   <li key={i} className="flex items-start gap-3 text-sm text-indigo-100 font-medium">
                     <Check className="w-5 h-5 text-indigo-300 shrink-0" /> 
                     <span>{f}</span>
@@ -342,7 +347,7 @@ export default function Landing() {
               <p className="text-gray-500 text-sm mb-6">Za tiste, ki želijo nekaj več.</p>
               <div className="text-5xl font-extrabold mb-8 text-gray-900 tracking-tight">79€</div>
               <ul className="space-y-4 mb-10">
-                {['Vse iz paketa PLUS', 'Premium design predloge', 'Dostop do galerije 2 leti', 'Prioritetna podpora'].map((f, i) => (
+                {['Unikatna QR koda', 'Neomejeno število gostov', 'Neomejeno fotografij', 'Dostop do galerije 2 leti', 'Prenos vseh slik (ZIP)', 'Live galerija (projekcija)', 'Personalizirana stran z imeni', 'Premium design predloge', 'Prioritetna podpora'].map((f, i) => (
                   <li key={i} className="flex items-start gap-3 text-sm text-gray-700 font-medium">
                     <Check className="w-5 h-5 text-indigo-400 shrink-0" /> 
                     <span>{f}</span>

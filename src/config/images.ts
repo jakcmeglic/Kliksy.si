@@ -11,16 +11,16 @@ export const LANDING_IMAGES = {
   floatingImage2: "https://picsum.photos/seed/wed2/200/200",
 
   // "Kako deluje" - Sekcija 1 (Slika natisnjene kode)
-  printQrCode: "/hf_20260326_055112_eca2ffc5-def0-4a57-8d76-c6336838255b (1).jpeg",
+  printQrCode: "/hf_20260326_055112_eca2ffc5-def0-4a57-8d76-c6336838255b_1.jpeg",
 
   // "Kako deluje" - Sekcija 2 (Slika gosta, ki slika)
-  guestTakingPhoto: "/hf_20260327_065704_09ee1521-869d-4f93-9163-86cd1ff9e1e5 (1).png",
+  guestTakingPhoto: "/hf_20260327_065704_09ee1521-869d-4f93-9163-86cd1ff9e1e5_1.png",
 
   // "Kako deluje" - Sekcija 3 (Mreža slik v galeriji)
-  galleryGrid1: "/hf_20260326_055112_d114a56e-f8b1-4ccb-ad92-52e248232c66 (1).jpeg",
-  galleryGrid2: "/hf_20260326_055112_d114a56e-f8b1-4ccb-ad92-52e248232c66 (1).jpeg",
-  galleryGrid3: "/hf_20260326_055112_d114a56e-f8b1-4ccb-ad92-52e248232c66 (1).jpeg",
-  galleryGrid4: "/hf_20260326_055112_d114a56e-f8b1-4ccb-ad92-52e248232c66 (1).jpeg",
+  galleryGrid1: "/hf_20260326_055112_d114a56e-f8b1-4ccb-ad92-52e248232c66_1.jpeg",
+  galleryGrid2: "/hf_20260326_055112_d114a56e-f8b1-4ccb-ad92-52e248232c66_1.jpeg",
+  galleryGrid3: "/hf_20260326_055112_d114a56e-f8b1-4ccb-ad92-52e248232c66_1.jpeg",
+  galleryGrid4: "/hf_20260326_055112_d114a56e-f8b1-4ccb-ad92-52e248232c66_1.jpeg",
 };
 
 /**
