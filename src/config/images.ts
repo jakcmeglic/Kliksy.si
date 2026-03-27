@@ -14,13 +14,13 @@ export const LANDING_IMAGES = {
   printQrCode: "/hf_20260326_055112_eca2ffc5-def0-4a57-8d76-c6336838255b (1).jpeg",
 
   // "Kako deluje" - Sekcija 2 (Slika gosta, ki slika)
-  guestTakingPhoto: "/hf_20260326_055112_d114a56e-f8b1-4ccb-ad92-52e248232c66 (1).jpeg",
+  guestTakingPhoto: "/hf_20260327_065704_09ee1521-869d-4f93-9163-86cd1ff9e1e5 (1).png",
 
   // "Kako deluje" - Sekcija 3 (Mreža slik v galeriji)
-  galleryGrid1: "/hf_20260326_053452_94c5b6a0-8199-4033-89f2-6c326395a0b1.webp",
-  galleryGrid2: "/hf_20260326_053452_94c5b6a0-8199-4033-89f2-6c326395a0b1.webp",
-  galleryGrid3: "/hf_20260326_053452_94c5b6a0-8199-4033-89f2-6c326395a0b1.webp",
-  galleryGrid4: "/hf_20260326_053452_94c5b6a0-8199-4033-89f2-6c326395a0b1.webp",
+  galleryGrid1: "/hf_20260326_055112_d114a56e-f8b1-4ccb-ad92-52e248232c66 (1).jpeg",
+  galleryGrid2: "/hf_20260326_055112_d114a56e-f8b1-4ccb-ad92-52e248232c66 (1).jpeg",
+  galleryGrid3: "/hf_20260326_055112_d114a56e-f8b1-4ccb-ad92-52e248232c66 (1).jpeg",
+  galleryGrid4: "/hf_20260326_055112_d114a56e-f8b1-4ccb-ad92-52e248232c66 (1).jpeg",
 };
 
 /**

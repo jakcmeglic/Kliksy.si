@@ -100,25 +100,42 @@ export default function Landing() {
                 initial={{ opacity: 0, y: 40 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, delay: 0.2 }}
-                className="relative max-w-4xl mx-auto"
+                className="relative max-w-3xl mx-auto mt-12 md:mt-24 px-4 sm:px-8"
               >
-                <div className="relative rounded-[2rem] overflow-hidden border border-gray-200/50 shadow-2xl shadow-indigo-900/10 bg-white">
-                  <div className="absolute top-0 left-0 w-full h-12 bg-gray-50/80 backdrop-blur-sm border-b border-gray-200/50 flex items-center px-4 gap-2 z-10">
-                    <div className="w-3 h-3 rounded-full bg-red-400"></div>
-                    <div className="w-3 h-3 rounded-full bg-amber-400"></div>
-                    <div className="w-3 h-3 rounded-full bg-green-400"></div>
-                    <div className="mx-auto bg-white px-4 py-1 rounded-full text-xs font-medium text-gray-500 border border-gray-200 shadow-sm flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                      Nova slika: Gost je pravkar naložil sliko
-                    </div>
-                  </div>
+                <div className="relative rounded-3xl overflow-hidden shadow-2xl shadow-indigo-900/10 bg-gray-900 aspect-[4/3] sm:aspect-video">
                   <img 
                     src={LANDING_IMAGES.heroPhoneMockup} 
                     alt="Kliksy App Interface" 
-                    className="w-full h-auto object-cover pt-12"
+                    className="w-full h-full object-cover"
                     referrerPolicy="no-referrer"
                   />
                 </div>
+
+                {/* Floating QR Code Badge */}
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.8, x: -20 }}
+                  animate={{ opacity: 1, scale: 1, x: 0 }}
+                  transition={{ duration: 0.5, delay: 0.8 }}
+                  className="absolute -bottom-6 -left-2 sm:-left-6 bg-white p-3 sm:p-4 rounded-2xl shadow-xl border border-gray-100 flex items-center justify-center z-20"
+                >
+                  <QrCode className="w-10 h-10 sm:w-12 sm:h-12 text-gray-900" />
+                </motion.div>
+
+                {/* Floating Notification Badge */}
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.8, y: -20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 1 }}
+                  className="absolute -top-6 -right-2 sm:-right-6 bg-white p-3 sm:p-4 rounded-2xl shadow-xl border border-gray-100 flex items-center gap-3 sm:gap-4 z-20 max-w-[240px] sm:max-w-none"
+                >
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                    <Check className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-sm sm:text-base font-bold text-gray-900 leading-tight">Nova slika!</p>
+                    <p className="text-xs sm:text-sm text-gray-500 leading-tight mt-0.5">Gost je pravkar naložil sliko.</p>
+                  </div>
+                </motion.div>
               </motion.div>
             )}
           </div>
@@ -157,7 +174,7 @@ export default function Landing() {
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true, margin: "-100px" }}
-                className="order-2 md:order-1"
+                className="order-1 md:order-1"
               >
                 <div className="w-16 h-16 bg-indigo-100 rounded-2xl flex items-center justify-center mb-8 shadow-sm">
                   <QrCode className="w-8 h-8 text-indigo-600" />
@@ -182,15 +199,9 @@ export default function Landing() {
                 whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
                 viewport={{ once: true, margin: "-100px" }}
                 transition={{ duration: 0.5 }}
-                className="order-1 md:order-2 bg-gray-900 rounded-[2.5rem] shadow-2xl border border-gray-800 aspect-square flex items-center justify-center relative overflow-hidden group"
+                className="order-2 md:order-2 bg-gray-900 rounded-[2.5rem] shadow-2xl border border-gray-800 aspect-square flex items-center justify-center relative overflow-hidden"
               >
-                <img src={LANDING_IMAGES.printQrCode} alt="Printed QR Code" className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-60 transition-opacity duration-500" referrerPolicy="no-referrer" />
-                <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent opacity-60" />
-                
-                <div className="relative bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 shadow-2xl flex flex-col items-center transform transition-transform duration-500 group-hover:scale-105">
-                  <QrCode className="w-12 h-12 text-white mb-3" />
-                  <p className="font-bold text-lg text-white tracking-tight">QR koda pripravljena</p>
-                </div>
+                <img src={LANDING_IMAGES.printQrCode} alt="Printed QR Code" className="absolute inset-0 w-full h-full object-cover" referrerPolicy="no-referrer" />
               </motion.div>
             </div>
 
@@ -201,20 +212,15 @@ export default function Landing() {
                 whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
                 viewport={{ once: true, margin: "-100px" }}
                 transition={{ duration: 0.5 }}
-                className="bg-gray-900 rounded-[2.5rem] shadow-2xl border border-gray-800 aspect-square flex items-center justify-center relative overflow-hidden group"
+                className="order-2 md:order-1 bg-gray-900 rounded-[2.5rem] shadow-2xl border border-gray-800 flex items-center justify-center relative overflow-hidden max-w-sm mx-auto"
               >
-                <img src={LANDING_IMAGES.guestTakingPhoto} alt="Guest taking photo" className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-60 transition-opacity duration-500" referrerPolicy="no-referrer" />
-                <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent opacity-60" />
-                
-                <div className="relative bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 shadow-2xl flex flex-col items-center transform transition-transform duration-500 group-hover:scale-105">
-                  <Camera className="w-12 h-12 text-white mb-3" />
-                  <p className="font-bold text-lg text-white tracking-tight">Gostje slikajo</p>
-                </div>
+                <img src={LANDING_IMAGES.guestTakingPhoto} alt="Guest taking photo" className="w-full h-auto object-contain" referrerPolicy="no-referrer" />
               </motion.div>
               <motion.div 
                 initial={{ opacity: 0, x: 20 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true, margin: "-100px" }}
+                className="order-1 md:order-2"
               >
                 <div className="w-16 h-16 bg-indigo-100 rounded-2xl flex items-center justify-center mb-8 shadow-sm">
                   <Smartphone className="w-8 h-8 text-indigo-600" />
@@ -242,7 +248,7 @@ export default function Landing() {
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true, margin: "-100px" }}
-                className="order-2 md:order-1"
+                className="order-1 md:order-1"
               >
                 <div className="w-16 h-16 bg-indigo-100 rounded-2xl flex items-center justify-center mb-8 shadow-sm">
                   <Images className="w-8 h-8 text-indigo-600" />
@@ -267,7 +273,7 @@ export default function Landing() {
                 whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
                 viewport={{ once: true, margin: "-100px" }}
                 transition={{ duration: 0.5 }}
-                className="order-1 md:order-2 bg-gray-900 rounded-[2.5rem] shadow-2xl border border-gray-800 aspect-square flex items-center justify-center relative overflow-hidden group"
+                className="order-2 md:order-2 bg-gray-900 rounded-[2.5rem] shadow-2xl border border-gray-800 aspect-square flex items-center justify-center relative overflow-hidden group"
               >
                 <img src={LANDING_IMAGES.galleryGrid1} alt="Gallery" className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-60 transition-opacity duration-500" referrerPolicy="no-referrer" />
                 <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent opacity-60" />
