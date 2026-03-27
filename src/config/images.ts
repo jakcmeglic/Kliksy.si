@@ -1,26 +1,31 @@
+import heroPhoneMockup from '../assets/images/heroPhoneMockup.webp';
+import printQrCode from '../assets/images/printQrCode.jpeg';
+import guestTakingPhoto from '../assets/images/guestTakingPhoto.png';
+import galleryGrid from '../assets/images/galleryGrid.jpeg';
+
 export const LANDING_IMAGES = {
   // Logo aplikacije (če imate svojo datoteko, jo naložite v public/logo.png)
   logo: null, // Če je null, se uporabi tekstovni logo
 
   // Hero sekcija - Glavna slika (Mockup telefona ali galerije)
   // TUKAJ ZAMENJAJTE: naložite svojo sliko v public/ in spodaj spremenite pot
-  heroPhoneMockup: "/hf_20260326_053452_94c5b6a0-8199-4033-89f2-6c326395a0b1.webp",
+  heroPhoneMockup,
   
   // Plavajoče slike okoli glavne slike v Hero sekciji (za boljši vizualni učinek)
   floatingImage1: "https://picsum.photos/seed/wed1/200/200",
   floatingImage2: "https://picsum.photos/seed/wed2/200/200",
 
   // "Kako deluje" - Sekcija 1 (Slika natisnjene kode)
-  printQrCode: "/hf_20260326_055112_eca2ffc5-def0-4a57-8d76-c6336838255b_1.jpeg",
+  printQrCode,
 
   // "Kako deluje" - Sekcija 2 (Slika gosta, ki slika)
-  guestTakingPhoto: "/hf_20260327_065704_09ee1521-869d-4f93-9163-86cd1ff9e1e5_1.png",
+  guestTakingPhoto,
 
   // "Kako deluje" - Sekcija 3 (Mreža slik v galeriji)
-  galleryGrid1: "/hf_20260326_055112_d114a56e-f8b1-4ccb-ad92-52e248232c66_1.jpeg",
-  galleryGrid2: "/hf_20260326_055112_d114a56e-f8b1-4ccb-ad92-52e248232c66_1.jpeg",
-  galleryGrid3: "/hf_20260326_055112_d114a56e-f8b1-4ccb-ad92-52e248232c66_1.jpeg",
-  galleryGrid4: "/hf_20260326_055112_d114a56e-f8b1-4ccb-ad92-52e248232c66_1.jpeg",
+  galleryGrid1: galleryGrid,
+  galleryGrid2: galleryGrid,
+  galleryGrid3: galleryGrid,
+  galleryGrid4: galleryGrid,
 };
 
 /**
