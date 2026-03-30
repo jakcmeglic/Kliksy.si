@@ -28,7 +28,7 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <Link to="/" className="font-bold text-2xl tracking-tight text-gray-900 flex items-center gap-2">
             {LANDING_IMAGES.logo ? (
-              <img src={LANDING_IMAGES.logo} alt="Kliksy Logo" className="h-8 w-auto" />
+              <img src={LANDING_IMAGES.logo} alt="Kliksy Logo" className="h-8 w-auto" referrerPolicy="no-referrer" />
             ) : (
               <>Kliksy<span className="text-indigo-600">.</span></>
             )}
@@ -112,6 +112,7 @@ export default function Landing() {
                     src={LANDING_IMAGES.heroPhoneMockup} 
                     alt="Kliksy App Interface" 
                     className="w-full h-full object-cover"
+                    referrerPolicy="no-referrer"
                   />
                 </div>
 
@@ -205,7 +206,7 @@ export default function Landing() {
                 transition={{ duration: 0.5 }}
                 className="order-2 md:order-2 bg-gray-900 rounded-[2.5rem] shadow-2xl border border-gray-800 aspect-square flex items-center justify-center relative overflow-hidden"
               >
-                <img src={LANDING_IMAGES.printQrCode} alt="Printed QR Code" className="absolute inset-0 w-full h-full object-cover" />
+                <img src={LANDING_IMAGES.printQrCode} alt="Printed QR Code" className="absolute inset-0 w-full h-full object-cover" referrerPolicy="no-referrer" />
               </motion.div>
             </div>
 
@@ -218,7 +219,7 @@ export default function Landing() {
                 transition={{ duration: 0.5 }}
                 className="order-2 md:order-1 bg-gray-900 rounded-[2.5rem] shadow-2xl border border-gray-800 flex items-center justify-center relative overflow-hidden max-w-sm mx-auto aspect-[4/5] w-full"
               >
-                <img src={LANDING_IMAGES.guestTakingPhoto} alt="Guest taking photo" className="absolute inset-0 w-full h-full object-contain p-4" />
+                <img src={LANDING_IMAGES.guestTakingPhoto} alt="Guest taking photo" className="absolute inset-0 w-full h-full object-contain p-4" referrerPolicy="no-referrer" />
               </motion.div>
               <motion.div 
                 initial={{ opacity: 0, x: 20 }}
@@ -279,7 +280,7 @@ export default function Landing() {
                 transition={{ duration: 0.5 }}
                 className="order-2 md:order-2 bg-gray-900 rounded-[2.5rem] shadow-2xl border border-gray-800 aspect-square flex items-center justify-center relative overflow-hidden group"
               >
-                <img src={LANDING_IMAGES.galleryGrid1} alt="Gallery" className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-60 transition-opacity duration-500" />
+                <img src={LANDING_IMAGES.galleryGrid1} alt="Gallery" className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-60 transition-opacity duration-500" referrerPolicy="no-referrer" />
                 <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent opacity-60" />
                 
                 <div className="relative bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 shadow-2xl flex flex-col items-center transform transition-transform duration-500 group-hover:scale-105">
@@ -387,7 +388,7 @@ export default function Landing() {
             <div className="col-span-2">
               <Link to="/" className="text-2xl font-extrabold tracking-tight text-gray-900 mb-4 block">
                 {LANDING_IMAGES.logo ? (
-                  <img src={LANDING_IMAGES.logo} alt="Kliksy Logo" className="h-8 w-auto" />
+                  <img src={LANDING_IMAGES.logo} alt="Kliksy Logo" className="h-8 w-auto" referrerPolicy="no-referrer" />
                 ) : (
                   <>Kliksy<span className="text-indigo-600">.</span></>
                 )}

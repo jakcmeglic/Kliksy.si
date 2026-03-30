@@ -1,5 +1,4 @@
 import express from "express";
-import { createServer as createViteServer } from "vite";
 import Stripe from "stripe";
 import path from "path";
 
@@ -8,6 +7,21 @@ async function startServer() {
   const PORT = 3000;
 
   app.use(express.json());
+
+  const requestLogs: string[] = [];
+
+  // Log incoming requests
+  app.use((req, res, next) => {
+    const logEntry = `[REQUEST] ${req.method} ${req.url} (Host: ${req.headers.host})`;
+    console.log(logEntry);
+    requestLogs.push(logEntry);
+    if (requestLogs.length > 100) requestLogs.shift();
+    next();
+  });
+
+  app.get("/api/logs", (req, res) => {
+    res.json(requestLogs);
+  });
 
   // API routes FIRST
   app.post("/api/create-payment-intent", async (req, res) => {
@@ -52,6 +66,7 @@ async function startServer() {
 
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
+    const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
