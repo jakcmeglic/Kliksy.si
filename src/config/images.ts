@@ -4,23 +4,23 @@ export const LANDING_IMAGES = {
 
   // Hero sekcija - Glavna slika (Mockup telefona ali galerije)
   // TUKAJ ZAMENJAJTE: naložite svojo sliko v public/ in spodaj spremenite pot
-  heroPhoneMockup: "/images/photo1.webp",
+  heroPhoneMockup: "/images/firstsection.webp",
   
   // Plavajoče slike okoli glavne slike v Hero sekciji (za boljši vizualni učinek)
   floatingImage1: "https://picsum.photos/seed/wed1/200/200",
   floatingImage2: "https://picsum.photos/seed/wed2/200/200",
 
   // "Kako deluje" - Sekcija 1 (Slika natisnjene kode)
-  printQrCode: "/images/photo2.jpeg",
+  printQrCode: "/images/Secondsection.jpeg",
 
   // "Kako deluje" - Sekcija 2 (Slika gosta, ki slika)
-  guestTakingPhoto: "/images/photo3.png",
+  guestTakingPhoto: "/images/Middlesection.png",
 
   // "Kako deluje" - Sekcija 3 (Mreža slik v galeriji)
-  galleryGrid1: "/images/photo4.jpeg",
-  galleryGrid2: "/images/photo4.jpeg",
-  galleryGrid3: "/images/photo4.jpeg",
-  galleryGrid4: "/images/photo4.jpeg",
+  galleryGrid1: "/images/Bottomsection.jpeg",
+  galleryGrid2: "/images/Bottomsection.jpeg",
+  galleryGrid3: "/images/Bottomsection.jpeg",
+  galleryGrid4: "/images/Bottomsection.jpeg",
 };
 
 /**
