@@ -9,6 +9,7 @@ import { useAuth } from "../components/AuthProvider";
 import { db, handleFirestoreError, OperationType } from "../firebase";
 import { collection, query, where, getDocs, onSnapshot, doc, getDoc, orderBy } from "firebase/firestore";
 import QRModal from "../components/QRModal";
+import ImageViewer from "../components/ImageViewer";
 
 export default function Dashboard() {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -23,6 +24,7 @@ export default function Dashboard() {
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState('');
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
 
   useEffect(() => {
     if (authLoading) return;
@@ -234,27 +236,29 @@ export default function Dashboard() {
               </div>
             </div>
             
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <a 
                 href={eventUrl} 
                 target="_blank" 
                 rel="noreferrer"
-                className="flex items-center gap-2 px-4 py-2 bg-white border border-[var(--color-wedding-sand)] rounded-full text-sm font-medium hover:bg-[var(--color-wedding-sand)]/20 transition-colors"
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-white border border-[var(--color-wedding-sand)] rounded-full text-sm font-medium hover:bg-[var(--color-wedding-sand)]/20 transition-colors flex-1 md:flex-none"
               >
                 <ExternalLink className="w-4 h-4" />
-                Poglej kot gost
+                <span className="hidden sm:inline">Poglej kot gost</span>
+                <span className="sm:hidden">Gost</span>
               </a>
               <button 
                 onClick={handleDownloadAll}
                 disabled={isDownloading || photos.length === 0}
-                className="flex items-center gap-2 px-4 py-2 bg-[var(--color-wedding-dark)] text-white rounded-full text-sm font-medium hover:bg-black transition-colors disabled:opacity-50"
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-[var(--color-wedding-dark)] text-white rounded-full text-sm font-medium hover:bg-black transition-colors disabled:opacity-50 flex-1 md:flex-none"
               >
                 {isDownloading ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
                   <Download className="w-4 h-4" />
                 )}
-                {isDownloading ? "Pripravljam ZIP..." : "Prenesi vse (ZIP)"}
+                <span className="hidden sm:inline">{isDownloading ? "Pripravljam ZIP..." : "Prenesi vse (ZIP)"}</span>
+                <span className="sm:hidden">{isDownloading ? "..." : "Prenesi vse"}</span>
               </button>
             </div>
           </header>
@@ -322,10 +326,10 @@ export default function Dashboard() {
                   
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                     {photos.slice(0, 6).map((photo, i) => (
-                      <div key={photo.id} className="aspect-square rounded-xl overflow-hidden bg-gray-100 group relative">
+                      <div key={photo.id} className="aspect-square rounded-xl overflow-hidden bg-gray-100 group relative cursor-pointer" onClick={() => setSelectedImageIndex(i)}>
                         <img src={photo.url} alt="Wedding moment" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" />
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-                          <button onClick={() => handleDownloadSingle(photo.url, i)} className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg transform scale-90 group-hover:scale-100 transition-transform">
+                          <button onClick={(e) => { e.stopPropagation(); handleDownloadSingle(photo.url, i); }} className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg transform scale-90 group-hover:scale-100 transition-transform">
                             <Download className="w-5 h-5 text-[var(--color-wedding-dark)]" />
                           </button>
                         </div>
@@ -350,10 +354,10 @@ export default function Dashboard() {
             >
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                 {photos.map((photo, i) => (
-                  <div key={photo.id} className="aspect-square rounded-xl overflow-hidden bg-gray-100 group relative">
+                  <div key={photo.id} className="aspect-square rounded-xl overflow-hidden bg-gray-100 group relative cursor-pointer" onClick={() => setSelectedImageIndex(i)}>
                     <img src={photo.url} alt="Wedding moment" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-                      <button onClick={() => handleDownloadSingle(photo.url, i)} className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg transform scale-90 group-hover:scale-100 transition-transform">
+                      <button onClick={(e) => { e.stopPropagation(); handleDownloadSingle(photo.url, i); }} className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg transform scale-90 group-hover:scale-100 transition-transform">
                         <Download className="w-5 h-5 text-[var(--color-wedding-dark)]" />
                       </button>
                     </div>
@@ -427,6 +431,14 @@ export default function Dashboard() {
         event={event} 
         eventUrl={eventUrl} 
       />
+
+      {selectedImageIndex !== null && (
+        <ImageViewer
+          images={photos}
+          initialIndex={selectedImageIndex}
+          onClose={() => setSelectedImageIndex(null)}
+        />
+      )}
     </div>
   );
 }

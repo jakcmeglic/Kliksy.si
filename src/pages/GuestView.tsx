@@ -1,14 +1,18 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Camera, Upload, CheckCircle2, Plus, Heart, Loader2 } from "lucide-react";
+import { Camera, Upload, CheckCircle2, Plus, Heart, Loader2, Download } from "lucide-react";
 import { db, storage, handleFirestoreError, OperationType } from "../firebase";
-import { doc, getDoc, collection, addDoc, serverTimestamp, query, orderBy, limit, onSnapshot } from "firebase/firestore";
+import { doc, getDoc, collection, addDoc, serverTimestamp, query, orderBy, limit, onSnapshot, getDocs } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { signInAnonymously, onAuthStateChanged } from "firebase/auth";
 import { auth } from "../firebase";
 import { v4 as uuidv4 } from "uuid";
 import imageCompression from "browser-image-compression";
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
+
+import ImageViewer from "../components/ImageViewer";
 
 export default function GuestView() {
   const { id } = useParams();
@@ -18,7 +22,8 @@ export default function GuestView() {
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [uploadError, setUploadError] = useState('');
   const [recentPhotos, setRecentPhotos] = useState<any[]>([]);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
+  const [isDownloadingAll, setIsDownloadingAll] = useState(false);
   
   const [deviceId] = useState(() => {
     let id = localStorage.getItem('guestDeviceId');
@@ -162,6 +167,51 @@ export default function GuestView() {
     if (cameraInputRef.current) cameraInputRef.current.value = '';
   };
 
+  const handleDownloadAll = async () => {
+    if (!id || !event) return;
+    setIsDownloadingAll(true);
+    try {
+      const q = query(collection(db, "events", id, "photos"), orderBy("createdAt", "desc"));
+      const querySnapshot = await getDocs(q);
+      const allPhotos = querySnapshot.docs.map(doc => doc.data());
+
+      if (allPhotos.length === 0) {
+        alert("Ni še naloženih fotografij.");
+        setIsDownloadingAll(false);
+        return;
+      }
+
+      const zip = new JSZip();
+      const folder = zip.folder(`Kliksy-${event.partner1}-${event.partner2}`);
+      
+      if (!folder) throw new Error("Could not create zip folder");
+
+      const promises = allPhotos.map(async (photo, index) => {
+        try {
+          const response = await fetch(photo.url);
+          const blob = await response.blob();
+          let extension = 'jpg';
+          if (blob.type) {
+            extension = blob.type.split('/')[1] || 'jpg';
+          }
+          folder.file(`photo-${index + 1}.${extension}`, blob);
+        } catch (err) {
+          console.error(`Failed to download photo ${index}`, err);
+        }
+      });
+
+      await Promise.all(promises);
+      
+      const content = await zip.generateAsync({ type: "blob" });
+      saveAs(content, `Kliksy-${event.partner1}-${event.partner2}.zip`);
+    } catch (error) {
+      console.error("Error creating zip file:", error);
+      alert("Prišlo je do napake pri prenosu. Poskusite znova.");
+    } finally {
+      setIsDownloadingAll(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
@@ -297,13 +347,13 @@ export default function GuestView() {
               <span className="text-xs font-medium bg-indigo-50 px-2 py-1 rounded-full text-indigo-600">V živo</span>
             </div>
             <div className="grid grid-cols-3 gap-2">
-              {recentPhotos.map((photo) => (
+              {recentPhotos.map((photo, index) => (
                 <motion.div 
                   key={photo.id}
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   className="aspect-square rounded-xl overflow-hidden bg-gray-100 cursor-pointer"
-                  onClick={() => setSelectedImage(photo.url)}
+                  onClick={() => setSelectedImageIndex(index)}
                 >
                   <img src={photo.url} alt="Wedding moment" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                 </motion.div>
@@ -314,41 +364,34 @@ export default function GuestView() {
                 </div>
               )}
             </div>
+            {recentPhotos.length > 0 && (
+              <div className="mt-6 flex justify-center">
+                <button
+                  onClick={handleDownloadAll}
+                  disabled={isDownloadingAll}
+                  className="flex items-center gap-2 px-6 py-3 bg-white border-2 border-gray-200 text-gray-900 rounded-full text-sm font-bold hover:bg-gray-50 transition-colors disabled:opacity-50"
+                >
+                  {isDownloadingAll ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <Download className="w-5 h-5" />
+                  )}
+                  {isDownloadingAll ? "Pripravljam ZIP..." : "Prenesi vse slike"}
+                </button>
+              </div>
+            )}
           </motion.div>
         )}
       </main>
 
       {/* Fullscreen Image Modal */}
-      <AnimatePresence>
-        {selectedImage && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
-            onClick={() => setSelectedImage(null)}
-          >
-            <motion.img
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.9 }}
-              src={selectedImage}
-              alt="Enlarged wedding moment"
-              className="max-w-full max-h-full object-contain rounded-lg"
-              referrerPolicy="no-referrer"
-            />
-            <button 
-              className="absolute top-6 right-6 text-white bg-black/50 w-10 h-10 rounded-full flex items-center justify-center hover:bg-black/70 transition-colors"
-              onClick={(e) => {
-                e.stopPropagation();
-                setSelectedImage(null);
-              }}
-            >
-              ✕
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {selectedImageIndex !== null && (
+        <ImageViewer
+          images={recentPhotos}
+          initialIndex={selectedImageIndex}
+          onClose={() => setSelectedImageIndex(null)}
+        />
+      )}
     </div>
   );
 }

@@ -7,15 +7,15 @@ import html2canvas from 'html2canvas';
 
 const DESIGNS = [
   { id: 1, name: 'Minimalističen', container: 'bg-white border-2 border-gray-200', text: 'text-gray-900 font-sans', qrFg: '#111827', qrBg: '#ffffff' },
-  { id: 2, name: 'Eleganten', container: 'bg-white border-4 border-double border-[#D4AF37]', text: 'text-gray-900 font-serif', qrFg: '#000000', qrBg: '#ffffff' },
-  { id: 3, name: 'Rustikalen', container: 'bg-[#F5E6D3] border-2 border-dashed border-[#8B5A2B]', text: 'text-[#5C4033] font-serif', qrFg: '#3E2723', qrBg: '#F5E6D3' },
+  { id: 2, name: 'Eleganten', container: 'bg-white border-4 border-[#D4AF37]', text: 'text-gray-900 font-serif', qrFg: '#000000', qrBg: '#ffffff' },
+  { id: 3, name: 'Rustikalen', container: 'bg-[#F5E6D3] border-2 border-[#8B5A2B]', text: 'text-[#5C4033] font-serif', qrFg: '#3E2723', qrBg: '#F5E6D3' },
   { id: 4, name: 'Modern Temen', container: 'bg-gray-900 border-2 border-gray-700', text: 'text-white font-sans', qrFg: '#ffffff', qrBg: '#111827' },
   { id: 5, name: 'Botaničen', container: 'bg-[#F0FDF4] border-2 border-[#86EFAC]', text: 'text-[#14532D] font-serif', qrFg: '#14532D', qrBg: '#F0FDF4' },
   { id: 6, name: 'Klasičen Moder', container: 'bg-[#EFF6FF] border-4 border-[#1E3A8A]', text: 'text-[#1E3A8A] font-serif', qrFg: '#1E3A8A', qrBg: '#EFF6FF' },
   { id: 7, name: 'Geometričen', container: 'bg-white border-[8px] border-black', text: 'text-black font-sans uppercase tracking-widest', qrFg: '#000000', qrBg: '#ffffff' },
   { id: 8, name: 'Romantičen', container: 'bg-[#FFF1F2] border-2 border-[#FDA4AF] rounded-3xl', text: 'text-[#9F1239] font-serif', qrFg: '#9F1239', qrBg: '#FFF1F2' },
   { id: 9, name: 'Vintage', container: 'bg-[#FEF3C7] border-4 border-[#D97706]', text: 'text-[#78350F] font-serif', qrFg: '#78350F', qrBg: '#FEF3C7' },
-  { id: 10, name: 'Zlat Prah', container: 'bg-gradient-to-br from-white to-[#FEF08A] border-2 border-[#EAB308]', text: 'text-[#854D0E] font-serif', qrFg: '#854D0E', qrBg: '#ffffff' },
+  { id: 10, name: 'Zlat Prah', container: 'bg-[#FEF08A] border-2 border-[#EAB308]', text: 'text-[#854D0E] font-serif', qrFg: '#854D0E', qrBg: '#ffffff' },
 ];
 
 interface QRModalProps {

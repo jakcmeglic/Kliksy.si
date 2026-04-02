@@ -13,7 +13,9 @@ async function startServer() {
   // Log incoming requests
   app.use((req, res, next) => {
     const logEntry = `[REQUEST] ${req.method} ${req.url} (Host: ${req.headers.host})`;
-    console.log(logEntry);
+    if (req.url.startsWith('/api')) {
+      console.log(logEntry);
+    }
     requestLogs.push(logEntry);
     if (requestLogs.length > 100) requestLogs.shift();
     next();
@@ -26,7 +28,7 @@ async function startServer() {
   // API routes FIRST
   app.post("/api/create-payment-intent", async (req, res) => {
     try {
-      const { plan, discountCode } = req.body;
+      const { plan, discountCode, deliveryMode, standsQuantity } = req.body;
       
       const plans = {
         basic: 3900, // in cents (39.00 EUR)
@@ -39,6 +41,22 @@ async function startServer() {
       if (discountCode?.toLowerCase() === 'test99') {
         amount = 0;
       }
+
+      let upsellAmount = 0;
+      if (deliveryMode === 'home_delivery') {
+        upsellAmount += 4999;
+        if (standsQuantity === 5) upsellAmount += 499;
+        else if (standsQuantity === 10) upsellAmount += 999;
+        else if (standsQuantity === 20) upsellAmount += 1299;
+        else if (standsQuantity === 30) upsellAmount += 1499;
+      } else {
+        if (standsQuantity === 5) upsellAmount += 1999;
+        else if (standsQuantity === 10) upsellAmount += 2499;
+        else if (standsQuantity === 20) upsellAmount += 2999;
+        else if (standsQuantity === 30) upsellAmount += 3499;
+      }
+
+      amount += upsellAmount;
 
       if (amount === 0) {
         return res.json({ clientSecret: null, free: true });

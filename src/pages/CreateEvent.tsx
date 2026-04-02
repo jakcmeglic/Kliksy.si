@@ -35,6 +35,10 @@ export default function CreateEvent() {
   const [authPassword, setAuthPassword] = useState('');
   const [authError, setAuthError] = useState('');
 
+  // Upsell states
+  const [deliveryMode, setDeliveryMode] = useState<'self_print' | 'home_delivery'>('self_print');
+  const [standsQuantity, setStandsQuantity] = useState<0 | 5 | 10 | 20 | 30>(0);
+
   // Discount states
   const [discountCode, setDiscountCode] = useState('');
   const [discountApplied, setDiscountApplied] = useState(false);
@@ -94,7 +98,22 @@ export default function CreateEvent() {
     const initPayment = async () => {
       if (step === 3) {
         const originalPrice = plans[formData.plan].price;
-        const currentFinalPrice = discountApplied ? 0 : originalPrice;
+        
+        let upsellPrice = 0;
+        if (deliveryMode === 'home_delivery') {
+          upsellPrice += 49.99;
+          if (standsQuantity === 5) upsellPrice += 4.99;
+          else if (standsQuantity === 10) upsellPrice += 9.99;
+          else if (standsQuantity === 20) upsellPrice += 12.99;
+          else if (standsQuantity === 30) upsellPrice += 14.99;
+        } else {
+          if (standsQuantity === 5) upsellPrice += 19.99;
+          else if (standsQuantity === 10) upsellPrice += 24.99;
+          else if (standsQuantity === 20) upsellPrice += 29.99;
+          else if (standsQuantity === 30) upsellPrice += 34.99;
+        }
+
+        const currentFinalPrice = (discountApplied ? 0 : originalPrice) + upsellPrice;
 
         if (currentFinalPrice > 0) {
           setIsProcessing(true);
@@ -102,7 +121,12 @@ export default function CreateEvent() {
             const res = await fetch('/api/create-payment-intent', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ plan: formData.plan, discountCode: discountApplied ? 'test99' : '' })
+              body: JSON.stringify({ 
+                plan: formData.plan, 
+                discountCode: discountApplied ? 'test99' : '',
+                deliveryMode,
+                standsQuantity
+              })
             });
             const data = await res.json();
             if (data.clientSecret) {
@@ -116,7 +140,7 @@ export default function CreateEvent() {
       }
     };
     initPayment();
-  }, [step, formData.plan, discountApplied]);
+  }, [step, formData.plan, discountApplied, deliveryMode, standsQuantity]);
 
   const handleBack = () => {
     if (step === 3 && (!user || user.isAnonymous)) {
@@ -165,6 +189,8 @@ export default function CreateEvent() {
         date: formData.date,
         email: user.email || '',
         plan: formData.plan,
+        deliveryMode,
+        standsQuantity,
         ownerId: user.uid,
         createdAt: serverTimestamp()
       });
@@ -180,7 +206,22 @@ export default function CreateEvent() {
   };
 
   const originalPrice = plans[formData.plan].price;
-  const finalPrice = discountApplied ? 0 : originalPrice;
+  
+  let upsellPrice = 0;
+  if (deliveryMode === 'home_delivery') {
+    upsellPrice += 49.99;
+    if (standsQuantity === 5) upsellPrice += 4.99;
+    else if (standsQuantity === 10) upsellPrice += 9.99;
+    else if (standsQuantity === 20) upsellPrice += 12.99;
+    else if (standsQuantity === 30) upsellPrice += 14.99;
+  } else {
+    if (standsQuantity === 5) upsellPrice += 19.99;
+    else if (standsQuantity === 10) upsellPrice += 24.99;
+    else if (standsQuantity === 20) upsellPrice += 29.99;
+    else if (standsQuantity === 30) upsellPrice += 34.99;
+  }
+
+  const finalPrice = (discountApplied ? 0 : originalPrice) + upsellPrice;
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -471,11 +512,101 @@ export default function CreateEvent() {
                   ))}
                 </div>
 
+                <div className="space-y-4 mb-8">
+                  <h3 className="text-xl font-bold mb-4">Dodatne storitve</h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div 
+                      className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${
+                        deliveryMode === 'self_print' ? 'border-indigo-600 bg-indigo-50/50' : 'border-gray-200 hover:border-gray-300 bg-white'
+                      }`}
+                      onClick={() => setDeliveryMode('self_print')}
+                    >
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                          deliveryMode === 'self_print' ? 'border-indigo-600' : 'border-gray-300'
+                        }`}>
+                          {deliveryMode === 'self_print' && <div className="w-2.5 h-2.5 bg-indigo-600 rounded-full" />}
+                        </div>
+                        <h4 className="font-bold">Sprintal bom sam</h4>
+                      </div>
+                      <p className="text-sm text-gray-500 pl-8">Brezplačno. QR kodo boste prejeli v PDF formatu za lastno tiskanje.</p>
+                    </div>
+
+                    <div 
+                      className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${
+                        deliveryMode === 'home_delivery' ? 'border-indigo-600 bg-indigo-50/50' : 'border-gray-200 hover:border-gray-300 bg-white'
+                      }`}
+                      onClick={() => setDeliveryMode('home_delivery')}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                            deliveryMode === 'home_delivery' ? 'border-indigo-600' : 'border-gray-300'
+                          }`}>
+                            {deliveryMode === 'home_delivery' && <div className="w-2.5 h-2.5 bg-indigo-600 rounded-full" />}
+                          </div>
+                          <h4 className="font-bold">All in one dostava na dom</h4>
+                        </div>
+                        <span className="font-bold">+49.99€</span>
+                      </div>
+                      <p className="text-sm text-gray-500 pl-8">Vključuje printanje QR kode na trd papir in dostavo na dom.</p>
+                    </div>
+                  </div>
+
+                  <div className="mt-8 p-6 bg-gray-50 rounded-2xl border border-gray-200">
+                    <h4 className="font-bold mb-2">Podstavki za mizo (opcijsko)</h4>
+                    <p className="text-sm text-gray-600 mb-4">Izberite količino podstavkov za vaše QR kode.</p>
+                    
+                    <div className="grid grid-cols-3 gap-4 mb-6">
+                      <img src="/hf_20260402_042506_9c8ed65f-ea7f-49b0-a82b-514d73de11e0.png" alt="Podstavek 1" className="w-full aspect-square object-cover rounded-xl border border-gray-200" />
+                      <img src="/hf_20260402_042524_4ac5d4b1-0070-45c3-b3c4-75f0f1a9fb14.png" alt="Podstavek 2" className="w-full aspect-square object-cover rounded-xl border border-gray-200" />
+                      <img src="/hf_20260402_042605_6a668101-3fa9-4d41-849a-41503b830156.png" alt="Podstavek 3" className="w-full aspect-square object-cover rounded-xl border border-gray-200" />
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                      <button
+                        onClick={() => setStandsQuantity(0)}
+                        className={`py-2 px-3 rounded-xl text-sm font-medium border transition-colors ${
+                          standsQuantity === 0 ? 'bg-black text-white border-black' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                        }`}
+                      >
+                        Brez
+                      </button>
+                      {[5, 10, 20, 30].map((qty) => {
+                        const price = deliveryMode === 'home_delivery' 
+                          ? (qty === 5 ? 4.99 : qty === 10 ? 9.99 : qty === 20 ? 12.99 : 14.99)
+                          : (qty === 5 ? 19.99 : qty === 10 ? 24.99 : qty === 20 ? 29.99 : 34.99);
+                        
+                        return (
+                          <button
+                            key={qty}
+                            onClick={() => setStandsQuantity(qty as any)}
+                            className={`py-2 px-3 rounded-xl text-sm font-medium border transition-colors flex flex-col items-center justify-center ${
+                              standsQuantity === qty ? 'bg-black text-white border-black' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                            }`}
+                          >
+                            <span>{qty} kosov</span>
+                            <span className={standsQuantity === qty ? 'text-gray-300 text-xs' : 'text-gray-500 text-xs'}>+{price}€</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
                 <div className="bg-gray-50 p-6 rounded-2xl mb-8">
                   <div className="flex justify-between items-center mb-4 pb-4 border-b border-gray-200">
                     <span className="font-medium">Paket {plans[formData.plan].name}</span>
                     <span className="font-medium">{originalPrice}€</span>
                   </div>
+                  
+                  {upsellPrice > 0 && (
+                    <div className="flex justify-between items-center mb-4 pb-4 border-b border-gray-200">
+                      <span className="font-medium text-gray-600">Dodatne storitve</span>
+                      <span className="font-medium">+{upsellPrice.toFixed(2)}€</span>
+                    </div>
+                  )}
 
                   <div className="mb-4 pb-4 border-b border-gray-200">
                     <label className="block text-sm font-medium mb-2">Koda za popust</label>
@@ -518,8 +649,8 @@ export default function CreateEvent() {
                   <div className="flex justify-between items-center text-sm text-gray-500">
                     <span>Skupaj za plačilo</span>
                     <div className="text-right">
-                      {discountApplied && <span className="text-gray-400 line-through mr-2">{originalPrice}€</span>}
-                      <span className="text-xl font-bold text-black">{finalPrice}€</span>
+                      {discountApplied && <span className="text-gray-400 line-through mr-2">{(originalPrice + upsellPrice).toFixed(2)}€</span>}
+                      <span className="text-xl font-bold text-black">{finalPrice.toFixed(2)}€</span>
                     </div>
                   </div>
                 </div>
