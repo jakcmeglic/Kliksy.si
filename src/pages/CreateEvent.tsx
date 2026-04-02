@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, ArrowRight, Check, CreditCard, Calendar, Users, LogIn, Mail, Loader2, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, CreditCard, Calendar, Users, LogIn, Mail, Loader2, ChevronDown, ChevronUp, Maximize2 } from "lucide-react";
 import { useAuth } from "../components/AuthProvider";
 import { db, handleFirestoreError, OperationType, signInWithApple, signUpWithEmail, signInWithEmail } from "../firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
 import CheckoutForm from '../components/CheckoutForm';
+import ImageViewer from '../components/ImageViewer';
 
 const stripePromise = loadStripe((import.meta as any).env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_live_51TEmXMLJ8vfPX22QkXdW7GDFcWjf11FaIpQoWxafS1mr7B4qcGcNKHbUJNCW9b4DxHJ6iEwvUlGPMKDgoNOuCd6l00qbVmXCkV');
 
@@ -38,6 +39,15 @@ export default function CreateEvent() {
   // Upsell states
   const [deliveryMode, setDeliveryMode] = useState<'self_print' | 'home_delivery'>('self_print');
   const [standsQuantity, setStandsQuantity] = useState<0 | 5 | 10 | 20 | 30>(0);
+  const [printedQrQuantity, setPrintedQrQuantity] = useState<5 | 10 | 20 | 30>(5);
+  const [selectedStand, setSelectedStand] = useState<number>(0);
+  const [viewingImage, setViewingImage] = useState<number | null>(null);
+
+  const standImages = [
+    "/hf_20260402_042506_9c8ed65f-ea7f-49b0-a82b-514d73de11e0.png",
+    "/hf_20260402_042524_4ac5d4b1-0070-45c3-b3c4-75f0f1a9fb14.png",
+    "/hf_20260402_042605_6a668101-3fa9-4d41-849a-41503b830156.png"
+  ];
 
   // Discount states
   const [discountCode, setDiscountCode] = useState('');
@@ -101,7 +111,11 @@ export default function CreateEvent() {
         
         let upsellPrice = 0;
         if (deliveryMode === 'home_delivery') {
-          upsellPrice += 49.99;
+          if (printedQrQuantity === 5) upsellPrice += 19.99;
+          else if (printedQrQuantity === 10) upsellPrice += 29.99;
+          else if (printedQrQuantity === 20) upsellPrice += 39.99;
+          else if (printedQrQuantity === 30) upsellPrice += 49.99;
+
           if (standsQuantity === 5) upsellPrice += 4.99;
           else if (standsQuantity === 10) upsellPrice += 9.99;
           else if (standsQuantity === 20) upsellPrice += 12.99;
@@ -125,7 +139,8 @@ export default function CreateEvent() {
                 plan: formData.plan, 
                 discountCode: discountApplied ? 'test99' : '',
                 deliveryMode,
-                standsQuantity
+                standsQuantity,
+                printedQrQuantity
               })
             });
             const data = await res.json();
@@ -191,6 +206,8 @@ export default function CreateEvent() {
         plan: formData.plan,
         deliveryMode,
         standsQuantity,
+        printedQrQuantity: deliveryMode === 'home_delivery' ? printedQrQuantity : 0,
+        selectedStand: standsQuantity > 0 ? standImages[selectedStand] : null,
         ownerId: user.uid,
         createdAt: serverTimestamp()
       });
@@ -209,7 +226,11 @@ export default function CreateEvent() {
   
   let upsellPrice = 0;
   if (deliveryMode === 'home_delivery') {
-    upsellPrice += 49.99;
+    if (printedQrQuantity === 5) upsellPrice += 19.99;
+    else if (printedQrQuantity === 10) upsellPrice += 29.99;
+    else if (printedQrQuantity === 20) upsellPrice += 39.99;
+    else if (printedQrQuantity === 30) upsellPrice += 49.99;
+
     if (standsQuantity === 5) upsellPrice += 4.99;
     else if (standsQuantity === 10) upsellPrice += 9.99;
     else if (standsQuantity === 20) upsellPrice += 12.99;
@@ -534,12 +555,14 @@ export default function CreateEvent() {
                     </div>
 
                     <div 
-                      className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${
+                      className={`p-4 rounded-2xl border-2 transition-all ${
                         deliveryMode === 'home_delivery' ? 'border-indigo-600 bg-indigo-50/50' : 'border-gray-200 hover:border-gray-300 bg-white'
                       }`}
-                      onClick={() => setDeliveryMode('home_delivery')}
                     >
-                      <div className="flex items-center justify-between mb-2">
+                      <div 
+                        className="flex items-center justify-between mb-2 cursor-pointer"
+                        onClick={() => setDeliveryMode('home_delivery')}
+                      >
                         <div className="flex items-center gap-3">
                           <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
                             deliveryMode === 'home_delivery' ? 'border-indigo-600' : 'border-gray-300'
@@ -548,9 +571,39 @@ export default function CreateEvent() {
                           </div>
                           <h4 className="font-bold">All in one dostava na dom</h4>
                         </div>
-                        <span className="font-bold">+49.99€</span>
+                        <span className="font-bold">
+                          +{printedQrQuantity === 5 ? '19.99' : printedQrQuantity === 10 ? '29.99' : printedQrQuantity === 20 ? '39.99' : '49.99'}€
+                        </span>
                       </div>
-                      <p className="text-sm text-gray-500 pl-8">Vključuje printanje QR kode na trd papir in dostavo na dom.</p>
+                      <p className="text-sm text-gray-500 pl-8 mb-4 cursor-pointer" onClick={() => setDeliveryMode('home_delivery')}>Vključuje printanje QR kod na premium trd papir in dostavo na dom.</p>
+                      
+                      <AnimatePresence>
+                        {deliveryMode === 'home_delivery' && (
+                          <motion.div 
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="pl-8 overflow-hidden"
+                          >
+                            <div className="pt-2 border-t border-indigo-100/50">
+                              <p className="text-sm font-medium mb-2 text-gray-700">Število natisnjenih QR kod:</p>
+                              <div className="grid grid-cols-4 gap-2">
+                                {[5, 10, 20, 30].map((qty) => (
+                                  <button
+                                    key={qty}
+                                    onClick={() => setPrintedQrQuantity(qty as any)}
+                                    className={`py-2 px-1 rounded-lg text-sm font-medium border transition-colors ${
+                                      printedQrQuantity === qty ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                                    }`}
+                                  >
+                                    {qty}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
                   </div>
 
@@ -558,10 +611,37 @@ export default function CreateEvent() {
                     <h4 className="font-bold mb-2">Podstavki za mizo (opcijsko)</h4>
                     <p className="text-sm text-gray-600 mb-4">Izberite količino podstavkov za vaše QR kode.</p>
                     
-                    <div className="grid grid-cols-3 gap-4 mb-6">
-                      <img src="/hf_20260402_042506_9c8ed65f-ea7f-49b0-a82b-514d73de11e0.png" alt="Podstavek 1" className="w-full aspect-square object-cover rounded-xl border border-gray-200" />
-                      <img src="/hf_20260402_042524_4ac5d4b1-0070-45c3-b3c4-75f0f1a9fb14.png" alt="Podstavek 2" className="w-full aspect-square object-cover rounded-xl border border-gray-200" />
-                      <img src="/hf_20260402_042605_6a668101-3fa9-4d41-849a-41503b830156.png" alt="Podstavek 3" className="w-full aspect-square object-cover rounded-xl border border-gray-200" />
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                      {standImages.map((img, idx) => (
+                        <div 
+                          key={idx} 
+                          className={`rounded-xl border-2 overflow-hidden transition-all relative ${selectedStand === idx ? 'border-indigo-600 ring-2 ring-indigo-600/20' : 'border-gray-200 hover:border-gray-300'}`}
+                        >
+                          <div 
+                            className="w-full aspect-square relative cursor-pointer group"
+                            onClick={() => setViewingImage(idx)}
+                          >
+                            <img src={img} alt={`Podstavek ${idx + 1}`} className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                              <div className="bg-white/90 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity transform scale-90 group-hover:scale-100 shadow-sm">
+                                <Maximize2 className="w-5 h-5 text-gray-700" />
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div 
+                            className="p-3 bg-white border-t border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50"
+                            onClick={() => setSelectedStand(idx)}
+                          >
+                            <span className="text-sm font-medium text-gray-700">Podstavek {idx + 1}</span>
+                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                              selectedStand === idx ? 'border-indigo-600' : 'border-gray-300'
+                            }`}>
+                              {selectedStand === idx && <div className="w-2.5 h-2.5 bg-indigo-600 rounded-full" />}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
 
                     <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
@@ -610,7 +690,7 @@ export default function CreateEvent() {
 
                   <div className="mb-4 pb-4 border-b border-gray-200">
                     <label className="block text-sm font-medium mb-2">Koda za popust</label>
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
                       <input 
                         type="text" 
                         value={discountCode}
@@ -637,7 +717,7 @@ export default function CreateEvent() {
                             }
                           }
                         }}
-                        className={`px-6 py-3 rounded-xl font-medium transition-colors whitespace-nowrap ${discountApplied ? 'bg-red-100 text-red-600 hover:bg-red-200' : 'bg-gray-900 text-white hover:bg-black'}`}
+                        className={`px-6 py-3 rounded-xl font-medium transition-colors whitespace-nowrap w-full sm:w-auto ${discountApplied ? 'bg-red-100 text-red-600 hover:bg-red-200' : 'bg-gray-900 text-white hover:bg-black'}`}
                       >
                         {discountApplied ? 'Odstrani' : 'Uporabi'}
                       </button>
@@ -698,6 +778,14 @@ export default function CreateEvent() {
           </AnimatePresence>
         </div>
       </main>
+
+      {viewingImage !== null && (
+        <ImageViewer
+          images={standImages.map((url, idx) => ({ id: String(idx), url }))}
+          initialIndex={viewingImage}
+          onClose={() => setViewingImage(null)}
+        />
+      )}
     </div>
   );
 }

@@ -28,7 +28,7 @@ async function startServer() {
   // API routes FIRST
   app.post("/api/create-payment-intent", async (req, res) => {
     try {
-      const { plan, discountCode, deliveryMode, standsQuantity } = req.body;
+      const { plan, discountCode, deliveryMode, standsQuantity, printedQrQuantity } = req.body;
       
       const plans = {
         basic: 3900, // in cents (39.00 EUR)
@@ -44,7 +44,12 @@ async function startServer() {
 
       let upsellAmount = 0;
       if (deliveryMode === 'home_delivery') {
-        upsellAmount += 4999;
+        if (printedQrQuantity === 5) upsellAmount += 1999;
+        else if (printedQrQuantity === 10) upsellAmount += 2999;
+        else if (printedQrQuantity === 20) upsellAmount += 3999;
+        else if (printedQrQuantity === 30) upsellAmount += 4999;
+        else upsellAmount += 1999;
+
         if (standsQuantity === 5) upsellAmount += 499;
         else if (standsQuantity === 10) upsellAmount += 999;
         else if (standsQuantity === 20) upsellAmount += 1299;

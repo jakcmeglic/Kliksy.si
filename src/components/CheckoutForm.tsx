@@ -48,7 +48,7 @@ export default function CheckoutForm({ amount, onSuccess, isProcessing, setIsPro
               </span>
             ) : (
               <span className="flex items-center gap-2">
-                Plačaj {amount}€ <Check className="w-5 h-5" />
+                Plačaj <Check className="w-5 h-5" />
               </span>
             )}
           </button>
