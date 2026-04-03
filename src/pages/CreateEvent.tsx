@@ -104,58 +104,67 @@ export default function CreateEvent() {
   }, [user, step]);
 
   useEffect(() => {
-    // Initialize payment intent when reaching step 3
+    // Pre-initialize payment intent so it's ready when user reaches step 3
     const initPayment = async () => {
-      if (step === 3) {
-        const originalPrice = plans[formData.plan].price;
-        
-        let upsellPrice = 0;
-        if (deliveryMode === 'home_delivery') {
-          if (printedQrQuantity === 5) upsellPrice += 19.99;
-          else if (printedQrQuantity === 10) upsellPrice += 29.99;
-          else if (printedQrQuantity === 20) upsellPrice += 39.99;
-          else if (printedQrQuantity === 30) upsellPrice += 49.99;
+      const originalPrice = plans[formData.plan].price;
+      
+      let upsellPrice = 0;
+      if (deliveryMode === 'home_delivery') {
+        if (printedQrQuantity === 5) upsellPrice += 19.99;
+        else if (printedQrQuantity === 10) upsellPrice += 29.99;
+        else if (printedQrQuantity === 20) upsellPrice += 39.99;
+        else if (printedQrQuantity === 30) upsellPrice += 49.99;
 
-          if (standsQuantity === 5) upsellPrice += 4.99;
-          else if (standsQuantity === 10) upsellPrice += 9.99;
-          else if (standsQuantity === 20) upsellPrice += 12.99;
-          else if (standsQuantity === 30) upsellPrice += 14.99;
-        } else {
-          if (standsQuantity === 5) upsellPrice += 19.99;
-          else if (standsQuantity === 10) upsellPrice += 24.99;
-          else if (standsQuantity === 20) upsellPrice += 29.99;
-          else if (standsQuantity === 30) upsellPrice += 34.99;
-        }
+        if (standsQuantity === 5) upsellPrice += 4.99;
+        else if (standsQuantity === 10) upsellPrice += 9.99;
+        else if (standsQuantity === 20) upsellPrice += 12.99;
+        else if (standsQuantity === 30) upsellPrice += 14.99;
+      } else {
+        if (standsQuantity === 5) upsellPrice += 19.99;
+        else if (standsQuantity === 10) upsellPrice += 24.99;
+        else if (standsQuantity === 20) upsellPrice += 29.99;
+        else if (standsQuantity === 30) upsellPrice += 34.99;
+      }
 
-        const currentFinalPrice = (discountApplied ? 0 : originalPrice) + upsellPrice;
+      const currentFinalPrice = (discountApplied ? 0 : originalPrice) + upsellPrice;
 
-        if (currentFinalPrice > 0) {
+      if (currentFinalPrice > 0) {
+        // Only show processing state if we are actually on step 3 and waiting
+        if (step === 3 && !clientSecret) {
           setIsProcessing(true);
-          try {
-            const res = await fetch('/api/create-payment-intent', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ 
-                plan: formData.plan, 
-                discountCode: discountApplied ? 'test99' : '',
-                deliveryMode,
-                standsQuantity,
-                printedQrQuantity
-              })
-            });
-            const data = await res.json();
-            if (data.clientSecret) {
-              setClientSecret(data.clientSecret);
-            }
-          } catch (e) {
-            console.error(e);
-          }
-          setIsProcessing(false);
         }
+        try {
+          const res = await fetch('/api/create-payment-intent', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              plan: formData.plan, 
+              discountCode: discountApplied ? 'test99' : '',
+              deliveryMode,
+              standsQuantity,
+              printedQrQuantity
+            })
+          });
+          const data = await res.json();
+          if (data.clientSecret) {
+            setClientSecret(data.clientSecret);
+          }
+        } catch (e) {
+          console.error(e);
+        }
+        setIsProcessing(false);
+      } else {
+        setClientSecret('');
       }
     };
-    initPayment();
-  }, [step, formData.plan, discountApplied, deliveryMode, standsQuantity]);
+    
+    // Debounce the fetch slightly to avoid multiple calls when rapidly clicking
+    const timeoutId = setTimeout(() => {
+      initPayment();
+    }, 300);
+    
+    return () => clearTimeout(timeoutId);
+  }, [formData.plan, discountApplied, deliveryMode, standsQuantity, printedQrQuantity]);
 
   const handleBack = () => {
     if (step === 3 && (!user || user.isAnonymous)) {
