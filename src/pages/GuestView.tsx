@@ -116,15 +116,25 @@ export default function GuestView() {
           let fileToUpload: File | Blob = file;
           try {
             const options = {
-              maxSizeMB: 0.6, // 600KB max to safely fit in 1MB after Base64 encoding
+              maxSizeMB: 0.5, // 500KB max to safely fit in 1MB after Base64 encoding
               maxWidthOrHeight: 1600,
               useWebWorker: true,
             };
             fileToUpload = await imageCompression(file, options);
           } catch (compressionError) {
-            console.warn("Image compression failed:", compressionError);
-            if (file.size > 700 * 1024) {
-              throw new Error("Slika je prevelika in je ni bilo mogoče stisniti.");
+            console.warn("Image compression failed, trying without WebWorker:", compressionError);
+            try {
+              const fallbackOptions = {
+                maxSizeMB: 0.5,
+                maxWidthOrHeight: 1600,
+                useWebWorker: false,
+              };
+              fileToUpload = await imageCompression(file, fallbackOptions);
+            } catch (fallbackError) {
+              console.warn("Fallback compression failed:", fallbackError);
+              if (file.size > 700 * 1024) {
+                throw new Error("Slika je prevelika in je ni bilo mogoče stisniti.");
+              }
             }
           }
 

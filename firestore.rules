@@ -34,7 +34,7 @@ service cloud.firestore {
         allow read: if true;
         
         // Anyone (including anonymous guests) can upload a photo
-        allow create: if isAuthenticated();
+        allow create: if true;
         
         // Only the event owner can delete photos
         allow update, delete: if isAuthenticated() && get(/databases/$(database)/documents/events/$(eventId)).data.ownerId == request.auth.uid;
