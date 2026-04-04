@@ -54,6 +54,7 @@ export default function CreateEvent() {
   const [discountApplied, setDiscountApplied] = useState(false);
   const [discountError, setDiscountError] = useState('');
   const [clientSecret, setClientSecret] = useState('');
+  const [stripeError, setStripeError] = useState('');
   const [paymentSuccess, setPaymentSuccess] = useState(false);
 
   const plans = {
@@ -148,9 +149,13 @@ export default function CreateEvent() {
           const data = await res.json();
           if (data.clientSecret) {
             setClientSecret(data.clientSecret);
+            setStripeError('');
+          } else if (data.error) {
+            setStripeError(data.error);
           }
-        } catch (e) {
+        } catch (e: any) {
           console.error(e);
+          setStripeError(e.message || 'Napaka pri povezovanju s plačilnim sistemom.');
         }
         setIsProcessing(false);
       } else {
@@ -783,14 +788,20 @@ export default function CreateEvent() {
                       )}
                     </div>
                     
-                    {!clientSecret && (
+                    {!clientSecret && !stripeError && (
                       <div className="flex flex-col items-center justify-center py-12">
                         <Loader2 className="w-8 h-8 animate-spin text-indigo-600 mb-4" />
                         <p className="text-gray-500 text-sm">Povezujem z varnim plačilnim sistemom...</p>
                       </div>
                     )}
 
-                    {!clientSecret && (
+                    {stripeError && (
+                      <div className="p-4 bg-red-50 text-red-600 rounded-xl border border-red-100 text-sm mb-4">
+                        {stripeError}
+                      </div>
+                    )}
+
+                    {!clientSecret && !stripeError && (
                       <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] z-50 flex justify-center">
                         <div className="w-full max-w-xl">
                           <button 

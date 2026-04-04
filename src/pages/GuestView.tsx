@@ -374,22 +374,6 @@ export default function GuestView() {
                 </div>
               )}
             </div>
-            {recentPhotos.length > 0 && (
-              <div className="mt-6 flex justify-center">
-                <button
-                  onClick={handleDownloadAll}
-                  disabled={isDownloadingAll}
-                  className="flex items-center gap-2 px-6 py-3 bg-white border-2 border-gray-200 text-gray-900 rounded-full text-sm font-bold hover:bg-gray-50 transition-colors disabled:opacity-50"
-                >
-                  {isDownloadingAll ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <Download className="w-5 h-5" />
-                  )}
-                  {isDownloadingAll ? "Pripravljam ZIP..." : "Prenesi vse slike"}
-                </button>
-              </div>
-            )}
           </motion.div>
         )}
       </main>
