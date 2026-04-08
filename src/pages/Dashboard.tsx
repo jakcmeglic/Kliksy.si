@@ -19,6 +19,7 @@ export default function Dashboard() {
   
   const [activeTab, setActiveTab] = useState<'overview' | 'gallery' | 'settings'>('overview');
   const [event, setEvent] = useState<any>(null);
+  const [events, setEvents] = useState<any[]>([]);
   const [photos, setPhotos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -33,27 +34,23 @@ export default function Dashboard() {
       return;
     }
 
-    const fetchEvent = async () => {
+    const fetchEvents = async () => {
       try {
-        let eventDoc = null;
-        if (urlEventId) {
-          const docRef = doc(db, "events", urlEventId);
-          const docSnap = await getDoc(docRef);
-          if (docSnap.exists() && docSnap.data().ownerId === user.uid) {
-            eventDoc = { id: docSnap.id, ...docSnap.data() };
+        const q = query(collection(db, "events"), where("ownerId", "==", user.uid));
+        const querySnapshot = await getDocs(q);
+        
+        if (!querySnapshot.empty) {
+          const allEvents = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          setEvents(allEvents);
+          
+          let selectedEvent = allEvents[0];
+          if (urlEventId) {
+            const found = allEvents.find(e => e.id === urlEventId);
+            if (found) {
+              selectedEvent = found;
+            }
           }
-        }
-
-        if (!eventDoc) {
-          const q = query(collection(db, "events"), where("ownerId", "==", user.uid));
-          const querySnapshot = await getDocs(q);
-          if (!querySnapshot.empty) {
-            eventDoc = { id: querySnapshot.docs[0].id, ...querySnapshot.docs[0].data() };
-          }
-        }
-
-        if (eventDoc) {
-          setEvent(eventDoc);
+          setEvent(selectedEvent);
         } else {
           setLoading(false);
         }
@@ -62,7 +59,7 @@ export default function Dashboard() {
       }
     };
 
-    fetchEvent();
+    fetchEvents();
   }, [user, authLoading, urlEventId, navigate]);
 
   useEffect(() => {
@@ -120,7 +117,8 @@ export default function Dashboard() {
   const handleDownloadSingle = (url: string, index: number) => {
     const a = document.createElement('a');
     a.href = url;
-    a.download = `Kliksy-${event.partner1}-${event.partner2}-${index + 1}.jpg`;
+    const eventNameStr = event.eventType === 'poroka' || !event.eventType ? `${event.partner1}-${event.partner2}` : event.eventName;
+    a.download = `Kliksy-${eventNameStr}-${index + 1}.jpg`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -131,7 +129,8 @@ export default function Dashboard() {
     setIsDownloading(true);
     try {
       const zip = new JSZip();
-      const folder = zip.folder(`Kliksy-${event.partner1}-${event.partner2}`);
+      const eventNameStr = event.eventType === 'poroka' || !event.eventType ? `${event.partner1}-${event.partner2}` : event.eventName;
+      const folder = zip.folder(`Kliksy-${eventNameStr}`);
       
       if (!folder) throw new Error("Could not create zip folder");
 
@@ -156,7 +155,7 @@ export default function Dashboard() {
       await Promise.all(promises);
       
       const content = await zip.generateAsync({ type: "blob" });
-      saveAs(content, `Kliksy-${event.partner1}-${event.partner2}.zip`);
+      saveAs(content, `Kliksy-${eventNameStr}.zip`);
       setDownloadError('');
     } catch (error) {
       console.error("Error creating zip file:", error);
@@ -179,8 +178,30 @@ export default function Dashboard() {
         <div className="p-6 flex-1">
           <div className="mb-8">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Tvoj dogodek</p>
-            <h2 className="font-serif text-xl text-[var(--color-wedding-dark)] truncate">{event.partner1} & {event.partner2}</h2>
-            <p className="text-sm text-[var(--color-wedding-text)]/60">{new Date(event.date).toLocaleDateString('sl-SI')}</p>
+            {events.length > 1 ? (
+              <select
+                value={event.id}
+                onChange={(e) => {
+                  const selected = events.find(ev => ev.id === e.target.value);
+                  if (selected) {
+                    setEvent(selected);
+                    navigate(`/dashboard?eventId=${selected.id}`, { replace: true });
+                  }
+                }}
+                className="w-full bg-white border border-[var(--color-wedding-sand)] rounded-xl px-3 py-2 text-[var(--color-wedding-dark)] font-serif text-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-wedding-gold)] cursor-pointer truncate"
+              >
+                {events.map(ev => (
+                  <option key={ev.id} value={ev.id}>
+                    {ev.eventType === 'poroka' || !ev.eventType ? `${ev.partner1} & ${ev.partner2}` : ev.eventName}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <h2 className="font-serif text-xl text-[var(--color-wedding-dark)] truncate">
+                {event.eventType === 'poroka' || !event.eventType ? `${event.partner1} & ${event.partner2}` : event.eventName}
+              </h2>
+            )}
+            <p className="text-sm text-[var(--color-wedding-text)]/60 mt-2">{new Date(event.date).toLocaleDateString('sl-SI')}</p>
           </div>
 
           <nav className="space-y-2">
@@ -390,7 +411,7 @@ export default function Dashboard() {
                   <label className="block text-sm font-medium mb-2">Ime dogodka</label>
                   <input 
                     type="text" 
-                    defaultValue={`${event.partner1} & ${event.partner2}`}
+                    defaultValue={event.eventType === 'poroka' || !event.eventType ? `${event.partner1} & ${event.partner2}` : event.eventName}
                     className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[var(--color-wedding-gold)] focus:ring-1 focus:ring-[var(--color-wedding-gold)] outline-none transition-all"
                     disabled
                   />
@@ -407,7 +428,7 @@ export default function Dashboard() {
                 <div>
                   <label className="block text-sm font-medium mb-2">Pozdravno sporočilo za goste</label>
                   <textarea 
-                    defaultValue="Hvala, ker deliš spomine z nama."
+                    defaultValue={event.eventType === 'poroka' || !event.eventType ? "Hvala, ker deliš spomine z nama." : "Hvala, ker deliš spomine z nami."}
                     rows={3}
                     className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[var(--color-wedding-gold)] focus:ring-1 focus:ring-[var(--color-wedding-gold)] outline-none transition-all resize-none"
                   />

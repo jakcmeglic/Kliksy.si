@@ -23,7 +23,6 @@ export default function GuestView() {
   const [uploadError, setUploadError] = useState('');
   const [recentPhotos, setRecentPhotos] = useState<any[]>([]);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
-  const [isDownloadingAll, setIsDownloadingAll] = useState(false);
   
   const [deviceId] = useState(() => {
     let id = localStorage.getItem('guestDeviceId');
@@ -177,51 +176,6 @@ export default function GuestView() {
     if (cameraInputRef.current) cameraInputRef.current.value = '';
   };
 
-  const handleDownloadAll = async () => {
-    if (!id || !event) return;
-    setIsDownloadingAll(true);
-    try {
-      const q = query(collection(db, "events", id, "photos"), orderBy("createdAt", "desc"));
-      const querySnapshot = await getDocs(q);
-      const allPhotos = querySnapshot.docs.map(doc => doc.data());
-
-      if (allPhotos.length === 0) {
-        alert("Ni še naloženih fotografij.");
-        setIsDownloadingAll(false);
-        return;
-      }
-
-      const zip = new JSZip();
-      const folder = zip.folder(`Kliksy-${event.partner1}-${event.partner2}`);
-      
-      if (!folder) throw new Error("Could not create zip folder");
-
-      const promises = allPhotos.map(async (photo, index) => {
-        try {
-          const response = await fetch(photo.url);
-          const blob = await response.blob();
-          let extension = 'jpg';
-          if (blob.type) {
-            extension = blob.type.split('/')[1] || 'jpg';
-          }
-          folder.file(`photo-${index + 1}.${extension}`, blob);
-        } catch (err) {
-          console.error(`Failed to download photo ${index}`, err);
-        }
-      });
-
-      await Promise.all(promises);
-      
-      const content = await zip.generateAsync({ type: "blob" });
-      saveAs(content, `Kliksy-${event.partner1}-${event.partner2}.zip`);
-    } catch (error) {
-      console.error("Error creating zip file:", error);
-      alert("Prišlo je do napake pri prenosu. Poskusite znova.");
-    } finally {
-      setIsDownloadingAll(false);
-    }
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
@@ -267,8 +221,12 @@ export default function GuestView() {
         <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-indigo-50 mb-4">
           <Heart className="w-6 h-6 text-indigo-600 fill-indigo-600" />
         </div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">{event.partner1} & {event.partner2}</h1>
-        <p className="text-gray-500 text-sm">Hvala, ker deliš spomine z nama.</p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          {event.eventType === 'poroka' || !event.eventType ? `${event.partner1} & ${event.partner2}` : event.eventName}
+        </h1>
+        <p className="text-gray-500 text-sm">
+          {event.eventType === 'poroka' || !event.eventType ? 'Hvala, ker deliš spomine z nama.' : 'Hvala, ker deliš spomine z nami.'}
+        </p>
       </header>
 
       {/* Main Actions */}

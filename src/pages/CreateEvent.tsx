@@ -19,13 +19,19 @@ export default function CreateEvent() {
   const navigate = useNavigate();
   const initialPlan = (searchParams.get('plan') as Plan) || 'plus';
   
-  const { user, signIn } = useAuth();
+  const { user, signIn, signOut } = useAuth();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
+    eventType: '',
+    eventName: '',
     partner1: '',
     partner2: '',
     date: '',
-    plan: initialPlan
+    plan: initialPlan,
+    isCompanyInvoice: false,
+    companyName: '',
+    companyAddress: '',
+    companyTaxId: ''
   });
   const [expandedPlan, setExpandedPlan] = useState<Plan | null>(initialPlan);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -77,35 +83,25 @@ export default function CreateEvent() {
 
   const handleNext = async () => {
     if (step === 1) {
-      if (user && !user.isAnonymous) {
-        setStep(3); // Skip auth if already logged in
-      } else {
-        setStep(2);
-      }
+      setStep(2);
       return;
     }
 
     if (step === 2) {
-      if (user && !user.isAnonymous) {
-        setStep(3);
-      }
+      setStep(3);
       return;
     }
 
     if (step === 3) {
-      // Final success is handled by handleSuccess or CheckoutForm
+      if (user && !user.isAnonymous) {
+        setStep(4);
+      }
+      return;
     }
   };
 
   useEffect(() => {
-    // If user logs in while on step 2, move to step 3
-    if (step === 2 && user && !user.isAnonymous) {
-      setStep(3);
-    }
-  }, [user, step]);
-
-  useEffect(() => {
-    // Pre-initialize payment intent so it's ready when user reaches step 3
+    // Pre-initialize payment intent so it's ready when user reaches step 4
     const initPayment = async () => {
       const originalPrice = plans[formData.plan].price;
       
@@ -130,8 +126,8 @@ export default function CreateEvent() {
       const currentFinalPrice = (discountApplied ? 0 : originalPrice) + upsellPrice;
 
       if (currentFinalPrice > 0) {
-        // Only show processing state if we are actually on step 3 and waiting
-        if (step === 3 && !clientSecret) {
+        // Only show processing state if we are actually on step 4 and waiting
+        if (step === 4 && !clientSecret) {
           setIsProcessing(true);
         }
         try {
@@ -172,10 +168,10 @@ export default function CreateEvent() {
   }, [formData.plan, discountApplied, deliveryMode, standsQuantity, printedQrQuantity]);
 
   const handleBack = () => {
-    if (step === 3 && (!user || user.isAnonymous)) {
+    if (step === 4 && (!user || user.isAnonymous)) {
+      setStep(3);
+    } else if (step === 4 && user && !user.isAnonymous) {
       setStep(2);
-    } else if (step === 3 && user && !user.isAnonymous) {
-      setStep(1);
     } else {
       setStep(s => Math.max(s - 1, 1));
     }
@@ -213,6 +209,8 @@ export default function CreateEvent() {
     
     try {
       const docRef = await addDoc(collection(db, "events"), {
+        eventType: formData.eventType,
+        eventName: formData.eventName,
         partner1: formData.partner1,
         partner2: formData.partner2,
         date: formData.date,
@@ -222,6 +220,10 @@ export default function CreateEvent() {
         standsQuantity,
         printedQrQuantity: deliveryMode === 'home_delivery' ? printedQrQuantity : 0,
         selectedStand: standsQuantity > 0 ? standImages[selectedStand] : null,
+        isCompanyInvoice: formData.isCompanyInvoice,
+        companyName: formData.isCompanyInvoice ? formData.companyName : null,
+        companyAddress: formData.isCompanyInvoice ? formData.companyAddress : null,
+        companyTaxId: formData.isCompanyInvoice ? formData.companyTaxId : null,
         ownerId: user.uid,
         createdAt: serverTimestamp()
       });
@@ -281,7 +283,7 @@ export default function CreateEvent() {
             </Link>
           </div>
           <div className="text-sm font-medium text-gray-500">
-            Korak {step} od 3
+            Korak {step} od 4
           </div>
         </div>
       </header>
@@ -299,56 +301,28 @@ export default function CreateEvent() {
                 className="bg-white p-8 md:p-12 rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100"
               >
                 <div className="mb-8">
-                  <h2 className="text-3xl font-bold mb-2">Vaš veliki dan</h2>
-                  <p className="text-gray-600">Vnesite osnovne podatke o vajini poroki.</p>
+                  <h2 className="text-3xl font-bold mb-2">Vrsta dogodka</h2>
+                  <p className="text-gray-600">Izberite vrsto vašega dogodka.</p>
                 </div>
 
-                <div className="space-y-6">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-2">Ime (Partner 1)</label>
-                      <div className="relative">
-                        <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                        <input 
-                          type="text" 
-                          value={formData.partner1}
-                          onChange={e => setFormData({...formData, partner1: e.target.value})}
-                          className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-[var(--color-wedding-gold)] focus:ring-1 focus:ring-[var(--color-wedding-gold)] outline-none transition-all"
-                          placeholder="Ana"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-2">Ime (Partner 2)</label>
-                      <div className="relative">
-                        <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                        <input 
-                          type="text" 
-                          value={formData.partner2}
-                          onChange={e => setFormData({...formData, partner2: e.target.value})}
-                          className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-[var(--color-wedding-gold)] focus:ring-1 focus:ring-[var(--color-wedding-gold)] outline-none transition-all"
-                          placeholder="Luka"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Datum poroke</label>
-                    <div className="relative">
-                      <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                      <input 
-                        type="date" 
-                        value={formData.date}
-                        onChange={e => setFormData({...formData, date: e.target.value})}
-                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-[var(--color-wedding-gold)] focus:ring-1 focus:ring-[var(--color-wedding-gold)] outline-none transition-all"
-                      />
-                    </div>
-                  </div>
+                <div className="space-y-4">
+                  {['poroka', 'poslovni_dogodek', 'rojstni_dan', 'teambuilding'].map((type) => (
+                    <button
+                      key={type}
+                      onClick={() => setFormData({ ...formData, eventType: type })}
+                      className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
+                        formData.eventType === type ? 'border-indigo-600 bg-indigo-50/50' : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <span className="font-bold text-lg">
+                        {type === 'poroka' ? 'Poroka' : type === 'poslovni_dogodek' ? 'Poslovni dogodek' : type === 'rojstni_dan' ? 'Rojstni dan' : 'Teambuilding'}
+                      </span>
+                    </button>
+                  ))}
 
                   <button 
                     onClick={handleNext}
-                    disabled={!formData.partner1 || !formData.partner2 || !formData.date}
+                    disabled={!formData.eventType}
                     className="w-full bg-gray-900 text-white py-4 rounded-xl font-medium hover:bg-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-8"
                   >
                     Nadaljuj <ArrowRight className="w-5 h-5" />
@@ -369,102 +343,84 @@ export default function CreateEvent() {
                   <ArrowLeft className="w-4 h-4" /> Nazaj
                 </button>
 
-                <div className="mb-8 text-center">
-                  <h2 className="text-3xl font-bold mb-2">Ustvarite račun</h2>
-                  <p className="text-gray-600">Za upravljanje vašega dogodka potrebujemo vaš račun.</p>
+                <div className="mb-8">
+                  <h2 className="text-3xl font-bold mb-2">
+                    {formData.eventType === 'poroka' ? 'Vaš veliki dan' : 'Podrobnosti dogodka'}
+                  </h2>
+                  <p className="text-gray-600">
+                    {formData.eventType === 'poroka' ? 'Vnesite osnovne podatke o vajini poroki.' : 'Vnesite osnovne podatke o dogodku.'}
+                  </p>
                 </div>
 
-                <div className="bg-white border border-gray-200 p-6 rounded-2xl">
-                  <div className="flex gap-2 mb-6 p-1 bg-gray-100 rounded-xl">
-                    <button 
-                      onClick={() => setAuthMode('register')}
-                      className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${authMode === 'register' ? 'bg-white shadow-sm text-black' : 'text-gray-500 hover:text-black'}`}
-                    >
-                      Registracija
-                    </button>
-                    <button 
-                      onClick={() => setAuthMode('login')}
-                      className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${authMode === 'login' ? 'bg-white shadow-sm text-black' : 'text-gray-500 hover:text-black'}`}
-                    >
-                      Prijava
-                    </button>
-                  </div>
-
-                  {authError && (
-                    <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded-xl">
-                      {authError}
+                <div className="space-y-6">
+                  {formData.eventType === 'poroka' ? (
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Ime (Partner 1)</label>
+                        <div className="relative">
+                          <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                          <input 
+                            type="text" 
+                            value={formData.partner1}
+                            onChange={e => setFormData({...formData, partner1: e.target.value})}
+                            className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-all"
+                            placeholder="Ana"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Ime (Partner 2)</label>
+                        <div className="relative">
+                          <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                          <input 
+                            type="text" 
+                            value={formData.partner2}
+                            onChange={e => setFormData({...formData, partner2: e.target.value})}
+                            className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-all"
+                            placeholder="Luka"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Ime dogodka</label>
+                      <div className="relative">
+                        <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <input 
+                          type="text" 
+                          value={formData.eventName}
+                          onChange={e => setFormData({...formData, eventName: e.target.value})}
+                          className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-all"
+                          placeholder="Ime vašega dogodka"
+                        />
+                      </div>
                     </div>
                   )}
 
-                  <form onSubmit={handleEmailAuth} className="space-y-4 mb-6">
-                    <div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Datum dogodka</label>
+                    <div className="relative">
+                      <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                       <input 
-                        type="email" 
-                        placeholder="Email naslov"
-                        value={authEmail}
-                        onChange={e => setAuthEmail(e.target.value)}
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-all"
-                        required
+                        type="date" 
+                        value={formData.date}
+                        onChange={e => setFormData({...formData, date: e.target.value})}
+                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-all"
                       />
-                    </div>
-                    <div>
-                      <input 
-                        type="password" 
-                        placeholder="Geslo"
-                        value={authPassword}
-                        onChange={e => setAuthPassword(e.target.value)}
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-all"
-                        required
-                      />
-                    </div>
-                    <button 
-                      type="submit"
-                      className="w-full bg-black text-white py-3 rounded-xl font-medium hover:bg-gray-800 transition-colors"
-                    >
-                      {authMode === 'register' ? 'Ustvari račun' : 'Prijavi se'}
-                    </button>
-                  </form>
-
-                  <div className="relative mb-6">
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-gray-200"></div>
-                    </div>
-                    <div className="relative flex justify-center text-sm">
-                      <span className="px-2 bg-white text-gray-500">ali nadaljujte z</span>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <button 
-                      type="button"
-                      onClick={async () => {
-                        try {
-                          setAuthError('');
-                          await signIn();
-                        } catch (error: any) {
-                          setAuthError(error.message || 'Prišlo je do napake pri prijavi z Google.');
-                        }
-                      }}
-                      className="flex items-center justify-center gap-2 border border-gray-200 bg-white text-black px-4 py-3 rounded-xl font-medium hover:bg-gray-50 transition-colors"
-                    >
-                      <svg className="w-5 h-5" viewBox="0 0 24 24">
-                        <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                      </svg>
-                      Google
-                    </button>
-                    <button 
-                      onClick={handleAppleAuth}
-                      className="flex items-center justify-center gap-2 border border-gray-200 bg-white text-black px-4 py-3 rounded-xl font-medium hover:bg-gray-50 transition-colors"
-                    >
-                      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.04 2.26-.79 3.59-.76 1.56.04 2.87.74 3.65 1.9-3.13 1.86-2.61 5.98.43 7.21-.73 1.76-1.66 3.04-2.75 3.82zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
-                      </svg>
-                      Apple
-                    </button>
-                  </div>
+                  <button 
+                    onClick={handleNext}
+                    disabled={
+                      (formData.eventType === 'poroka' && (!formData.partner1 || !formData.partner2 || !formData.date)) ||
+                      (formData.eventType !== 'poroka' && (!formData.eventName || !formData.date))
+                    }
+                    className="w-full bg-gray-900 text-white py-4 rounded-xl font-medium hover:bg-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-8"
+                  >
+                    Nadaljuj <ArrowRight className="w-5 h-5" />
+                  </button>
                 </div>
               </motion.div>
             )}
@@ -472,6 +428,145 @@ export default function CreateEvent() {
             {step === 3 && (
               <motion.div
                 key="step3"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="bg-white p-8 md:p-12 rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100"
+              >
+                <button onClick={handleBack} className="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-black mb-6 transition-colors">
+                  <ArrowLeft className="w-4 h-4" /> Nazaj
+                </button>
+
+                <div className="mb-8 text-center">
+                  <h2 className="text-3xl font-bold mb-2">Ustvarite račun</h2>
+                  <p className="text-gray-600">Za upravljanje vašega dogodka potrebujemo vaš račun.</p>
+                </div>
+
+                <div className="bg-white border border-gray-200 p-6 rounded-2xl">
+                  {user && !user.isAnonymous ? (
+                    <div className="text-center py-4">
+                      <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                      <h3 className="text-xl font-bold mb-2">Uspešno prijavljeni</h3>
+                      <p className="text-gray-600 mb-6">Prijavljeni ste kot <span className="font-medium text-gray-900">{user.email || 'uporabnik'}</span>.</p>
+                      
+                      <button 
+                        onClick={() => setStep(4)}
+                        className="w-full bg-black text-white py-3 rounded-xl font-medium hover:bg-gray-800 transition-colors mb-3"
+                      >
+                        Nadaljuj na plačilo
+                      </button>
+                      <button 
+                        onClick={() => signOut()}
+                        className="w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-medium hover:bg-gray-200 transition-colors"
+                      >
+                        Odjava
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex gap-2 mb-6 p-1 bg-gray-100 rounded-xl">
+                        <button 
+                          onClick={() => setAuthMode('register')}
+                          className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${authMode === 'register' ? 'bg-white shadow-sm text-black' : 'text-gray-500 hover:text-black'}`}
+                        >
+                          Registracija
+                        </button>
+                        <button 
+                          onClick={() => setAuthMode('login')}
+                          className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${authMode === 'login' ? 'bg-white shadow-sm text-black' : 'text-gray-500 hover:text-black'}`}
+                        >
+                          Prijava
+                        </button>
+                      </div>
+
+                      {authError && (
+                        <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded-xl">
+                          {authError}
+                        </div>
+                      )}
+
+                      <form onSubmit={handleEmailAuth} className="space-y-4 mb-6">
+                        <div>
+                          <input 
+                            type="email" 
+                            placeholder="Email naslov"
+                            value={authEmail}
+                            onChange={e => setAuthEmail(e.target.value)}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-all"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <input 
+                            type="password" 
+                            placeholder="Geslo"
+                            value={authPassword}
+                            onChange={e => setAuthPassword(e.target.value)}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-all"
+                            required
+                          />
+                        </div>
+                        <button 
+                          type="submit"
+                          className="w-full bg-black text-white py-3 rounded-xl font-medium hover:bg-gray-800 transition-colors"
+                        >
+                          {authMode === 'register' ? 'Ustvari račun' : 'Prijavi se'}
+                        </button>
+                      </form>
+
+                      <div className="relative mb-6">
+                        <div className="absolute inset-0 flex items-center">
+                          <div className="w-full border-t border-gray-200"></div>
+                        </div>
+                        <div className="relative flex justify-center text-sm">
+                          <span className="px-2 bg-white text-gray-500">ali nadaljujte z</span>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <button 
+                          type="button"
+                          onClick={async () => {
+                            try {
+                              setAuthError('');
+                              await signIn();
+                            } catch (error: any) {
+                              setAuthError(error.message || 'Prišlo je do napake pri prijavi z Google.');
+                            }
+                          }}
+                          className="flex items-center justify-center gap-2 border border-gray-200 bg-white text-black px-4 py-3 rounded-xl font-medium hover:bg-gray-50 transition-colors"
+                        >
+                          <svg className="w-5 h-5" viewBox="0 0 24 24">
+                            <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                          </svg>
+                          Google
+                        </button>
+                        <button 
+                          onClick={handleAppleAuth}
+                          className="flex items-center justify-center gap-2 border border-gray-200 bg-white text-black px-4 py-3 rounded-xl font-medium hover:bg-gray-50 transition-colors"
+                        >
+                          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.04 2.26-.79 3.59-.76 1.56.04 2.87.74 3.65 1.9-3.13 1.86-2.61 5.98.43 7.21-.73 1.76-1.66 3.04-2.75 3.82zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
+                          </svg>
+                          Apple
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </motion.div>
+            )}
+
+            {step === 4 && (
+              <motion.div
+                key="step4"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
@@ -738,6 +833,60 @@ export default function CreateEvent() {
                     </div>
                     {discountError && <p className="text-red-500 text-sm mt-2">{discountError}</p>}
                     {discountApplied && <p className="text-green-600 text-sm mt-2">Koda uspešno unovčena! (-100%)</p>}
+                  </div>
+
+                  <div className="mb-4 pb-4 border-b border-gray-200">
+                    <label className="flex items-center gap-2 cursor-pointer mb-4">
+                      <input 
+                        type="checkbox" 
+                        checked={formData.isCompanyInvoice}
+                        onChange={(e) => setFormData({...formData, isCompanyInvoice: e.target.checked})}
+                        className="w-5 h-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                      />
+                      <span className="font-medium text-gray-900">Potrebujem račun na podjetje</span>
+                    </label>
+
+                    <AnimatePresence>
+                      {formData.isCompanyInvoice && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="space-y-4 overflow-hidden"
+                        >
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Ime podjetja</label>
+                            <input 
+                              type="text" 
+                              value={formData.companyName}
+                              onChange={e => setFormData({...formData, companyName: e.target.value})}
+                              className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-all"
+                              placeholder="Podjetje d.o.o."
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Naslov podjetja</label>
+                            <input 
+                              type="text" 
+                              value={formData.companyAddress}
+                              onChange={e => setFormData({...formData, companyAddress: e.target.value})}
+                              className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-all"
+                              placeholder="Slovenska cesta 1, 1000 Ljubljana"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Davčna številka</label>
+                            <input 
+                              type="text" 
+                              value={formData.companyTaxId}
+                              onChange={e => setFormData({...formData, companyTaxId: e.target.value})}
+                              className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-all"
+                              placeholder="SI12345678"
+                            />
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
 
                   <div className="flex justify-between items-center text-sm text-gray-500">

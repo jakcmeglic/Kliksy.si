@@ -66,7 +66,8 @@ export default function QRModal({ isOpen, onClose, event, eventUrl }: QRModalPro
       pdf.addImage(imgData, 'JPEG', 0, 148.5, cardW, cardH);
       pdf.addImage(imgData, 'JPEG', 105, 148.5, cardW, cardH);
 
-      const filename = `QR-Listici-${event.partner1}-${event.partner2}.pdf`;
+      const eventNameStr = event.eventType === 'poroka' || !event.eventType ? `${event.partner1}-${event.partner2}` : event.eventName;
+      const filename = `QR-Listici-${eventNameStr}.pdf`;
       const pdfBlob = pdf.output('blob');
       
       // For better mobile compatibility, try Web Share API first
@@ -77,7 +78,7 @@ export default function QRModal({ isOpen, onClose, event, eventUrl }: QRModalPro
             await navigator.share({
               files: [file],
               title: 'QR Lističi',
-              text: 'Tukaj so QR lističi za najino poroko!',
+              text: event.eventType === 'poroka' || !event.eventType ? 'Tukaj so QR lističi za najino poroko!' : 'Tukaj so QR lističi za dogodek!',
             });
             onClose();
             setIsGenerating(false);
@@ -149,7 +150,7 @@ export default function QRModal({ isOpen, onClose, event, eventUrl }: QRModalPro
                   <div className={`w-full h-full flex flex-col items-center justify-between p-2 text-center ${design.container}`}>
                     <div className="mt-1">
                       <div className={`text-[10px] font-bold leading-tight ${design.text}`}>
-                        {event.partner1}<br/>&<br/>{event.partner2}
+                        {event.eventType === 'poroka' || !event.eventType ? <>{event.partner1}<br/>&<br/>{event.partner2}</> : event.eventName}
                       </div>
                     </div>
                     <div className="bg-white p-1 rounded shadow-sm">
@@ -204,7 +205,7 @@ export default function QRModal({ isOpen, onClose, event, eventUrl }: QRModalPro
           >
             <div className="mt-6">
               <h1 className={`text-4xl font-bold mb-4 leading-tight ${selected.text}`}>
-                {event.partner1} & {event.partner2}
+                {event.eventType === 'poroka' || !event.eventType ? `${event.partner1} & ${event.partner2}` : event.eventName}
               </h1>
               <p className={`text-xl opacity-80 ${selected.text}`}>
                 {new Date(event.date).toLocaleDateString('sl-SI')}
@@ -224,7 +225,7 @@ export default function QRModal({ isOpen, onClose, event, eventUrl }: QRModalPro
 
             <div className="mb-8">
               <p className={`text-xl font-medium leading-snug ${selected.text}`}>
-                Skeniraj QR kodo in<br/>deli svoje fotke z nama
+                Skeniraj QR kodo in<br/>deli svoje fotke z {event.eventType === 'poroka' || !event.eventType ? 'nama' : 'nami'}
               </p>
             </div>
           </div>

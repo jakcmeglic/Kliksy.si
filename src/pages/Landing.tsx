@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
-import { Camera, QrCode, Download, Heart, ArrowRight, Check, Star, Smartphone, Images, Sparkles, Play } from "lucide-react";
+import { Camera, QrCode, Download, Heart, ArrowRight, Check, Star, Smartphone, Images, Sparkles, Play, User as UserIcon } from "lucide-react";
 import { LANDING_IMAGES } from "../config/images";
+import { useAuth } from "../components/AuthProvider";
 
 const EVENT_TYPES = [
   { word: "Poroke", prep: "s" },
@@ -13,6 +14,7 @@ const EVENT_TYPES = [
 
 export default function Landing() {
   const [currentEventType, setCurrentEventType] = useState(0);
+  const { user } = useAuth();
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -39,9 +41,19 @@ export default function Landing() {
             <a href="#paketi" className="hover:text-gray-900 transition-colors">Cenik</a>
           </div>
           <div className="flex items-center gap-4">
-            <Link to="/login" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
-              Prijava
-            </Link>
+            {user && !user.isAnonymous ? (
+              <Link to="/dashboard" className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 border border-gray-200 overflow-hidden hover:ring-2 hover:ring-indigo-500 hover:ring-offset-2 transition-all">
+                {user.photoURL ? (
+                  <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                ) : (
+                  <UserIcon className="w-5 h-5 text-gray-500" />
+                )}
+              </Link>
+            ) : (
+              <Link to="/login" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
+                Prijava
+              </Link>
+            )}
             <Link to="/create" className="bg-gray-900 text-white px-5 py-2.5 rounded-full text-sm font-medium hover:bg-gray-800 transition-all shadow-sm hover:shadow-md">
               Ustvari dogodek
             </Link>
