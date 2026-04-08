@@ -125,6 +125,16 @@ async function startServer() {
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });
+
+  // Global error handler
+  app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    console.error("Global error handler caught:", err);
+    if (req.url.startsWith('/api')) {
+      res.status(err.status || 500).json({ error: err.message || 'Internal Server Error' });
+    } else {
+      next(err);
+    }
+  });
 }
 
 startServer();

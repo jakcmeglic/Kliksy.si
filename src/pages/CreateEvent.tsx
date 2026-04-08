@@ -61,6 +61,7 @@ export default function CreateEvent() {
   const [discountError, setDiscountError] = useState('');
   const [clientSecret, setClientSecret] = useState('');
   const [stripeError, setStripeError] = useState('');
+  const [retryCount, setRetryCount] = useState(0);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
 
   const plans = {
@@ -142,7 +143,17 @@ export default function CreateEvent() {
               printedQrQuantity
             })
           });
-          const data = await res.json();
+          
+          let data;
+          const contentType = res.headers.get("content-type");
+          if (contentType && contentType.indexOf("application/json") !== -1) {
+            data = await res.json();
+          } else {
+            const text = await res.text();
+            console.error("Non-JSON response:", text.substring(0, 200));
+            throw new Error("Strežnik je vrnil neveljaven odgovor. Prosimo, osvežite stran.");
+          }
+
           if (data.clientSecret) {
             setClientSecret(data.clientSecret);
             setStripeError('');
@@ -161,11 +172,17 @@ export default function CreateEvent() {
     
     // Debounce the fetch slightly to avoid multiple calls when rapidly clicking
     const timeoutId = setTimeout(() => {
-      initPayment();
+      // Only fetch if we don't have a client secret, or if settings changed, or if we reached step 4 with an error
+      if (step === 4 || !clientSecret || stripeError) {
+        initPayment();
+      } else if (step < 4 && !clientSecret && !stripeError) {
+        // Pre-initialize
+        initPayment();
+      }
     }, 300);
     
     return () => clearTimeout(timeoutId);
-  }, [formData.plan, discountApplied, deliveryMode, standsQuantity, printedQrQuantity]);
+  }, [formData.plan, discountApplied, deliveryMode, standsQuantity, printedQrQuantity, step, retryCount]);
 
   const handleBack = () => {
     if (step === 4 && (!user || user.isAnonymous)) {
@@ -945,8 +962,18 @@ export default function CreateEvent() {
                     )}
 
                     {stripeError && (
-                      <div className="p-4 bg-red-50 text-red-600 rounded-xl border border-red-100 text-sm mb-4">
-                        {stripeError}
+                      <div className="p-4 bg-red-50 text-red-600 rounded-xl border border-red-100 text-sm mb-4 flex flex-col gap-3">
+                        <p>{stripeError}</p>
+                        <button 
+                          onClick={() => {
+                            setStripeError('');
+                            setClientSecret('');
+                            setRetryCount(c => c + 1);
+                          }}
+                          className="self-start px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg font-medium transition-colors"
+                        >
+                          Poskusi znova
+                        </button>
                       </div>
                     )}
 
