@@ -150,8 +150,9 @@ export default function CreateEvent() {
             data = await res.json();
           } else {
             const text = await res.text();
+            const snippet = text.substring(0, 100).replace(/<[^>]*>?/gm, ''); // Strip HTML tags for cleaner display
             console.error("Non-JSON response:", text.substring(0, 200));
-            throw new Error("Strežnik je vrnil neveljaven odgovor. Prosimo, osvežite stran.");
+            throw new Error(`Strežnik je vrnil neveljaven odgovor: ${snippet ? snippet : 'Prazno'}. Status: ${res.status}`);
           }
 
           if (data.clientSecret) {
