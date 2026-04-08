@@ -31,7 +31,7 @@ export default function CheckoutForm({ amount, onSuccess, isProcessing, setIsPro
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 pb-24">
-      <PaymentElement />
+      <PaymentElement options={{ wallets: { applePay: 'never', googlePay: 'never' } }} />
       {errorMessage && <div className="p-3 bg-red-50 text-red-600 text-sm rounded-xl">{errorMessage}</div>}
       
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] z-50 flex justify-center">
