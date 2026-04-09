@@ -135,6 +135,7 @@ export default function CreateEvent() {
           const res = await fetch('/api/create-payment-intent', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify({ 
               plan: formData.plan, 
               discountCode: discountApplied ? 'test99' : '',
