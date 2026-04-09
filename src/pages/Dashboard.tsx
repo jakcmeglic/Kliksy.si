@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { QRCodeSVG } from "qrcode.react";
-import { Download, Image as ImageIcon, Users, Clock, Settings, ExternalLink, LogOut, Heart, Loader2, ArrowLeft } from "lucide-react";
+import { Download, Image as ImageIcon, Users, Clock, Settings, ExternalLink, LogOut, Heart, Loader2, ArrowLeft, Plus } from "lucide-react";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import { useAuth } from "../components/AuthProvider";
@@ -210,6 +210,14 @@ export default function Dashboard() {
               </h2>
             )}
             <p className="text-sm text-[var(--color-wedding-text)]/60 mt-2">{new Date(event.date).toLocaleDateString('sl-SI')}</p>
+            
+            <button
+              onClick={() => navigate('/create')}
+              className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2 border-2 border-dashed border-[var(--color-wedding-sand)] text-[var(--color-wedding-dark)] rounded-xl text-sm font-medium hover:bg-[var(--color-wedding-sand)]/10 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              Dodaj nov dogodek
+            </button>
           </div>
 
           <nav className="space-y-2">

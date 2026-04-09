@@ -88,7 +88,11 @@ export default function CreateEvent() {
     }
 
     if (step === 2) {
-      setStep(3);
+      if (user && !user.isAnonymous) {
+        setStep(4);
+      } else {
+        setStep(3);
+      }
       return;
     }
 
