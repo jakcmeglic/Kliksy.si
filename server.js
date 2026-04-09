@@ -4,7 +4,7 @@ import Stripe from "stripe";
 import path from "path";
 async function startServer() {
   const app = express();
-  const PORT = process.env.PORT || 3e3;
+  const PORT = Number(process.env.PORT) || 3e3;
   app.use(express.json());
   const requestLogs = [];
   app.use((req, res, next) => {

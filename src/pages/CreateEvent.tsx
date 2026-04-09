@@ -134,6 +134,29 @@ export default function CreateEvent() {
     }
   };
 
+  const originalPrice = plans[formData.plan].price;
+  
+  let upsellPrice = 0;
+  if (deliveryMode === 'home_delivery') {
+    if (printedQrQuantity === 5) upsellPrice += 19.99;
+    else if (printedQrQuantity === 10) upsellPrice += 29.99;
+    else if (printedQrQuantity === 20) upsellPrice += 39.99;
+    else if (printedQrQuantity === 30) upsellPrice += 49.99;
+    else upsellPrice += 19.99;
+
+    if (standsQuantity === 5) upsellPrice += 4.99;
+    else if (standsQuantity === 10) upsellPrice += 9.99;
+    else if (standsQuantity === 20) upsellPrice += 12.99;
+    else if (standsQuantity === 30) upsellPrice += 14.99;
+  } else {
+    if (standsQuantity === 5) upsellPrice += 19.99;
+    else if (standsQuantity === 10) upsellPrice += 24.99;
+    else if (standsQuantity === 20) upsellPrice += 29.99;
+    else if (standsQuantity === 30) upsellPrice += 34.99;
+  }
+
+  const finalPrice = (discountApplied ? 0 : originalPrice) + upsellPrice;
+
   useEffect(() => {
     if (step === 4 && finalPrice > 0) {
       const fetchClientSecret = async () => {
@@ -213,28 +236,6 @@ export default function CreateEvent() {
       setIsProcessing(false);
     }
   };
-
-  const originalPrice = plans[formData.plan].price;
-  
-  let upsellPrice = 0;
-  if (deliveryMode === 'home_delivery') {
-    if (printedQrQuantity === 5) upsellPrice += 19.99;
-    else if (printedQrQuantity === 10) upsellPrice += 29.99;
-    else if (printedQrQuantity === 20) upsellPrice += 39.99;
-    else if (printedQrQuantity === 30) upsellPrice += 49.99;
-
-    if (standsQuantity === 5) upsellPrice += 4.99;
-    else if (standsQuantity === 10) upsellPrice += 9.99;
-    else if (standsQuantity === 20) upsellPrice += 12.99;
-    else if (standsQuantity === 30) upsellPrice += 14.99;
-  } else {
-    if (standsQuantity === 5) upsellPrice += 19.99;
-    else if (standsQuantity === 10) upsellPrice += 24.99;
-    else if (standsQuantity === 20) upsellPrice += 29.99;
-    else if (standsQuantity === 30) upsellPrice += 34.99;
-  }
-
-  const finalPrice = (discountApplied ? 0 : originalPrice) + upsellPrice;
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
