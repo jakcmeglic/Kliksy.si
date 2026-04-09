@@ -6,10 +6,16 @@ import { useAuth } from "../components/AuthProvider";
 import { db, handleFirestoreError, OperationType, signInWithApple, signUpWithEmail, signInWithEmail } from "../firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import ImageViewer from '../components/ImageViewer';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
 
 type Plan = 'basic' | 'plus' | 'premium';
 
-export default function CreateEvent() {
+function CreateEventContent() {
+  const stripe = useStripe();
+  const elements = useElements();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const initialPlan = (searchParams.get('plan') as Plan) || 'plus';
@@ -168,20 +174,22 @@ export default function CreateEvent() {
         return;
       }
 
-      // Call checkout session endpoint
-      const res = await fetch('/api/create-checkout-session', {
+      if (!stripe || !elements) {
+        setStripeError('Stripe ni naložen. Prosimo, osvežite stran.');
+        setIsProcessing(false);
+        return;
+      }
+
+      // Call payment intent endpoint
+      const res = await fetch('/api/create-payment-intent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ 
           plan: formData.plan, 
           discountCode: discountApplied ? 'test99' : '',
           deliveryMode,
           standsQuantity,
-          printedQrQuantity,
-          eventId: docRef.id,
-          successUrl: `${window.location.origin}/dashboard?eventId=${docRef.id}&success=true`,
-          cancelUrl: `${window.location.origin}/create-event?canceled=true`
+          printedQrQuantity
         })
       });
       
@@ -195,13 +203,37 @@ export default function CreateEvent() {
         throw new Error(`Strežnik je vrnil neveljaven odgovor: ${snippet ? snippet : 'Prazno'}. Status: ${res.status}`);
       }
 
-      if (data.url) {
-        window.location.href = data.url;
-      } else if (data.error) {
+      if (data.error) {
         setStripeError(data.error);
         setIsProcessing(false);
-      } else {
-        throw new Error('Neznan odgovor strežnika.');
+        return;
+      }
+
+      const cardElement = elements.getElement(CardElement);
+      if (!cardElement) {
+        throw new Error('Kartica ni najdena.');
+      }
+
+      const { error: stripeErr, paymentIntent } = await stripe.confirmCardPayment(
+        data.clientSecret,
+        {
+          payment_method: {
+            card: cardElement,
+            billing_details: {
+              email: user.email || '',
+            },
+          },
+        }
+      );
+
+      if (stripeErr) {
+        setStripeError(stripeErr.message || 'Plačilo ni uspelo.');
+        setIsProcessing(false);
+      } else if (paymentIntent && paymentIntent.status === 'succeeded') {
+        setPaymentSuccess(true);
+        setTimeout(() => {
+          navigate(`/dashboard?eventId=${docRef.id}&success=true`);
+        }, 3000);
       }
     } catch (error: any) {
       console.error(error);
@@ -889,6 +921,29 @@ export default function CreateEvent() {
                         <p>{stripeError}</p>
                       </div>
                     )}
+                    
+                    {finalPrice > 0 && (
+                      <div className="mb-6 p-4 border border-gray-200 rounded-xl bg-gray-50">
+                        <label className="block text-sm font-medium text-gray-700 mb-3">Podatki o kartici</label>
+                        <div className="bg-white p-3 rounded-lg border border-gray-300">
+                          <CardElement options={{
+                            style: {
+                              base: {
+                                fontSize: '16px',
+                                color: '#424770',
+                                '::placeholder': {
+                                  color: '#aab7c4',
+                                },
+                              },
+                              invalid: {
+                                color: '#9e2146',
+                              },
+                            },
+                          }} />
+                        </div>
+                      </div>
+                    )}
+
                     <button 
                       onClick={handleCheckout}
                       disabled={isProcessing || !user || user.isAnonymous}
@@ -926,5 +981,13 @@ export default function CreateEvent() {
         />
       )}
     </div>
+  );
+}
+
+export default function CreateEvent() {
+  return (
+    <Elements stripe={stripePromise}>
+      <CreateEventContent />
+    </Elements>
   );
 }
