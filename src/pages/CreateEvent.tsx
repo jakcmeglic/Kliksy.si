@@ -215,8 +215,8 @@ function CreateEventContent() {
         data = await res.json();
       } else {
         const text = await res.text();
-        const snippet = text.substring(0, 100).replace(/<[^>]*>?/gm, '');
-        throw new Error(`Strežnik je vrnil neveljaven odgovor: ${snippet ? snippet : 'Prazno'}. Status: ${res.status}`);
+        console.error("Server returned non-JSON response:", text.substring(0, 200));
+        throw new Error(`Napaka strežnika: API zahtevki ne pridejo do Node.js zaledja. Hostinger (Apache/Nginx) verjetno prestreza zahtevek in vrača HTML. Preverite .htaccess ali nastavitve usmerjanja na Hostingerju.`);
       }
 
       if (data.error) {
