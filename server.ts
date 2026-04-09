@@ -2,6 +2,7 @@ import express from "express";
 import Stripe from "stripe";
 import path from "path";
 
+// Main server initialization
 async function startServer() {
   const app = express();
   const PORT = process.env.PORT || 3000;
