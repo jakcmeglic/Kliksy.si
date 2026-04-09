@@ -5,12 +5,7 @@ import { ArrowLeft, ArrowRight, Check, CreditCard, Calendar, Users, LogIn, Mail,
 import { useAuth } from "../components/AuthProvider";
 import { db, handleFirestoreError, OperationType, signInWithApple, signUpWithEmail, signInWithEmail } from "../firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { loadStripe } from '@stripe/stripe-js';
-import { Elements } from '@stripe/react-stripe-js';
-import CheckoutForm from '../components/CheckoutForm';
 import ImageViewer from '../components/ImageViewer';
-
-const stripePromise = loadStripe((import.meta as any).env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_live_51TEmXMLJ8vfPX22QkXdW7GDFcWjf11FaIpQoWxafS1mr7B4qcGcNKHbUJNCW9b4DxHJ6iEwvUlGPMKDgoNOuCd6l00qbVmXCkV');
 
 type Plan = 'basic' | 'plus' | 'premium';
 
@@ -59,9 +54,7 @@ export default function CreateEvent() {
   const [discountCode, setDiscountCode] = useState('');
   const [discountApplied, setDiscountApplied] = useState(false);
   const [discountError, setDiscountError] = useState('');
-  const [clientSecret, setClientSecret] = useState('');
   const [stripeError, setStripeError] = useState('');
-  const [retryCount, setRetryCount] = useState(0);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
 
   const plans = {
@@ -101,90 +94,7 @@ export default function CreateEvent() {
     }
   };
 
-  useEffect(() => {
-    // Pre-initialize payment intent so it's ready when user reaches step 4
-    const initPayment = async () => {
-      const originalPrice = plans[formData.plan].price;
-      
-      let upsellPrice = 0;
-      if (deliveryMode === 'home_delivery') {
-        if (printedQrQuantity === 5) upsellPrice += 19.99;
-        else if (printedQrQuantity === 10) upsellPrice += 29.99;
-        else if (printedQrQuantity === 20) upsellPrice += 39.99;
-        else if (printedQrQuantity === 30) upsellPrice += 49.99;
 
-        if (standsQuantity === 5) upsellPrice += 4.99;
-        else if (standsQuantity === 10) upsellPrice += 9.99;
-        else if (standsQuantity === 20) upsellPrice += 12.99;
-        else if (standsQuantity === 30) upsellPrice += 14.99;
-      } else {
-        if (standsQuantity === 5) upsellPrice += 19.99;
-        else if (standsQuantity === 10) upsellPrice += 24.99;
-        else if (standsQuantity === 20) upsellPrice += 29.99;
-        else if (standsQuantity === 30) upsellPrice += 34.99;
-      }
-
-      const currentFinalPrice = (discountApplied ? 0 : originalPrice) + upsellPrice;
-
-      if (currentFinalPrice > 0) {
-        // Only show processing state if we are actually on step 4 and waiting
-        if (step === 4 && !clientSecret) {
-          setIsProcessing(true);
-        }
-        try {
-          const res = await fetch('/api/create-payment-intent', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({ 
-              plan: formData.plan, 
-              discountCode: discountApplied ? 'test99' : '',
-              deliveryMode,
-              standsQuantity,
-              printedQrQuantity
-            })
-          });
-          
-          let data;
-          const contentType = res.headers.get("content-type");
-          if (contentType && contentType.indexOf("application/json") !== -1) {
-            data = await res.json();
-          } else {
-            const text = await res.text();
-            const snippet = text.substring(0, 100).replace(/<[^>]*>?/gm, ''); // Strip HTML tags for cleaner display
-            console.error("Non-JSON response:", text.substring(0, 200));
-            throw new Error(`Strežnik je vrnil neveljaven odgovor: ${snippet ? snippet : 'Prazno'}. Status: ${res.status}`);
-          }
-
-          if (data.clientSecret) {
-            setClientSecret(data.clientSecret);
-            setStripeError('');
-          } else if (data.error) {
-            setStripeError(data.error);
-          }
-        } catch (e: any) {
-          console.error(e);
-          setStripeError(e.message || 'Napaka pri povezovanju s plačilnim sistemom.');
-        }
-        setIsProcessing(false);
-      } else {
-        setClientSecret('');
-      }
-    };
-    
-    // Debounce the fetch slightly to avoid multiple calls when rapidly clicking
-    const timeoutId = setTimeout(() => {
-      // Only fetch if we don't have a client secret, or if settings changed, or if we reached step 4 with an error
-      if (step === 4 || !clientSecret || stripeError) {
-        initPayment();
-      } else if (step < 4 && !clientSecret && !stripeError) {
-        // Pre-initialize
-        initPayment();
-      }
-    }, 300);
-    
-    return () => clearTimeout(timeoutId);
-  }, [formData.plan, discountApplied, deliveryMode, standsQuantity, printedQrQuantity, step, retryCount]);
 
   const handleBack = () => {
     if (step === 4 && (!user || user.isAnonymous)) {
@@ -218,13 +128,14 @@ export default function CreateEvent() {
     }
   };
 
-  const handleSuccess = async () => {
+  const handleCheckout = async () => {
     if (!user || user.isAnonymous) {
       setAuthError("Prosimo, prijavite se za nadaljevanje.");
       return;
     }
     
     setIsProcessing(true);
+    setStripeError('');
     
     try {
       const docRef = await addDoc(collection(db, "events"), {
@@ -244,16 +155,58 @@ export default function CreateEvent() {
         companyAddress: formData.isCompanyInvoice ? formData.companyAddress : null,
         companyTaxId: formData.isCompanyInvoice ? formData.companyTaxId : null,
         ownerId: user.uid,
-        createdAt: serverTimestamp()
+        createdAt: serverTimestamp(),
+        paymentStatus: finalPrice > 0 ? 'pending' : 'paid'
       });
+
+      if (finalPrice === 0) {
+        setIsProcessing(false);
+        setPaymentSuccess(true);
+        setTimeout(() => {
+          navigate(`/dashboard?eventId=${docRef.id}&success=true`);
+        }, 3000);
+        return;
+      }
+
+      // Call checkout session endpoint
+      const res = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ 
+          plan: formData.plan, 
+          discountCode: discountApplied ? 'test99' : '',
+          deliveryMode,
+          standsQuantity,
+          printedQrQuantity,
+          eventId: docRef.id,
+          successUrl: `${window.location.origin}/dashboard?eventId=${docRef.id}&success=true`,
+          cancelUrl: `${window.location.origin}/create-event?canceled=true`
+        })
+      });
+      
+      let data;
+      const contentType = res.headers.get("content-type");
+      if (contentType && contentType.indexOf("application/json") !== -1) {
+        data = await res.json();
+      } else {
+        const text = await res.text();
+        const snippet = text.substring(0, 100).replace(/<[^>]*>?/gm, '');
+        throw new Error(`Strežnik je vrnil neveljaven odgovor: ${snippet ? snippet : 'Prazno'}. Status: ${res.status}`);
+      }
+
+      if (data.url) {
+        window.location.href = data.url;
+      } else if (data.error) {
+        setStripeError(data.error);
+        setIsProcessing(false);
+      } else {
+        throw new Error('Neznan odgovor strežnika.');
+      }
+    } catch (error: any) {
+      console.error(error);
+      setStripeError(error.message || 'Napaka pri povezovanju s plačilnim sistemom.');
       setIsProcessing(false);
-      setPaymentSuccess(true);
-      setTimeout(() => {
-        navigate(`/dashboard?eventId=${docRef.id}&success=true`);
-      }, 3000);
-    } catch (error) {
-      setIsProcessing(false);
-      handleFirestoreError(error, OperationType.CREATE, "events");
     }
   };
 
@@ -929,71 +882,33 @@ export default function CreateEvent() {
                     <h3 className="text-2xl font-bold mb-2">Plačilo uspešno!</h3>
                     <p className="text-gray-600">Pripravljamo vaš dogodek...</p>
                   </motion.div>
-                ) : finalPrice === 0 ? (
-                  <button 
-                    onClick={handleSuccess}
-                    disabled={isProcessing || !user || user.isAnonymous}
-                    className="w-full bg-gray-900 text-white py-4 rounded-xl font-medium hover:bg-black transition-colors flex items-center justify-center gap-2 mt-8 disabled:opacity-70"
-                  >
-                    {isProcessing ? (
-                      <span className="flex items-center gap-2">
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        Obdelujem...
-                      </span>
-                    ) : (
-                      <span className="flex items-center gap-2">
-                        Ustvari dogodek brezplačno <Check className="w-5 h-5" />
-                      </span>
-                    )}
-                  </button>
                 ) : (
                   <>
-                    <div className={!clientSecret ? 'hidden' : 'block'}>
-                      {clientSecret && (
-                        <Elements stripe={stripePromise} options={{ clientSecret, appearance: { theme: 'stripe' } }}>
-                          <CheckoutForm amount={finalPrice} onSuccess={handleSuccess} isProcessing={isProcessing} setIsProcessing={setIsProcessing} />
-                        </Elements>
-                      )}
-                    </div>
-                    
-                    {!clientSecret && !stripeError && (
-                      <div className="flex flex-col items-center justify-center py-12">
-                        <Loader2 className="w-8 h-8 animate-spin text-indigo-600 mb-4" />
-                        <p className="text-gray-500 text-sm">Povezujem z varnim plačilnim sistemom...</p>
-                      </div>
-                    )}
-
                     {stripeError && (
                       <div className="p-4 bg-red-50 text-red-600 rounded-xl border border-red-100 text-sm mb-4 flex flex-col gap-3">
                         <p>{stripeError}</p>
-                        <button 
-                          onClick={() => {
-                            setStripeError('');
-                            setClientSecret('');
-                            setRetryCount(c => c + 1);
-                          }}
-                          className="self-start px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg font-medium transition-colors"
-                        >
-                          Poskusi znova
-                        </button>
                       </div>
                     )}
-
-                    {!clientSecret && !stripeError && (
-                      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] z-50 flex justify-center">
-                        <div className="w-full max-w-xl">
-                          <button 
-                            disabled
-                            className="w-full bg-gray-900 text-white py-4 rounded-xl font-medium flex items-center justify-center gap-2 opacity-70 shadow-lg"
-                          >
-                            <Loader2 className="w-5 h-5 animate-spin" />
-                            Pripravljam plačilo...
-                          </button>
-                          <p className="text-center text-xs text-gray-400 mt-3 flex items-center justify-center gap-1">
-                            Varno plačilo zagotavlja Stripe
-                          </p>
-                        </div>
-                      </div>
+                    <button 
+                      onClick={handleCheckout}
+                      disabled={isProcessing || !user || user.isAnonymous}
+                      className="w-full bg-gray-900 text-white py-4 rounded-xl font-medium hover:bg-black transition-colors flex items-center justify-center gap-2 mt-8 disabled:opacity-70"
+                    >
+                      {isProcessing ? (
+                        <span className="flex items-center gap-2">
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                          Obdelujem...
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-2">
+                          {finalPrice === 0 ? 'Ustvari dogodek brezplačno' : 'Nadaljuj na plačilo'} <Check className="w-5 h-5" />
+                        </span>
+                      )}
+                    </button>
+                    {finalPrice > 0 && (
+                      <p className="text-center text-xs text-gray-400 mt-3 flex items-center justify-center gap-1">
+                        Varno plačilo zagotavlja Stripe
+                      </p>
                     )}
                   </>
                 )}

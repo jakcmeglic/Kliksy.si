@@ -26,6 +26,82 @@ async function startServer() {
   });
 
   // API routes FIRST
+  app.post("/api/create-checkout-session", async (req, res) => {
+    try {
+      const { plan, discountCode, deliveryMode, standsQuantity, printedQrQuantity, eventId, successUrl, cancelUrl } = req.body;
+      
+      const plans = {
+        basic: 3900, // in cents (39.00 EUR)
+        plus: 4900,
+        premium: 7900
+      };
+
+      let amount = plans[plan as keyof typeof plans] || 4900;
+
+      if (discountCode?.toLowerCase() === 'test99') {
+        amount = 0;
+      }
+
+      let upsellAmount = 0;
+      if (deliveryMode === 'home_delivery') {
+        if (printedQrQuantity === 5) upsellAmount += 1999;
+        else if (printedQrQuantity === 10) upsellAmount += 2999;
+        else if (printedQrQuantity === 20) upsellAmount += 3999;
+        else if (printedQrQuantity === 30) upsellAmount += 4999;
+        else upsellAmount += 1999;
+
+        if (standsQuantity === 5) upsellAmount += 499;
+        else if (standsQuantity === 10) upsellAmount += 999;
+        else if (standsQuantity === 20) upsellAmount += 1299;
+        else if (standsQuantity === 30) upsellAmount += 1499;
+      } else {
+        if (standsQuantity === 5) upsellAmount += 1999;
+        else if (standsQuantity === 10) upsellAmount += 2499;
+        else if (standsQuantity === 20) upsellAmount += 2999;
+        else if (standsQuantity === 30) upsellAmount += 3499;
+      }
+
+      amount += upsellAmount;
+
+      if (amount === 0) {
+        return res.json({ url: successUrl, free: true });
+      }
+
+      const stripeKey = process.env.STRIPE_SECRET_KEY;
+      if (!stripeKey) {
+        throw new Error("STRIPE_SECRET_KEY is not configured on the server. Please add it to your environment variables.");
+      }
+
+      const stripe = new Stripe(stripeKey, { apiVersion: '2025-02-24.acacia' as any });
+
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        line_items: [
+          {
+            price_data: {
+              currency: 'eur',
+              product_data: {
+                name: `Paket ${plan.toUpperCase()}`,
+                description: `Dodatki: ${standsQuantity} stojal${deliveryMode === 'home_delivery' ? `, ${printedQrQuantity} natisnjenih QR kod` : ''}`,
+              },
+              unit_amount: amount,
+            },
+            quantity: 1,
+          },
+        ],
+        mode: 'payment',
+        success_url: successUrl,
+        cancel_url: cancelUrl,
+        client_reference_id: eventId,
+      });
+
+      res.json({ url: session.url });
+    } catch (error: any) {
+      console.error("Stripe error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   app.post("/api/create-payment-intent", async (req, res) => {
     try {
       const { plan, discountCode, deliveryMode, standsQuantity, printedQrQuantity } = req.body;
