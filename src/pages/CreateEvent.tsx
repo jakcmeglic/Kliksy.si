@@ -158,9 +158,10 @@ export default function CreateEvent() {
   const finalPrice = (discountApplied ? 0 : originalPrice) + upsellPrice;
 
   useEffect(() => {
-    if (step === 4 && finalPrice > 0) {
+    if (step >= 3 && finalPrice > 0) {
       const fetchClientSecret = async () => {
         try {
+          setStripeError('');
           const res = await fetch('/api/create-payment-intent', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -191,7 +192,13 @@ export default function CreateEvent() {
           setStripeError(err.message || 'Napaka pri povezavi s strežnikom.');
         }
       };
-      fetchClientSecret();
+      
+      // Debounce the fetch slightly to avoid multiple calls when user is clicking around
+      const timeoutId = setTimeout(() => {
+        fetchClientSecret();
+      }, 500);
+      
+      return () => clearTimeout(timeoutId);
     }
   }, [step, finalPrice, formData.plan, discountApplied, deliveryMode, standsQuantity, printedQrQuantity]);
 
@@ -909,6 +916,16 @@ export default function CreateEvent() {
                             onError={setStripeError}
                           />
                         </Elements>
+                      ) : stripeError ? (
+                        <div className="flex flex-col items-center justify-center p-8 border border-red-200 rounded-xl bg-red-50">
+                          <p className="text-sm text-red-600 font-medium mb-2">Plačilnega okna ni bilo mogoče naložiti</p>
+                          <button 
+                            onClick={() => setStep(3)}
+                            className="px-4 py-2 bg-white border border-red-200 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 transition-colors"
+                          >
+                            Nazaj na izbiro paketa
+                          </button>
+                        </div>
                       ) : (
                         <div className="flex flex-col items-center justify-center p-8 border border-gray-200 rounded-xl bg-gray-50">
                           <Loader2 className="w-8 h-8 animate-spin text-gray-400 mb-4" />
