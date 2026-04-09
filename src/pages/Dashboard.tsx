@@ -41,6 +41,14 @@ export default function Dashboard() {
         
         if (!querySnapshot.empty) {
           const allEvents = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          
+          // Sort events by createdAt descending in memory to avoid needing a composite index
+          allEvents.sort((a: any, b: any) => {
+            const timeA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+            const timeB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+            return timeB - timeA;
+          });
+
           setEvents(allEvents);
           
           let selectedEvent = allEvents[0];

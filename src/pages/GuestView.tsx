@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Camera, Upload, CheckCircle2, Plus, Heart, Loader2, Download } from "lucide-react";
 import { db, storage, handleFirestoreError, OperationType } from "../firebase";
-import { doc, getDoc, collection, addDoc, serverTimestamp, query, orderBy, limit, onSnapshot, getDocs } from "firebase/firestore";
+import { doc, getDoc, collection, addDoc, serverTimestamp, Timestamp, query, orderBy, limit, onSnapshot, getDocs } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { signInAnonymously, onAuthStateChanged } from "firebase/auth";
 import { auth } from "../firebase";
@@ -115,8 +115,8 @@ export default function GuestView() {
           let fileToUpload: File | Blob = file;
           try {
             const options = {
-              maxSizeMB: 0.5, // 500KB max to safely fit in 1MB after Base64 encoding
-              maxWidthOrHeight: 1600,
+              maxSizeMB: 0.15, // 150KB max for much faster uploads
+              maxWidthOrHeight: 1080,
               useWebWorker: true,
             };
             fileToUpload = await imageCompression(file, options);
@@ -124,8 +124,8 @@ export default function GuestView() {
             console.warn("Image compression failed, trying without WebWorker:", compressionError);
             try {
               const fallbackOptions = {
-                maxSizeMB: 0.5,
-                maxWidthOrHeight: 1600,
+                maxSizeMB: 0.15,
+                maxWidthOrHeight: 1080,
                 useWebWorker: false,
               };
               fileToUpload = await imageCompression(file, fallbackOptions);
@@ -145,7 +145,7 @@ export default function GuestView() {
             url: base64String,
             eventId: id,
             deviceId: deviceId,
-            createdAt: serverTimestamp()
+            createdAt: Timestamp.now()
           });
           
           successCount++;
