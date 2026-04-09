@@ -154,7 +154,9 @@ async function startServer() {
       const paymentIntent = await stripe.paymentIntents.create({
         amount,
         currency: "eur",
-        payment_method_types: ['card'],
+        automatic_payment_methods: {
+          enabled: true,
+        },
       });
 
       res.json({ clientSecret: paymentIntent.client_secret });

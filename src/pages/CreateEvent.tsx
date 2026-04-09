@@ -7,15 +7,13 @@ import { db, handleFirestoreError, OperationType, signInWithApple, signUpWithEma
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import ImageViewer from '../components/ImageViewer';
 import { loadStripe } from '@stripe/stripe-js';
-import { Elements, CardNumberElement, CardExpiryElement, CardCvcElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
 
 type Plan = 'basic' | 'plus' | 'premium';
 
-function CreateEventContent() {
-  const stripe = useStripe();
-  const elements = useElements();
+export default function CreateEvent() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const initialPlan = (searchParams.get('plan') as Plan) || 'plus';
@@ -63,21 +61,7 @@ function CreateEventContent() {
   const [stripeError, setStripeError] = useState('');
   const [cardName, setCardName] = useState('');
   const [paymentSuccess, setPaymentSuccess] = useState(false);
-
-  const stripeElementOptions = {
-    style: {
-      base: {
-        fontSize: '16px',
-        color: '#111827',
-        '::placeholder': {
-          color: '#9ca3af',
-        },
-      },
-      invalid: {
-        color: '#ef4444',
-      },
-    },
-  };
+  const [clientSecret, setClientSecret] = useState('');
 
   const plans = {
     basic: { 
@@ -150,7 +134,45 @@ function CreateEventContent() {
     }
   };
 
-  const handleCheckout = async () => {
+  useEffect(() => {
+    if (step === 4 && finalPrice > 0) {
+      const fetchClientSecret = async () => {
+        try {
+          const res = await fetch('/api/create-payment-intent', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              plan: formData.plan, 
+              discountCode: discountApplied ? 'test99' : '',
+              deliveryMode,
+              standsQuantity,
+              printedQrQuantity
+            })
+          });
+          
+          const contentType = res.headers.get("content-type");
+          if (contentType && contentType.indexOf("application/json") !== -1) {
+            const data = await res.json();
+            if (data.clientSecret) {
+              setClientSecret(data.clientSecret);
+            } else if (data.error) {
+              setStripeError(data.error);
+            }
+          } else {
+            const text = await res.text();
+            console.error("Server returned non-JSON response:", text.substring(0, 200));
+            setStripeError(`Napaka strežnika: API zahtevki ne pridejo do Node.js zaledja. Hostinger (Apache/Nginx) verjetno prestreza zahtevek in vrača HTML. Preverite .htaccess ali nastavitve usmerjanja na Hostingerju.`);
+          }
+        } catch (err: any) {
+          console.error(err);
+          setStripeError(err.message || 'Napaka pri povezavi s strežnikom.');
+        }
+      };
+      fetchClientSecret();
+    }
+  }, [step, finalPrice, formData.plan, discountApplied, deliveryMode, standsQuantity, printedQrQuantity]);
+
+  const handleCheckoutFree = async () => {
     if (!user || user.isAnonymous) {
       setAuthError("Prosimo, prijavite se za nadaljevanje.");
       return;
@@ -178,83 +200,16 @@ function CreateEventContent() {
         companyTaxId: formData.isCompanyInvoice ? formData.companyTaxId : null,
         ownerId: user.uid,
         createdAt: serverTimestamp(),
-        paymentStatus: finalPrice > 0 ? 'pending' : 'paid'
+        paymentStatus: 'paid'
       });
 
-      if (finalPrice === 0) {
-        setIsProcessing(false);
-        setPaymentSuccess(true);
-        setTimeout(() => {
-          navigate(`/dashboard?eventId=${docRef.id}&success=true`);
-        }, 3000);
-        return;
-      }
-
-      if (!stripe || !elements) {
-        setStripeError('Stripe ni naložen. Prosimo, osvežite stran.');
-        setIsProcessing(false);
-        return;
-      }
-
-      // Call payment intent endpoint
-      const res = await fetch('/api/create-payment-intent', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          plan: formData.plan, 
-          discountCode: discountApplied ? 'test99' : '',
-          deliveryMode,
-          standsQuantity,
-          printedQrQuantity
-        })
-      });
-      
-      let data;
-      const contentType = res.headers.get("content-type");
-      if (contentType && contentType.indexOf("application/json") !== -1) {
-        data = await res.json();
-      } else {
-        const text = await res.text();
-        console.error("Server returned non-JSON response:", text.substring(0, 200));
-        throw new Error(`Napaka strežnika: API zahtevki ne pridejo do Node.js zaledja. Hostinger (Apache/Nginx) verjetno prestreza zahtevek in vrača HTML. Preverite .htaccess ali nastavitve usmerjanja na Hostingerju.`);
-      }
-
-      if (data.error) {
-        setStripeError(data.error);
-        setIsProcessing(false);
-        return;
-      }
-
-      const cardElement = elements.getElement(CardNumberElement);
-      if (!cardElement) {
-        throw new Error('Kartica ni najdena.');
-      }
-
-      const { error: stripeErr, paymentIntent } = await stripe.confirmCardPayment(
-        data.clientSecret,
-        {
-          payment_method: {
-            card: cardElement,
-            billing_details: {
-              name: cardName,
-              email: user.email || '',
-            },
-          },
-        }
-      );
-
-      if (stripeErr) {
-        setStripeError(stripeErr.message || 'Plačilo ni uspelo.');
-        setIsProcessing(false);
-      } else if (paymentIntent && paymentIntent.status === 'succeeded') {
-        setPaymentSuccess(true);
-        setTimeout(() => {
-          navigate(`/dashboard?eventId=${docRef.id}&success=true`);
-        }, 3000);
-      }
+      setIsProcessing(false);
+      setPaymentSuccess(true);
+      setTimeout(() => {
+        navigate(`/dashboard?eventId=${docRef.id}&success=true`);
+      }, 3000);
     } catch (error: any) {
-      console.error(error);
-      setStripeError(error.message || 'Napaka pri povezovanju s plačilnim sistemom.');
+      setStripeError(error.message || 'Prišlo je do napake.');
       setIsProcessing(false);
     }
   };
@@ -939,62 +894,44 @@ function CreateEventContent() {
                       </div>
                     )}
                     
-                    {finalPrice > 0 && (
-                      <div className="mb-6 p-5 border border-gray-200 rounded-xl bg-gray-50 space-y-4">
-                        <h4 className="font-medium text-gray-900 mb-2">Podatki o kartici</h4>
-                        
-                        <div>
-                          <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Ime na kartici</label>
-                          <input
-                            type="text"
-                            value={cardName}
-                            onChange={(e) => setCardName(e.target.value)}
-                            placeholder="Janez Novak"
-                            className="w-full bg-white p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all text-gray-900"
-                            required
+                    {finalPrice > 0 ? (
+                      clientSecret ? (
+                        <Elements stripe={stripePromise} options={{ clientSecret, appearance: { theme: 'stripe' } }}>
+                          <StripePaymentForm 
+                            user={user}
+                            formData={formData}
+                            deliveryMode={deliveryMode}
+                            standsQuantity={standsQuantity}
+                            printedQrQuantity={printedQrQuantity}
+                            standImages={standImages}
+                            selectedStand={selectedStand}
+                            onError={setStripeError}
                           />
-                        </div>
-
-                        <div>
-                          <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Številka kartice</label>
-                          <div className="bg-white p-3 rounded-lg border border-gray-300 focus-within:ring-2 focus-within:ring-black focus-within:border-transparent transition-all">
-                            <CardNumberElement options={stripeElementOptions} />
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Datum poteka</label>
-                            <div className="bg-white p-3 rounded-lg border border-gray-300 focus-within:ring-2 focus-within:ring-black focus-within:border-transparent transition-all">
-                              <CardExpiryElement options={stripeElementOptions} />
-                            </div>
-                          </div>
-                          <div>
-                            <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">CVC</label>
-                            <div className="bg-white p-3 rounded-lg border border-gray-300 focus-within:ring-2 focus-within:ring-black focus-within:border-transparent transition-all">
-                              <CardCvcElement options={stripeElementOptions} />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    <button 
-                      onClick={handleCheckout}
-                      disabled={isProcessing || !user || user.isAnonymous}
-                      className="w-full bg-gray-900 text-white py-4 rounded-xl font-medium hover:bg-black transition-colors flex items-center justify-center gap-2 mt-8 disabled:opacity-70"
-                    >
-                      {isProcessing ? (
-                        <span className="flex items-center gap-2">
-                          <Loader2 className="w-5 h-5 animate-spin" />
-                          Obdelujem...
-                        </span>
+                        </Elements>
                       ) : (
-                        <span className="flex items-center gap-2">
-                          {finalPrice === 0 ? 'Ustvari dogodek brezplačno' : 'Nadaljuj na plačilo'} <Check className="w-5 h-5" />
-                        </span>
-                      )}
-                    </button>
+                        <div className="flex flex-col items-center justify-center p-8 border border-gray-200 rounded-xl bg-gray-50">
+                          <Loader2 className="w-8 h-8 animate-spin text-gray-400 mb-4" />
+                          <p className="text-sm text-gray-500">Pripravljam varno plačilo...</p>
+                        </div>
+                      )
+                    ) : (
+                      <button 
+                        onClick={handleCheckoutFree}
+                        disabled={isProcessing || !user || user.isAnonymous}
+                        className="w-full bg-gray-900 text-white py-4 rounded-xl font-medium hover:bg-black transition-colors flex items-center justify-center gap-2 mt-8 disabled:opacity-70"
+                      >
+                        {isProcessing ? (
+                          <span className="flex items-center gap-2">
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                            Obdelujem...
+                          </span>
+                        ) : (
+                          <span className="flex items-center gap-2">
+                            Ustvari dogodek brezplačno <Check className="w-5 h-5" />
+                          </span>
+                        )}
+                      </button>
+                    )}
                     {finalPrice > 0 && (
                       <p className="text-center text-xs text-gray-400 mt-3 flex items-center justify-center gap-1">
                         Varno plačilo zagotavlja Stripe
@@ -1019,10 +956,91 @@ function CreateEventContent() {
   );
 }
 
-export default function CreateEvent() {
+function StripePaymentForm({ 
+  user, 
+  formData, 
+  deliveryMode, 
+  standsQuantity, 
+  printedQrQuantity, 
+  standImages, 
+  selectedStand, 
+  onError 
+}: any) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!stripe || !elements || !user) return;
+
+    setIsProcessing(true);
+    onError('');
+
+    try {
+      // Create document first
+      const docRef = await addDoc(collection(db, "events"), {
+        eventType: formData.eventType,
+        eventName: formData.eventName,
+        partner1: formData.partner1,
+        partner2: formData.partner2,
+        date: formData.date,
+        email: user.email || '',
+        plan: formData.plan,
+        deliveryMode,
+        standsQuantity,
+        printedQrQuantity: deliveryMode === 'home_delivery' ? printedQrQuantity : 0,
+        selectedStand: standsQuantity > 0 ? standImages[selectedStand] : null,
+        isCompanyInvoice: formData.isCompanyInvoice,
+        companyName: formData.isCompanyInvoice ? formData.companyName : null,
+        companyAddress: formData.isCompanyInvoice ? formData.companyAddress : null,
+        companyTaxId: formData.isCompanyInvoice ? formData.companyTaxId : null,
+        ownerId: user.uid,
+        createdAt: serverTimestamp(),
+        paymentStatus: 'pending'
+      });
+
+      const { error: stripeErr } = await stripe.confirmPayment({
+        elements,
+        confirmParams: {
+          return_url: `${window.location.origin}/dashboard?eventId=${docRef.id}&success=true`,
+        },
+      });
+
+      if (stripeErr) {
+        onError(stripeErr.message || 'Plačilo ni uspelo.');
+        setIsProcessing(false);
+      }
+    } catch (err: any) {
+      onError(err.message || 'Prišlo je do napake.');
+      setIsProcessing(false);
+    }
+  };
+
   return (
-    <Elements stripe={stripePromise}>
-      <CreateEventContent />
-    </Elements>
+    <form onSubmit={handleSubmit} className="w-full">
+      <div className="mb-6 p-5 border border-gray-200 rounded-xl bg-gray-50 space-y-4">
+        <h4 className="font-medium text-gray-900 mb-2">Podatki za plačilo</h4>
+        <div className="bg-white p-3 rounded-lg border border-gray-300">
+          <PaymentElement />
+        </div>
+      </div>
+      <button 
+        type="submit"
+        disabled={isProcessing || !stripe || !elements}
+        className="w-full bg-gray-900 text-white py-4 rounded-xl font-medium hover:bg-black transition-colors flex items-center justify-center gap-2 mt-8 disabled:opacity-70"
+      >
+        {isProcessing ? (
+          <span className="flex items-center gap-2">
+            <Loader2 className="w-5 h-5 animate-spin" />
+            Obdelujem...
+          </span>
+        ) : (
+          <span className="flex items-center gap-2">
+            Plačaj in ustvari dogodek <Check className="w-5 h-5" />
+          </span>
+        )}
+      </button>
+    </form>
   );
 }
