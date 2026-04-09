@@ -7,7 +7,7 @@ import { db, handleFirestoreError, OperationType, signInWithApple, signUpWithEma
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import ImageViewer from '../components/ImageViewer';
 import { loadStripe } from '@stripe/stripe-js';
-import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { Elements, CardNumberElement, CardExpiryElement, CardCvcElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
 
@@ -61,7 +61,23 @@ function CreateEventContent() {
   const [discountApplied, setDiscountApplied] = useState(false);
   const [discountError, setDiscountError] = useState('');
   const [stripeError, setStripeError] = useState('');
+  const [cardName, setCardName] = useState('');
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+
+  const stripeElementOptions = {
+    style: {
+      base: {
+        fontSize: '16px',
+        color: '#111827',
+        '::placeholder': {
+          color: '#9ca3af',
+        },
+      },
+      invalid: {
+        color: '#ef4444',
+      },
+    },
+  };
 
   const plans = {
     basic: { 
@@ -209,7 +225,7 @@ function CreateEventContent() {
         return;
       }
 
-      const cardElement = elements.getElement(CardElement);
+      const cardElement = elements.getElement(CardNumberElement);
       if (!cardElement) {
         throw new Error('Kartica ni najdena.');
       }
@@ -220,6 +236,7 @@ function CreateEventContent() {
           payment_method: {
             card: cardElement,
             billing_details: {
+              name: cardName,
               email: user.email || '',
             },
           },
@@ -923,23 +940,41 @@ function CreateEventContent() {
                     )}
                     
                     {finalPrice > 0 && (
-                      <div className="mb-6 p-4 border border-gray-200 rounded-xl bg-gray-50">
-                        <label className="block text-sm font-medium text-gray-700 mb-3">Podatki o kartici</label>
-                        <div className="bg-white p-3 rounded-lg border border-gray-300">
-                          <CardElement options={{
-                            style: {
-                              base: {
-                                fontSize: '16px',
-                                color: '#424770',
-                                '::placeholder': {
-                                  color: '#aab7c4',
-                                },
-                              },
-                              invalid: {
-                                color: '#9e2146',
-                              },
-                            },
-                          }} />
+                      <div className="mb-6 p-5 border border-gray-200 rounded-xl bg-gray-50 space-y-4">
+                        <h4 className="font-medium text-gray-900 mb-2">Podatki o kartici</h4>
+                        
+                        <div>
+                          <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Ime na kartici</label>
+                          <input
+                            type="text"
+                            value={cardName}
+                            onChange={(e) => setCardName(e.target.value)}
+                            placeholder="Janez Novak"
+                            className="w-full bg-white p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all text-gray-900"
+                            required
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Številka kartice</label>
+                          <div className="bg-white p-3 rounded-lg border border-gray-300 focus-within:ring-2 focus-within:ring-black focus-within:border-transparent transition-all">
+                            <CardNumberElement options={stripeElementOptions} />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Datum poteka</label>
+                            <div className="bg-white p-3 rounded-lg border border-gray-300 focus-within:ring-2 focus-within:ring-black focus-within:border-transparent transition-all">
+                              <CardExpiryElement options={stripeElementOptions} />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">CVC</label>
+                            <div className="bg-white p-3 rounded-lg border border-gray-300 focus-within:ring-2 focus-within:ring-black focus-within:border-transparent transition-all">
+                              <CardCvcElement options={stripeElementOptions} />
+                            </div>
+                          </div>
                         </div>
                       </div>
                     )}
