@@ -7,7 +7,7 @@ import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import { useAuth } from "../components/AuthProvider";
 import { db, handleFirestoreError, OperationType } from "../firebase";
-import { collection, query, where, getDocs, onSnapshot, doc, getDoc, orderBy } from "firebase/firestore";
+import { collection, query, where, getDocs, onSnapshot, doc, getDoc, orderBy, updateDoc } from "firebase/firestore";
 import QRModal from "../components/QRModal";
 import ImageViewer from "../components/ImageViewer";
 
@@ -16,6 +16,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const urlEventId = searchParams.get('eventId');
+  const isSuccess = searchParams.get('success') === 'true';
   
   const [activeTab, setActiveTab] = useState<'overview' | 'gallery' | 'settings'>('overview');
   const [event, setEvent] = useState<any>(null);
@@ -36,11 +37,26 @@ export default function Dashboard() {
 
     const fetchEvents = async () => {
       try {
+        // Handle successful payment redirect
+        if (isSuccess && urlEventId) {
+          try {
+            await updateDoc(doc(db, "events", urlEventId), { paymentStatus: 'paid' });
+            // Clean up URL to prevent re-triggering on refresh
+            navigate(`/dashboard?eventId=${urlEventId}`, { replace: true });
+            return; // The navigate will re-trigger the useEffect without success=true
+          } catch (err) {
+            console.error("Error updating payment status:", err);
+          }
+        }
+
         const q = query(collection(db, "events"), where("ownerId", "==", user.uid));
         const querySnapshot = await getDocs(q);
         
         if (!querySnapshot.empty) {
-          const allEvents = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          let allEvents = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          
+          // Filter out pending payments (keep paid or legacy events without paymentStatus)
+          allEvents = allEvents.filter((e: any) => e.paymentStatus !== 'pending');
           
           // Sort events by createdAt descending in memory to avoid needing a composite index
           allEvents.sort((a: any, b: any) => {
@@ -51,14 +67,18 @@ export default function Dashboard() {
 
           setEvents(allEvents);
           
-          let selectedEvent = allEvents[0];
-          if (urlEventId) {
-            const found = allEvents.find(e => e.id === urlEventId);
-            if (found) {
-              selectedEvent = found;
+          if (allEvents.length > 0) {
+            let selectedEvent = allEvents[0];
+            if (urlEventId) {
+              const found = allEvents.find(e => e.id === urlEventId);
+              if (found) {
+                selectedEvent = found;
+              }
             }
+            setEvent(selectedEvent);
+          } else {
+            setLoading(false);
           }
-          setEvent(selectedEvent);
         } else {
           setLoading(false);
         }
@@ -68,7 +88,7 @@ export default function Dashboard() {
     };
 
     fetchEvents();
-  }, [user, authLoading, urlEventId, navigate]);
+  }, [user, authLoading, urlEventId, isSuccess, navigate]);
 
   useEffect(() => {
     if (!event) return;
