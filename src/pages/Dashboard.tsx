@@ -94,18 +94,18 @@ export default function Dashboard() {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--color-wedding-beige)]">
-        <Loader2 className="w-10 h-10 animate-spin text-[var(--color-wedding-gold)]" />
+      <div className="min-h-screen flex items-center justify-center bg-[#FDFCFB]">
+        <Loader2 className="w-10 h-10 animate-spin text-indigo-600" />
       </div>
     );
   }
 
   if (!event) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[var(--color-wedding-beige)] p-6 text-center">
-        <h2 className="text-3xl font-serif mb-4">Nimate še dogodka</h2>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#FDFCFB] p-6 text-center">
+        <h2 className="text-3xl font-extrabold tracking-tight text-gray-900 mb-4">Nimate še dogodka</h2>
         <p className="text-gray-600 mb-8">Ustvarite svoj prvi dogodek za začetek zbiranja spominov.</p>
-        <Link to="/create" className="bg-gray-900 text-white px-8 py-4 rounded-full font-medium hover:bg-black transition-colors">
+        <Link to="/create" className="bg-gray-900 text-white px-8 py-4 rounded-full font-medium hover:bg-black transition-colors shadow-sm">
           Ustvari dogodek
         </Link>
       </div>
@@ -174,12 +174,12 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--color-wedding-beige)] flex flex-col md:flex-row font-sans">
+    <div className="min-h-screen bg-[#FDFCFB] flex flex-col md:flex-row font-sans text-gray-900">
       {/* Sidebar */}
-      <aside className="w-full md:w-64 bg-white border-r border-[var(--color-wedding-sand)]/30 flex flex-col">
-        <div className="p-6 border-b border-[var(--color-wedding-sand)]/30">
-          <Link to="/" className="font-serif text-2xl tracking-tight text-[var(--color-wedding-dark)]">
-            Kliksy<span className="text-[var(--color-wedding-gold)]">.</span>
+      <aside className="w-full md:w-64 bg-white border-r border-gray-100 flex flex-col shadow-sm z-10">
+        <div className="p-6 border-b border-gray-100">
+          <Link to="/" className="font-bold text-2xl tracking-tight text-gray-900">
+            Kliksy<span className="text-indigo-600">.</span>
           </Link>
         </div>
         
@@ -196,7 +196,7 @@ export default function Dashboard() {
                     navigate(`/dashboard?eventId=${selected.id}`, { replace: true });
                   }
                 }}
-                className="w-full bg-white border border-[var(--color-wedding-sand)] rounded-xl px-3 py-2 text-[var(--color-wedding-dark)] font-serif text-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-wedding-gold)] cursor-pointer truncate"
+                className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-gray-900 font-bold text-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer truncate shadow-sm"
               >
                 {events.map(ev => (
                   <option key={ev.id} value={ev.id}>
@@ -205,15 +205,15 @@ export default function Dashboard() {
                 ))}
               </select>
             ) : (
-              <h2 className="font-serif text-xl text-[var(--color-wedding-dark)] truncate">
+              <h2 className="font-bold tracking-tight text-xl text-gray-900 truncate">
                 {event.eventType === 'poroka' || !event.eventType ? `${event.partner1} & ${event.partner2}` : event.eventName}
               </h2>
             )}
-            <p className="text-sm text-[var(--color-wedding-text)]/60 mt-2">{new Date(event.date).toLocaleDateString('sl-SI')}</p>
+            <p className="text-sm text-gray-500 mt-2">{new Date(event.date).toLocaleDateString('sl-SI')}</p>
             
             <button
               onClick={() => navigate('/create')}
-              className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2 border-2 border-dashed border-[var(--color-wedding-sand)] text-[var(--color-wedding-dark)] rounded-xl text-sm font-medium hover:bg-[var(--color-wedding-sand)]/10 transition-colors"
+              className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2 border-2 border-dashed border-gray-200 text-gray-600 rounded-xl text-sm font-medium hover:bg-gray-50 hover:text-gray-900 hover:border-gray-300 transition-colors"
             >
               <Plus className="w-4 h-4" />
               Dodaj nov dogodek
@@ -229,10 +229,10 @@ export default function Dashboard() {
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id as any)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
                   activeTab === item.id 
-                    ? 'bg-[var(--color-wedding-dark)] text-white' 
-                    : 'text-[var(--color-wedding-text)] hover:bg-[var(--color-wedding-sand)]/20'
+                    ? 'bg-gray-900 text-white shadow-sm' 
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                 }`}
               >
                 <item.icon className="w-5 h-5" />
@@ -242,7 +242,7 @@ export default function Dashboard() {
           </nav>
         </div>
 
-        <div className="p-6 border-t border-[var(--color-wedding-sand)]/30">
+        <div className="p-6 border-t border-gray-100">
           <button onClick={signOut} className="flex items-center gap-3 text-sm font-medium text-red-600 hover:text-red-700 transition-colors">
             <LogOut className="w-5 h-5" />
             Odjava
@@ -259,17 +259,17 @@ export default function Dashboard() {
             <div className="flex items-center gap-4">
               <button 
                 onClick={() => navigate(-1)}
-                className="p-2 -ml-2 hover:bg-white rounded-full transition-colors border border-transparent hover:border-[var(--color-wedding-sand)]"
+                className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors border border-transparent"
               >
-                <ArrowLeft className="w-5 h-5 text-[var(--color-wedding-dark)]" />
+                <ArrowLeft className="w-5 h-5 text-gray-900" />
               </button>
               <div>
-                <h1 className="text-3xl font-serif text-[var(--color-wedding-dark)] mb-2">
+                <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 mb-1">
                   {activeTab === 'overview' && 'Pregled dogodka'}
                   {activeTab === 'gallery' && 'Vse fotografije'}
                   {activeTab === 'settings' && 'Nastavitve'}
                 </h1>
-                <p className="text-[var(--color-wedding-text)]/70">Upravljaj svoje poročne spomine.</p>
+                <p className="text-gray-500">Upravljaj svoje poročne spomine.</p>
               </div>
             </div>
             
@@ -278,7 +278,7 @@ export default function Dashboard() {
                 href={eventUrl} 
                 target="_blank" 
                 rel="noreferrer"
-                className="flex items-center justify-center gap-2 px-4 py-2 bg-white border border-[var(--color-wedding-sand)] rounded-full text-sm font-medium hover:bg-[var(--color-wedding-sand)]/20 transition-colors flex-1 md:flex-none"
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-full text-sm font-medium hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm flex-1 md:flex-none text-gray-700"
               >
                 <ExternalLink className="w-4 h-4" />
                 <span className="hidden sm:inline">Poglej kot gost</span>
@@ -287,7 +287,7 @@ export default function Dashboard() {
               <button 
                 onClick={handleDownloadAll}
                 disabled={isDownloading || photos.length === 0}
-                className="flex items-center justify-center gap-2 px-4 py-2 bg-[var(--color-wedding-dark)] text-white rounded-full text-sm font-medium hover:bg-black transition-colors disabled:opacity-50 flex-1 md:flex-none"
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-full text-sm font-medium hover:bg-gray-800 transition-all shadow-sm disabled:opacity-50 flex-1 md:flex-none"
               >
                 {isDownloading ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -315,13 +315,13 @@ export default function Dashboard() {
               {/* Stats Grid */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {stats.map((stat, i) => (
-                  <div key={i} className="bg-white p-6 rounded-3xl border border-[var(--color-wedding-sand)]/30 shadow-sm flex items-center gap-4">
-                    <div className="w-12 h-12 bg-[var(--color-wedding-beige)] rounded-full flex items-center justify-center">
-                      <stat.icon className="w-6 h-6 text-[var(--color-wedding-gold)]" />
+                  <div key={i} className="bg-white p-6 rounded-3xl border border-gray-200 shadow-sm flex items-center gap-4">
+                    <div className="w-12 h-12 bg-indigo-50 rounded-full flex items-center justify-center">
+                      <stat.icon className="w-6 h-6 text-indigo-600" />
                     </div>
                     <div>
-                      <p className="text-sm text-[var(--color-wedding-text)]/60 mb-1">{stat.label}</p>
-                      <p className="text-2xl font-serif text-[var(--color-wedding-dark)]">{stat.value}</p>
+                      <p className="text-sm text-gray-500 font-medium mb-1">{stat.label}</p>
+                      <p className="text-2xl font-bold tracking-tight text-gray-900">{stat.value}</p>
                     </div>
                   </div>
                 ))}
@@ -329,16 +329,16 @@ export default function Dashboard() {
 
               <div className="grid md:grid-cols-3 gap-8">
                 {/* QR Code Card */}
-                <div className="md:col-span-1 bg-white p-8 rounded-3xl border border-[var(--color-wedding-sand)]/30 shadow-sm text-center flex flex-col items-center">
-                  <h3 className="font-serif text-xl mb-2">Tvoja QR koda</h3>
-                  <p className="text-sm text-[var(--color-wedding-text)]/60 mb-8">Natisni to kodo in jo postavi na mize.</p>
+                <div className="md:col-span-1 bg-white p-8 rounded-3xl border border-gray-200 shadow-sm text-center flex flex-col items-center">
+                  <h3 className="font-bold tracking-tight text-xl mb-2 text-gray-900">Tvoja QR koda</h3>
+                  <p className="text-sm text-gray-500 mb-8">Natisni to kodo in jo postavi na mize.</p>
                   
                   <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 mb-6">
                     <QRCodeSVG 
                       value={eventUrl} 
                       size={180}
                       bgColor={"#ffffff"}
-                      fgColor={"#2A2A2A"}
+                      fgColor={"#111827"}
                       level={"Q"}
                       includeMargin={false}
                     />
@@ -346,17 +346,17 @@ export default function Dashboard() {
                   
                   <button 
                     onClick={() => setIsQRModalOpen(true)}
-                    className="w-full py-3 px-4 bg-[var(--color-wedding-beige)] text-[var(--color-wedding-dark)] rounded-xl text-sm font-medium hover:bg-[var(--color-wedding-sand)]/50 transition-colors flex items-center justify-center gap-2"
+                    className="w-full py-3 px-4 bg-gray-100 text-gray-900 rounded-xl text-sm font-medium hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
                   >
                     <Download className="w-4 h-4" /> Prenesi QR kodo
                   </button>
                 </div>
 
                 {/* Recent Photos Preview */}
-                <div className="md:col-span-2 bg-white p-8 rounded-3xl border border-[var(--color-wedding-sand)]/30 shadow-sm">
+                <div className="md:col-span-2 bg-white p-8 rounded-3xl border border-gray-200 shadow-sm">
                   <div className="flex items-center justify-between mb-6">
-                    <h3 className="font-serif text-xl">Zadnje naloženo</h3>
-                    <button onClick={() => setActiveTab('gallery')} className="text-sm font-medium text-[var(--color-wedding-gold)] hover:text-[var(--color-wedding-dark)] transition-colors">
+                    <h3 className="font-bold tracking-tight text-xl text-gray-900">Zadnje naloženo</h3>
+                    <button onClick={() => setActiveTab('gallery')} className="text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors">
                       Poglej vse
                     </button>
                   </div>
@@ -367,7 +367,7 @@ export default function Dashboard() {
                         <img src={photo.url} alt="Wedding moment" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" />
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
                           <button onClick={(e) => { e.stopPropagation(); handleDownloadSingle(photo.url, i); }} className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg transform scale-90 group-hover:scale-100 transition-transform">
-                            <Download className="w-5 h-5 text-[var(--color-wedding-dark)]" />
+                            <Download className="w-5 h-5 text-gray-900" />
                           </button>
                         </div>
                       </div>
@@ -395,7 +395,7 @@ export default function Dashboard() {
                     <img src={photo.url} alt="Wedding moment" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
                       <button onClick={(e) => { e.stopPropagation(); handleDownloadSingle(photo.url, i); }} className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg transform scale-90 group-hover:scale-100 transition-transform">
-                        <Download className="w-5 h-5 text-[var(--color-wedding-dark)]" />
+                        <Download className="w-5 h-5 text-gray-900" />
                       </button>
                     </div>
                   </div>
@@ -407,7 +407,7 @@ export default function Dashboard() {
                 )}
               </div>
               <div className="text-center pt-8">
-                <button className="px-8 py-3 bg-white border border-[var(--color-wedding-sand)] rounded-full text-sm font-medium hover:bg-[var(--color-wedding-sand)]/20 transition-colors">
+                <button className="px-8 py-3 bg-white border border-gray-200 rounded-full text-sm font-medium hover:bg-gray-50 text-gray-700 transition-colors shadow-sm">
                   Naloži več
                 </button>
               </div>
@@ -418,40 +418,40 @@ export default function Dashboard() {
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white p-8 rounded-3xl border border-[var(--color-wedding-sand)]/30 shadow-sm max-w-2xl"
+              className="bg-white p-8 rounded-3xl border border-gray-200 shadow-sm max-w-2xl"
             >
-              <h3 className="font-serif text-xl mb-6">Nastavitve dogodka</h3>
+              <h3 className="font-bold tracking-tight text-xl mb-6 text-gray-900">Nastavitve dogodka</h3>
               
               <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Ime dogodka</label>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">Ime dogodka</label>
                   <input 
                     type="text" 
                     defaultValue={event.eventType === 'poroka' || !event.eventType ? `${event.partner1} & ${event.partner2}` : event.eventName}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[var(--color-wedding-gold)] focus:ring-1 focus:ring-[var(--color-wedding-gold)] outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all text-gray-900 bg-gray-50"
                     disabled
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Datum</label>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">Datum</label>
                   <input 
                     type="date" 
                     defaultValue={event.date}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[var(--color-wedding-gold)] focus:ring-1 focus:ring-[var(--color-wedding-gold)] outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all text-gray-900 bg-gray-50"
                     disabled
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Pozdravno sporočilo za goste</label>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">Pozdravno sporočilo za goste</label>
                   <textarea 
                     defaultValue={event.eventType === 'poroka' || !event.eventType ? "Hvala, ker deliš spomine z nama." : "Hvala, ker deliš spomine z nami."}
                     rows={3}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[var(--color-wedding-gold)] focus:ring-1 focus:ring-[var(--color-wedding-gold)] outline-none transition-all resize-none"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all resize-none text-gray-900"
                   />
                 </div>
                 
-                <div className="pt-6 border-t border-[var(--color-wedding-sand)]/30">
-                  <button className="px-8 py-3 bg-[var(--color-wedding-dark)] text-white rounded-xl font-medium hover:bg-black transition-colors">
+                <div className="pt-6 border-t border-gray-100">
+                  <button className="px-8 py-3 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 transition-colors shadow-sm">
                     Shrani spremembe
                   </button>
                 </div>
