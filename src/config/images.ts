@@ -11,16 +11,16 @@ export const LANDING_IMAGES = {
   floatingImage2: "https://picsum.photos/seed/wed2/200/200",
 
   // "Kako deluje" - Sekcija 1 (Slika natisnjene kode)
-  printQrCode: "/Secondsection.webp",
+  printQrCode: "/Secondsection.jpeg",
 
   // "Kako deluje" - Sekcija 2 (Slika gosta, ki slika)
-  guestTakingPhoto: "/Middlesection.webp",
+  guestTakingPhoto: "/Middlesection.png",
 
   // "Kako deluje" - Sekcija 3 (Mreža slik v galeriji)
-  galleryGrid1: "/Bottomsection.webp",
-  galleryGrid2: "/Bottomsection.webp",
-  galleryGrid3: "/Bottomsection.webp",
-  galleryGrid4: "/Bottomsection.webp",
+  galleryGrid1: "/Bottomsection.jpeg",
+  galleryGrid2: "/Bottomsection.jpeg",
+  galleryGrid3: "/Bottomsection.jpeg",
+  galleryGrid4: "/Bottomsection.jpeg",
 };
 
 /**
