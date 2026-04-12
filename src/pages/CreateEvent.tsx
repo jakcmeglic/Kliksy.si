@@ -908,7 +908,7 @@ export default function CreateEvent() {
                     
                     {finalPrice > 0 ? (
                       clientSecret ? (
-                        <Elements stripe={stripePromise} options={{ clientSecret, appearance: { theme: 'stripe' } }}>
+                        <Elements stripe={stripePromise} options={{ clientSecret, appearance: { theme: 'stripe' }, locale: 'sl' }}>
                           <StripePaymentForm 
                             user={user}
                             formData={formData}
