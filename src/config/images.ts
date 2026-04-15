@@ -4,23 +4,23 @@ export const LANDING_IMAGES = {
 
   // Hero sekcija - Glavna slika (Mockup telefona ali galerije)
   // TUKAJ ZAMENJAJTE: naložite svojo sliko v public/ in spodaj spremenite pot
-  heroPhoneMockup: "https://i.postimg.cc/Xp4zsNQm/firstsection.webp",
+  heroPhoneMockup: "https://i.postimg.cc/LRy9DP81/firstsection.webp",
   
   // Plavajoče slike okoli glavne slike v Hero sekciji (za boljši vizualni učinek)
   floatingImage1: "https://picsum.photos/seed/wed1/200/200",
   floatingImage2: "https://picsum.photos/seed/wed2/200/200",
 
   // "Kako deluje" - Sekcija 1 (Slika natisnjene kode)
-  printQrCode: "https://i.postimg.cc/Xp4zsNQh/Secondsection.jpg",
+  printQrCode: "https://i.postimg.cc/nZdF2mhQ/Secondsection.jpg",
 
   // "Kako deluje" - Sekcija 2 (Slika gosta, ki slika)
-  guestTakingPhoto: "https://i.postimg.cc/D8nMxfBR/Middlesection.png",
+  guestTakingPhoto: "https://i.postimg.cc/DFCv6GwG/Middlesection.png",
 
   // "Kako deluje" - Sekcija 3 (Mreža slik v galeriji)
-  galleryGrid1: "https://i.postimg.cc/Z0rQPvFX/Bottomsection.jpg",
-  galleryGrid2: "https://i.postimg.cc/Z0rQPvFX/Bottomsection.jpg",
-  galleryGrid3: "https://i.postimg.cc/Z0rQPvFX/Bottomsection.jpg",
-  galleryGrid4: "https://i.postimg.cc/Z0rQPvFX/Bottomsection.jpg",
+  galleryGrid1: "https://i.postimg.cc/ZZYY6H4N/Bottomsection.jpg",
+  galleryGrid2: "https://i.postimg.cc/ZZYY6H4N/Bottomsection.jpg",
+  galleryGrid3: "https://i.postimg.cc/ZZYY6H4N/Bottomsection.jpg",
+  galleryGrid4: "https://i.postimg.cc/ZZYY6H4N/Bottomsection.jpg",
 };
 
 /**
