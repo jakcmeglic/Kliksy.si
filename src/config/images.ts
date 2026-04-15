@@ -4,23 +4,23 @@ export const LANDING_IMAGES = {
 
   // Hero sekcija - Glavna slika (Mockup telefona ali galerije)
   // TUKAJ ZAMENJAJTE: naložite svojo sliko v public/ in spodaj spremenite pot
-  heroPhoneMockup: "https://github.com/jakcmeglic/Kliksy.si/blob/main/public/firstsection.webp?raw=true",
+  heroPhoneMockup: "https://github.com/user-attachments/assets/3c212c94-b309-460c-a335-4e7e30d506ad",
   
   // Plavajoče slike okoli glavne slike v Hero sekciji (za boljši vizualni učinek)
   floatingImage1: "https://picsum.photos/seed/wed1/200/200",
   floatingImage2: "https://picsum.photos/seed/wed2/200/200",
 
   // "Kako deluje" - Sekcija 1 (Slika natisnjene kode)
-  printQrCode: "https://github.com/jakcmeglic/Kliksy.si/blob/main/public/Secondsection.jpeg?raw=true",
+  printQrCode: "https://github.com/user-attachments/assets/a4b635cd-b91c-472c-a99d-b354309cef83",
 
   // "Kako deluje" - Sekcija 2 (Slika gosta, ki slika)
-  guestTakingPhoto: "https://github.com/jakcmeglic/Kliksy.si/blob/main/public/Middlesection.png?raw=true",
+  guestTakingPhoto: "https://github.com/user-attachments/assets/455fe8a6-6a6b-4ecf-9644-54a9a2246f39",
 
   // "Kako deluje" - Sekcija 3 (Mreža slik v galeriji)
-  galleryGrid1: "https://github.com/jakcmeglic/Kliksy.si/blob/main/public/Bottomsection.jpeg?raw=true",
-  galleryGrid2: "https://github.com/jakcmeglic/Kliksy.si/blob/main/public/Bottomsection.jpeg?raw=true",
-  galleryGrid3: "https://github.com/jakcmeglic/Kliksy.si/blob/main/public/Bottomsection.jpeg?raw=true",
-  galleryGrid4: "https://github.com/jakcmeglic/Kliksy.si/blob/main/public/Bottomsection.jpeg?raw=true",
+  galleryGrid1: "https://github.com/user-attachments/assets/2d7017c5-6811-4821-aa1e-46581f0072a8",
+  galleryGrid2: "https://github.com/user-attachments/assets/2d7017c5-6811-4821-aa1e-46581f0072a8",
+  galleryGrid3: "https://github.com/user-attachments/assets/2d7017c5-6811-4821-aa1e-46581f0072a8",
+  galleryGrid4: "https://github.com/user-attachments/assets/2d7017c5-6811-4821-aa1e-46581f0072a8",
 };
 
 /**
