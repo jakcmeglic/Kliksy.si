@@ -257,7 +257,7 @@ export const DESIGNS = [
         <div className="relative w-full h-full flex flex-col items-center justify-center z-10 bg-white overflow-hidden">
           {/* Ozadje - slika, ki jo naloži uporabnik */}
           <img 
-            src="/template-custom.png" 
+            src="https://raw.githubusercontent.com/jakcmeglic/Kliksy.si/88eed03337e18f3e03a77a25db4b8d9e018dfe69/public/template-custom.png" 
             alt="Custom Template Background" 
             className="absolute inset-0 w-full h-full object-cover z-0"
             onError={(e) => {

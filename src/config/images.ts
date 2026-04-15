@@ -4,23 +4,23 @@ export const LANDING_IMAGES = {
 
   // Hero sekcija - Glavna slika (Mockup telefona ali galerije)
   // TUKAJ ZAMENJAJTE: naložite svojo sliko v public/ in spodaj spremenite pot
-  heroPhoneMockup: "https://github.com/user-attachments/assets/3c212c94-b309-460c-a335-4e7e30d506ad",
+  heroPhoneMockup: "https://i.postimg.cc/Xp4zsNQm/firstsection.webp",
   
   // Plavajoče slike okoli glavne slike v Hero sekciji (za boljši vizualni učinek)
   floatingImage1: "https://picsum.photos/seed/wed1/200/200",
   floatingImage2: "https://picsum.photos/seed/wed2/200/200",
 
   // "Kako deluje" - Sekcija 1 (Slika natisnjene kode)
-  printQrCode: "https://github.com/user-attachments/assets/a4b635cd-b91c-472c-a99d-b354309cef83",
+  printQrCode: "https://i.postimg.cc/Xp4zsNQh/Secondsection.jpg",
 
   // "Kako deluje" - Sekcija 2 (Slika gosta, ki slika)
-  guestTakingPhoto: "https://github.com/user-attachments/assets/455fe8a6-6a6b-4ecf-9644-54a9a2246f39",
+  guestTakingPhoto: "https://i.postimg.cc/D8nMxfBR/Middlesection.png",
 
   // "Kako deluje" - Sekcija 3 (Mreža slik v galeriji)
-  galleryGrid1: "https://github.com/user-attachments/assets/2d7017c5-6811-4821-aa1e-46581f0072a8",
-  galleryGrid2: "https://github.com/user-attachments/assets/2d7017c5-6811-4821-aa1e-46581f0072a8",
-  galleryGrid3: "https://github.com/user-attachments/assets/2d7017c5-6811-4821-aa1e-46581f0072a8",
-  galleryGrid4: "https://github.com/user-attachments/assets/2d7017c5-6811-4821-aa1e-46581f0072a8",
+  galleryGrid1: "https://i.postimg.cc/Z0rQPvFX/Bottomsection.jpg",
+  galleryGrid2: "https://i.postimg.cc/Z0rQPvFX/Bottomsection.jpg",
+  galleryGrid3: "https://i.postimg.cc/Z0rQPvFX/Bottomsection.jpg",
+  galleryGrid4: "https://i.postimg.cc/Z0rQPvFX/Bottomsection.jpg",
 };
 
 /**
