@@ -5,18 +5,9 @@ import { QRCodeSVG, QRCodeCanvas } from 'qrcode.react';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 
-const DESIGNS = [
-  { id: 1, name: 'Minimalističen', container: 'bg-white border-2 border-gray-200', text: 'text-gray-900 font-sans', qrFg: '#111827', qrBg: '#ffffff' },
-  { id: 2, name: 'Eleganten', container: 'bg-white border-4 border-[#D4AF37]', text: 'text-gray-900 font-serif', qrFg: '#000000', qrBg: '#ffffff' },
-  { id: 3, name: 'Rustikalen', container: 'bg-[#F5E6D3] border-2 border-[#8B5A2B]', text: 'text-[#5C4033] font-serif', qrFg: '#3E2723', qrBg: '#F5E6D3' },
-  { id: 4, name: 'Modern Temen', container: 'bg-gray-900 border-2 border-gray-700', text: 'text-white font-sans', qrFg: '#ffffff', qrBg: '#111827' },
-  { id: 5, name: 'Botaničen', container: 'bg-[#F0FDF4] border-2 border-[#86EFAC]', text: 'text-[#14532D] font-serif', qrFg: '#14532D', qrBg: '#F0FDF4' },
-  { id: 6, name: 'Klasičen Moder', container: 'bg-[#EFF6FF] border-4 border-[#1E3A8A]', text: 'text-[#1E3A8A] font-serif', qrFg: '#1E3A8A', qrBg: '#EFF6FF' },
-  { id: 7, name: 'Geometričen', container: 'bg-white border-[8px] border-black', text: 'text-black font-sans uppercase tracking-widest', qrFg: '#000000', qrBg: '#ffffff' },
-  { id: 8, name: 'Romantičen', container: 'bg-[#FFF1F2] border-2 border-[#FDA4AF] rounded-3xl', text: 'text-[#9F1239] font-serif', qrFg: '#9F1239', qrBg: '#FFF1F2' },
-  { id: 9, name: 'Vintage', container: 'bg-[#FEF3C7] border-4 border-[#D97706]', text: 'text-[#78350F] font-serif', qrFg: '#78350F', qrBg: '#FEF3C7' },
-  { id: 10, name: 'Zlat Prah', container: 'bg-[#FEF08A] border-2 border-[#EAB308]', text: 'text-[#854D0E] font-serif', qrFg: '#854D0E', qrBg: '#ffffff' },
-];
+import { DESIGNS } from './QRDesigns';
+
+const CATEGORIES = ['Poročni', 'Nevtralni', 'Poslovni', 'Rojstnodnevni'];
 
 interface QRModalProps {
   isOpen: boolean;
@@ -26,13 +17,15 @@ interface QRModalProps {
 }
 
 export default function QRModal({ isOpen, onClose, event, eventUrl }: QRModalProps) {
-  const [selectedDesign, setSelectedDesign] = useState(0);
+  const [activeCategory, setActiveCategory] = useState(CATEGORIES[0]);
+  const [selectedDesignId, setSelectedDesignId] = useState(DESIGNS[0].id);
   const [isGenerating, setIsGenerating] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
 
   if (!isOpen || !event) return null;
 
-  const selected = DESIGNS[selectedDesign];
+  const selected = DESIGNS.find(d => d.id === selectedDesignId) || DESIGNS[0];
+  const filteredDesigns = DESIGNS.filter(d => d.category === activeCategory);
 
   const generatePDF = async () => {
     if (!printRef.current) return;
@@ -40,13 +33,13 @@ export default function QRModal({ isOpen, onClose, event, eventUrl }: QRModalPro
     try {
       // Capture the hidden element
       const canvas = await html2canvas(printRef.current, {
-        scale: 2, // Reduced from 3 to 2 for better mobile memory handling
+        scale: 2, // Good balance between quality and memory
         useCORS: true,
         logging: false,
-        backgroundColor: selected.container.includes('bg-') ? null : '#ffffff',
+        backgroundColor: selected.bg,
       });
 
-      const imgData = canvas.toDataURL('image/jpeg', 0.9); // Use JPEG to reduce size
+      const imgData = canvas.toDataURL('image/jpeg', 0.9);
       
       // Create A4 PDF
       const pdf = new jsPDF({
@@ -70,7 +63,8 @@ export default function QRModal({ isOpen, onClose, event, eventUrl }: QRModalPro
       const filename = `QR-Listici-${eventNameStr}.pdf`;
       const pdfBlob = pdf.output('blob');
       
-      // For better mobile compatibility, try Web Share API first
+      // Try Web Share API first for mobile devices
+      let shared = false;
       if (navigator.canShare) {
         const file = new File([pdfBlob], filename, { type: 'application/pdf' });
         if (navigator.canShare({ files: [file] })) {
@@ -78,37 +72,36 @@ export default function QRModal({ isOpen, onClose, event, eventUrl }: QRModalPro
             await navigator.share({
               files: [file],
               title: 'QR Lističi',
-              text: event.eventType === 'poroka' || !event.eventType ? 'Tukaj so QR lističi za najino poroko!' : 'Tukaj so QR lističi za dogodek!',
+              text: 'Tukaj so QR lističi za dogodek!',
             });
-            onClose();
-            setIsGenerating(false);
-            return; // Successfully shared, exit early
+            shared = true;
           } catch (shareError) {
             console.log("Share cancelled or failed, falling back to download", shareError);
-            // Fall through to standard download
           }
         }
       }
       
-      // Standard save fallback
-      try {
-        pdf.save(filename);
-      } catch (saveError) {
-        console.warn("Standard save failed, trying fallback...", saveError);
-        const url = URL.createObjectURL(pdfBlob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = filename;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        setTimeout(() => URL.revokeObjectURL(url), 100);
+      // Standard save fallback if share wasn't successful
+      if (!shared) {
+        try {
+          pdf.save(filename);
+        } catch (saveError) {
+          console.warn("Standard save failed, trying fallback...", saveError);
+          const url = URL.createObjectURL(pdfBlob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = filename;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          setTimeout(() => URL.revokeObjectURL(url), 100);
+        }
       }
       
       onClose();
     } catch (error) {
       console.error("Napaka pri generiranju PDF:", error);
-      alert("Prišlo je do napake pri generiranju PDF-ja. Poskusite znova ali uporabite računalnik.");
+      alert("Prišlo je do napake pri generiranju PDF-ja. Poskusite znova ali uporabite drug brskalnik.");
     } finally {
       setIsGenerating(false);
     }
@@ -121,7 +114,7 @@ export default function QRModal({ isOpen, onClose, event, eventUrl }: QRModalPro
            initial={{ opacity: 0, scale: 0.95 }}
            animate={{ opacity: 1, scale: 1 }}
            exit={{ opacity: 0, scale: 0.95 }}
-           className="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
+           className="bg-white rounded-2xl shadow-xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col"
         >
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-gray-100">
@@ -137,33 +130,53 @@ export default function QRModal({ isOpen, onClose, event, eventUrl }: QRModalPro
               Izberite dizajn za vaše QR lističe. Prenesel se bo PDF dokument formata A4, na katerem bodo 4 lističi (vsak formata A6), pripravljeni za tisk.
             </p>
 
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              {DESIGNS.map((design, index) => (
+            {/* Categories */}
+            <div className="flex flex-wrap gap-2 mb-6">
+              {CATEGORIES.map(category => (
                 <button
-                  key={design.id}
-                  onClick={() => setSelectedDesign(index)}
-                  className={`relative aspect-[1/1.414] rounded-xl overflow-hidden border-2 transition-all ${
-                    selectedDesign === index ? 'border-[var(--color-wedding-gold)] ring-4 ring-[var(--color-wedding-gold)]/20 shadow-lg scale-105 z-10' : 'border-gray-200 hover:border-gray-300'
+                  key={category}
+                  onClick={() => {
+                    setActiveCategory(category);
+                    const firstInCategory = DESIGNS.find(d => d.category === category);
+                    if (firstInCategory) setSelectedDesignId(firstInCategory.id);
+                  }}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                    activeCategory === category 
+                      ? 'bg-gray-900 text-white' 
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
+                  {category}
+                </button>
+              ))}
+            </div>
+
+            {/* Designs Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+              {filteredDesigns.map((design) => (
+                <button
+                  key={design.id}
+                  onClick={() => setSelectedDesignId(design.id)}
+                  className={`relative aspect-[1/1.414] rounded-xl overflow-hidden border-2 transition-all ${
+                    selectedDesignId === design.id 
+                      ? 'border-blue-500 ring-4 ring-blue-500/20 shadow-lg scale-105 z-10' 
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                  style={{ backgroundColor: design.bg }}
+                >
                   {/* Mini preview */}
-                  <div className={`w-full h-full flex flex-col items-center justify-between p-2 text-center ${design.container}`}>
-                    <div className="mt-1">
-                      <div className={`text-[10px] font-bold leading-tight ${design.text}`}>
-                        {event.eventType === 'poroka' || !event.eventType ? <>{event.partner1}<br/>&<br/>{event.partner2}</> : event.eventName}
-                      </div>
-                    </div>
-                    <div className="bg-white p-1 rounded shadow-sm">
-                      <QRCodeSVG value={eventUrl} size={40} bgColor="#ffffff" fgColor="#2A2A2A" level="Q" includeMargin={false} />
-                    </div>
-                    <div className="mb-1">
-                      <div className={`text-[6px] leading-tight ${design.text}`}>
-                        Skeniraj QR kodo in<br/>deli svoje fotke
-                      </div>
-                    </div>
+                  <div className="absolute inset-0 pointer-events-none">
+                    {design.render({
+                      event,
+                      eventUrl,
+                      QRCodeComponent: QRCodeSVG,
+                      qrSize: 80,
+                      isPrint: false
+                    })}
                   </div>
+                  
                   {/* Label */}
-                  <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-[10px] py-1 font-medium">
+                  <div className="absolute bottom-0 left-0 right-0 bg-black/80 text-white text-xs py-2 font-medium z-20">
                     {design.name}
                   </div>
                 </button>
@@ -179,7 +192,7 @@ export default function QRModal({ isOpen, onClose, event, eventUrl }: QRModalPro
             <button
               onClick={generatePDF}
               disabled={isGenerating}
-              className="px-6 py-2 rounded-xl font-medium bg-[var(--color-wedding-dark)] text-white hover:bg-black transition-colors flex items-center gap-2 disabled:opacity-70"
+              className="px-6 py-2 rounded-xl font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-70"
             >
               {isGenerating ? (
                 <>
@@ -200,34 +213,16 @@ export default function QRModal({ isOpen, onClose, event, eventUrl }: QRModalPro
         <div style={{ position: 'fixed', top: 0, left: 0, opacity: 0.001, pointerEvents: 'none', zIndex: -50 }} aria-hidden="true">
           <div 
             ref={printRef} 
-            className={`w-[400px] h-[566px] flex flex-col items-center justify-between p-10 text-center ${selected.container}`}
-            style={{ boxSizing: 'border-box', backgroundColor: selected.container.includes('bg-') ? undefined : 'white' }}
+            className="relative w-[400px] h-[566px] flex flex-col items-center justify-center overflow-hidden"
+            style={{ boxSizing: 'border-box', backgroundColor: selected.bg }}
           >
-            <div className="mt-6">
-              <h1 className={`text-4xl font-bold mb-4 leading-tight ${selected.text}`}>
-                {event.eventType === 'poroka' || !event.eventType ? `${event.partner1} & ${event.partner2}` : event.eventName}
-              </h1>
-              <p className={`text-xl opacity-80 ${selected.text}`}>
-                {new Date(event.date).toLocaleDateString('sl-SI')}
-              </p>
-            </div>
-            
-            <div className="bg-white p-4 rounded-2xl shadow-sm">
-              <QRCodeCanvas 
-                value={eventUrl} 
-                size={220}
-                bgColor="#ffffff"
-                fgColor="#2A2A2A"
-                level="Q"
-                includeMargin={false}
-              />
-            </div>
-
-            <div className="mb-8">
-              <p className={`text-xl font-medium leading-snug ${selected.text}`}>
-                Skeniraj QR kodo in<br/>deli svoje fotke z {event.eventType === 'poroka' || !event.eventType ? 'nama' : 'nami'}
-              </p>
-            </div>
+            {selected.render({
+              event,
+              eventUrl,
+              QRCodeComponent: QRCodeCanvas,
+              qrSize: 180,
+              isPrint: true
+            })}
           </div>
         </div>
       </div>
