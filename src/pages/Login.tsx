@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { Mail, ArrowRight, ArrowLeft, Loader2 } from "lucide-react";
 import { useAuth } from "../components/AuthProvider";
-import { signInWithGoogle, signInWithApple, signInWithEmail } from "../firebase";
+import { signInWithGoogle, signInWithEmail } from "../firebase";
 
 export default function Login() {
   const { user } = useAuth();
@@ -51,20 +51,6 @@ export default function Login() {
     } catch (err: any) {
       console.error("Google login error:", err);
       setError("Napaka pri prijavi z Google računom.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleAppleLogin = async () => {
-    setError(null);
-    setLoading(true);
-    try {
-      await signInWithApple();
-      navigate("/dashboard");
-    } catch (err: any) {
-      console.error("Apple login error:", err);
-      setError("Napaka pri prijavi z Apple ID.");
     } finally {
       setLoading(false);
     }
@@ -120,7 +106,7 @@ export default function Login() {
             </div>
           )}
 
-          <div className="space-y-4 mb-8">
+          <div className="grid grid-cols-1 gap-4 mb-8">
             <button
               onClick={handleGoogleLogin}
               disabled={loading}
@@ -133,17 +119,6 @@ export default function Login() {
                 <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
               </svg>
               {authMode === 'login' ? 'Prijava z Google' : 'Registracija z Google'}
-            </button>
-            
-            <button
-              onClick={handleAppleLogin}
-              disabled={loading}
-              className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-black text-white rounded-xl font-medium hover:bg-gray-900 transition-colors disabled:opacity-50"
-            >
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.04 2.26-.79 3.59-.76 1.56.04 2.87.68 3.64 1.83-3.15 1.87-2.61 5.91.31 7.1-1.01 2.59-2.58 4.09-3.62 3.99zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
-              </svg>
-              {authMode === 'login' ? 'Prijava z Apple' : 'Registracija z Apple'}
             </button>
           </div>
 

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Check, CreditCard, Calendar, Users, LogIn, Mail, Loader2, ChevronDown, ChevronUp, Maximize2 } from "lucide-react";
 import { useAuth } from "../components/AuthProvider";
-import { db, handleFirestoreError, OperationType, signInWithApple, signUpWithEmail, signInWithEmail } from "../firebase";
+import { db, handleFirestoreError, OperationType, signUpWithEmail, signInWithEmail } from "../firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import ImageViewer from '../components/ImageViewer';
 import { loadStripe } from '@stripe/stripe-js';
@@ -127,14 +127,6 @@ export default function CreateEvent() {
       }
     } catch (error: any) {
       setAuthError(error.message || 'Prišlo je do napake pri prijavi.');
-    }
-  };
-
-  const handleAppleAuth = async () => {
-    try {
-      await signInWithApple();
-    } catch (error: any) {
-      setAuthError(error.message || 'Prišlo je do napake pri prijavi z Apple.');
     }
   };
 
@@ -515,7 +507,7 @@ export default function CreateEvent() {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 gap-3">
                         <button 
                           type="button"
                           onClick={async () => {
@@ -535,15 +527,6 @@ export default function CreateEvent() {
                             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                           </svg>
                           Google
-                        </button>
-                        <button 
-                          onClick={handleAppleAuth}
-                          className="flex items-center justify-center gap-2 border border-gray-200 bg-white text-black px-4 py-3 rounded-xl font-medium hover:bg-gray-50 transition-colors"
-                        >
-                          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.04 2.26-.79 3.59-.76 1.56.04 2.87.74 3.65 1.9-3.13 1.86-2.61 5.98.43 7.21-.73 1.76-1.66 3.04-2.75 3.82zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
-                          </svg>
-                          Apple
                         </button>
                       </div>
                     </>

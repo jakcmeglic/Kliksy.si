@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
-import { Camera, QrCode, Download, Heart, ArrowRight, Check, Star, Smartphone, Images, Sparkles, Play, User as UserIcon } from "lucide-react";
+import { Camera, QrCode, Download, Heart, ArrowRight, Check, Star, Smartphone, Images, Sparkles, Play, User as UserIcon, Shield, Zap, Users } from "lucide-react";
 import { LANDING_IMAGES } from "../config/images";
 import { useAuth } from "../components/AuthProvider";
 
@@ -305,6 +305,84 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Prednosti */}
+      <section id="prednosti" className="py-24 md:py-32 bg-white relative overflow-hidden">
+        {/* Background decorative elements */}
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+          <div className="absolute -top-[20%] -right-[10%] w-[50%] h-[50%] rounded-full bg-indigo-50/80 blur-[120px]" />
+          <div className="absolute -bottom-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-indigo-50/80 blur-[120px]" />
+        </div>
+
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
+          <div className="text-center max-w-2xl mx-auto mb-20">
+            <h2 className="text-4xl md:text-5xl font-extrabold mb-6 tracking-tight text-gray-900">Zakaj izbrati Kliksy?</h2>
+            <p className="text-lg md:text-xl text-gray-600">Več kot le deljenje fotografij. Ustvarite nepozabne spomine brez stresa in zapletov.</p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Card 1 */}
+            <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-xl shadow-indigo-100/20 hover:shadow-2xl hover:shadow-indigo-100/40 transition-all hover:-translate-y-1">
+              <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center mb-6">
+                <Camera className="w-7 h-7 text-indigo-600" />
+              </div>
+              <h3 className="text-xl font-bold mb-3 text-gray-900">Boljše kot Photo Booth</h3>
+              <p className="text-gray-600 leading-relaxed">Ceneje in brez čakanja v vrsti. Vsak gost ima svoj "photo booth" v žepu in lahko slika dogajanje iz vseh zornih kotov.</p>
+            </div>
+
+            {/* Card 2 */}
+            <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-xl shadow-indigo-100/20 hover:shadow-2xl hover:shadow-indigo-100/40 transition-all hover:-translate-y-1">
+              <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center mb-6">
+                <Images className="w-7 h-7 text-indigo-600" />
+              </div>
+              <h3 className="text-xl font-bold mb-3 text-gray-900">Vse slike na enem mestu</h3>
+              <p className="text-gray-600 leading-relaxed">Konec pošiljanja preko Viberja, WhatsAppa ali e-pošte, kjer slike izgubijo na kvaliteti. Vse zbrano v eni čudoviti galeriji.</p>
+            </div>
+
+            {/* Card 3 */}
+            <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-xl shadow-indigo-100/20 hover:shadow-2xl hover:shadow-indigo-100/40 transition-all hover:-translate-y-1">
+              <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center mb-6">
+                <Zap className="w-7 h-7 text-indigo-600" />
+              </div>
+              <h3 className="text-xl font-bold mb-3 text-gray-900">Takojšen dostop</h3>
+              <p className="text-gray-600 leading-relaxed">Brez nameščanja aplikacij in brez registracije za goste. Samo skenirajo QR kodo in že lahko delijo svoje utrinke.</p>
+            </div>
+
+            {/* Card 4 */}
+            <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-xl shadow-indigo-100/20 hover:shadow-2xl hover:shadow-indigo-100/40 transition-all hover:-translate-y-1">
+              <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center mb-6">
+                <Shield className="w-7 h-7 text-indigo-600" />
+              </div>
+              <h3 className="text-xl font-bold mb-3 text-gray-900">100% Zasebnost</h3>
+              <p className="text-gray-600 leading-relaxed">Galerija je dostopna samo vašim gostom preko edinstvene povezave ali QR kode. Brez javnih objav na socialnih omrežjih.</p>
+            </div>
+
+            {/* Card 5 */}
+            <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-xl shadow-indigo-100/20 hover:shadow-2xl hover:shadow-indigo-100/40 transition-all hover:-translate-y-1">
+              <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center mb-6">
+                <Download className="w-7 h-7 text-indigo-600" />
+              </div>
+              <h3 className="text-xl font-bold mb-3 text-gray-900">Polna kvaliteta</h3>
+              <p className="text-gray-600 leading-relaxed">Slike se shranijo v originalni resoluciji, pripravljene za tisk fotoknjige ali razvijanje fotografij za v album.</p>
+            </div>
+
+            {/* Card 6 */}
+            <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-xl shadow-indigo-100/20 hover:shadow-2xl hover:shadow-indigo-100/40 transition-all hover:-translate-y-1">
+              <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center mb-6">
+                <Users className="w-7 h-7 text-indigo-600" />
+              </div>
+              <h3 className="text-xl font-bold mb-3 text-gray-900">Zabava za vse</h3>
+              <p className="text-gray-600 leading-relaxed">Povežite goste in poglejte dogodek skozi njihove oči. Ujeli bodo trenutke, ki bi jih vi ali profesionalni fotograf morda zamudili.</p>
+            </div>
+          </div>
+
+          <div className="mt-16 text-center">
+            <Link to="/create" className="inline-flex items-center justify-center gap-2 bg-indigo-600 text-white px-8 py-4 rounded-full text-lg font-medium hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/20 hover:shadow-indigo-600/30 active:scale-95">
+              Ustvari dogodek zdaj <ArrowRight className="w-5 h-5" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Pricing */}
       <section id="paketi" className="py-24 md:py-32 bg-gray-50 border-t border-gray-100">
         <div className="max-w-7xl mx-auto px-6">
@@ -413,6 +491,7 @@ export default function Landing() {
               <h4 className="font-bold text-gray-900 mb-4">Produkt</h4>
               <ul className="space-y-3 text-gray-500 font-medium">
                 <li><a href="#kako-deluje" className="hover:text-indigo-600 transition-colors">Kako deluje</a></li>
+                <li><a href="#prednosti" className="hover:text-indigo-600 transition-colors">Prednosti</a></li>
                 <li><a href="#paketi" className="hover:text-indigo-600 transition-colors">Cenik</a></li>
                 <li><Link to="/event/demo" className="hover:text-indigo-600 transition-colors">Demo galerija</Link></li>
               </ul>
