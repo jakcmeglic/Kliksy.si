@@ -65,6 +65,7 @@ export default function CreateEvent() {
   const [cardName, setCardName] = useState('');
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [clientSecret, setClientSecret] = useState('');
+  const [stripePaymentIntentId, setStripePaymentIntentId] = useState('');
 
   const plans = {
     basic: { 
@@ -178,6 +179,9 @@ export default function CreateEvent() {
             const data = await res.json();
             if (data.clientSecret) {
               setClientSecret(data.clientSecret);
+              if (data.clientSecret.includes('_secret_')) {
+                setStripePaymentIntentId(data.clientSecret.split('_secret_')[0]);
+              }
             } else if (data.error) {
               setStripeError(data.error);
             }
@@ -232,7 +236,9 @@ export default function CreateEvent() {
         deliveryPostcode: deliveryMode === 'home_delivery' ? formData.deliveryPostcode : null,
         ownerId: user.uid,
         createdAt: serverTimestamp(),
-        paymentStatus: 'paid'
+        paymentStatus: 'paid',
+        amountPaid: finalPrice,
+        discountCode: discountApplied ? discountCode : null
       });
 
       setIsProcessing(false);
@@ -936,6 +942,10 @@ export default function CreateEvent() {
                             standImages={standImages}
                             selectedStand={selectedStand}
                             onError={setStripeError}
+                            finalPrice={finalPrice}
+                            discountApplied={discountApplied}
+                            discountCode={discountCode}
+                            stripePaymentIntentId={stripePaymentIntentId}
                           />
                         </Elements>
                       ) : stripeError ? (
@@ -1004,7 +1014,11 @@ function StripePaymentForm({
   printedQrQuantity, 
   standImages, 
   selectedStand, 
-  onError 
+  onError,
+  finalPrice,
+  discountApplied,
+  discountCode,
+  stripePaymentIntentId
 }: any) {
   const stripe = useStripe();
   const elements = useElements();
@@ -1040,7 +1054,10 @@ function StripePaymentForm({
         deliveryPostcode: deliveryMode === 'home_delivery' ? formData.deliveryPostcode : null,
         ownerId: user.uid,
         createdAt: serverTimestamp(),
-        paymentStatus: 'pending'
+        paymentStatus: 'pending',
+        amountPaid: finalPrice,
+        discountCode: discountApplied ? discountCode : null,
+        stripePaymentIntentId: stripePaymentIntentId || null
       });
 
       const { error: stripeErr } = await stripe.confirmPayment({

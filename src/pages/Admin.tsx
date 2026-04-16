@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
@@ -24,6 +24,8 @@ interface EventData {
   standsQuantity: number;
   printedQrQuantity: number;
   paymentStatus: string;
+  amountPaid?: number;
+  discountCode?: string;
   createdAt: any;
   ownerId: string;
   selectedDesignId?: string;
@@ -61,6 +63,9 @@ export default function Admin() {
   const [timeframe, setTimeframe] = useState<'today' | 'yesterday' | 'l7d' | 'l30d' | 'lifetime'>('l30d');
   
   const [selectedEventForQR, setSelectedEventForQR] = useState<EventData | null>(null);
+  const [editingEvent, setEditingEvent] = useState<EventData | null>(null);
+  const [editAmount, setEditAmount] = useState<string>('');
+  const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
     const auth = sessionStorage.getItem('adminAuth');
@@ -132,11 +137,27 @@ export default function Admin() {
     let paidOrders = 0;
 
     filteredEvents.forEach(event => {
-      const isPaid = event.paymentStatus === 'paid' || !event.paymentStatus;
+      const isPaid = event.paymentStatus === 'paid';
       if (isPaid) {
         paidOrders++;
-        const basePrice = PLAN_PRICES[event.plan] || 0;
-        const upsellPrice = getUpsellPrice(event.standsQuantity || 0, event.printedQrQuantity || 0);
+        
+        let basePrice = 0;
+        let upsellPrice = 0;
+        
+        if (event.amountPaid !== undefined) {
+          // If amountPaid is explicitly set, use it.
+          // We assume upsell price is fixed based on quantities, and base price is the rest.
+          upsellPrice = getUpsellPrice(event.standsQuantity || 0, event.printedQrQuantity || 0);
+          basePrice = Math.max(0, event.amountPaid - upsellPrice);
+        } else {
+          // Legacy calculation for events without amountPaid
+          if (event.discountCode) {
+            basePrice = 0;
+          } else {
+            basePrice = PLAN_PRICES[event.plan] || 0;
+          }
+          upsellPrice = getUpsellPrice(event.standsQuantity || 0, event.printedQrQuantity || 0);
+        }
         
         totalEventsRevenue += basePrice;
         totalUpsellsRevenue += upsellPrice;
@@ -171,11 +192,24 @@ export default function Admin() {
     }
 
     filteredEvents.forEach(event => {
-      const isPaid = event.paymentStatus === 'paid' || !event.paymentStatus;
+      const isPaid = event.paymentStatus === 'paid';
       if (isPaid && event.createdAt) {
         const dateStr = format(event.createdAt.toDate(), 'dd. MM.');
-        const basePrice = PLAN_PRICES[event.plan] || 0;
-        const upsellPrice = getUpsellPrice(event.standsQuantity || 0, event.printedQrQuantity || 0);
+        
+        let basePrice = 0;
+        let upsellPrice = 0;
+        
+        if (event.amountPaid !== undefined) {
+          upsellPrice = getUpsellPrice(event.standsQuantity || 0, event.printedQrQuantity || 0);
+          basePrice = Math.max(0, event.amountPaid - upsellPrice);
+        } else {
+          if (event.discountCode) {
+            basePrice = 0;
+          } else {
+            basePrice = PLAN_PRICES[event.plan] || 0;
+          }
+          upsellPrice = getUpsellPrice(event.standsQuantity || 0, event.printedQrQuantity || 0);
+        }
         
         if (dataMap.has(dateStr)) {
           const existing = dataMap.get(dateStr)!;
@@ -189,6 +223,35 @@ export default function Admin() {
 
     return Array.from(dataMap.values()).reverse(); // Reverse if lifetime to show oldest first, or keep chronological
   }, [filteredEvents, timeframe]);
+
+  const handleUpdatePayment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingEvent) return;
+    
+    setIsUpdating(true);
+    try {
+      const amount = parseFloat(editAmount);
+      await updateDoc(doc(db, 'events', editingEvent.id), {
+        paymentStatus: 'paid',
+        amountPaid: isNaN(amount) ? 0 : amount
+      });
+      
+      // Update local state
+      setEvents(events.map(ev => 
+        ev.id === editingEvent.id 
+          ? { ...ev, paymentStatus: 'paid', amountPaid: isNaN(amount) ? 0 : amount } 
+          : ev
+      ));
+      
+      setEditingEvent(null);
+      setEditAmount('');
+    } catch (err) {
+      console.error("Error updating payment:", err);
+      alert("Napaka pri posodabljanju statusa.");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   if (!isAuthenticated) {
     return (
@@ -397,19 +460,32 @@ export default function Admin() {
                       </td>
                       <td className="px-6 py-4">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          (event.paymentStatus === 'paid' || !event.paymentStatus) ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                          event.paymentStatus === 'paid' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
                         }`}>
-                          {(event.paymentStatus === 'paid' || !event.paymentStatus) ? 'Plačano' : 'V čakanju'}
+                          {event.paymentStatus === 'paid' ? 'Plačano' : 'V čakanju'}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <button
-                          onClick={() => setSelectedEventForQR(event)}
-                          className="inline-flex items-center justify-center gap-2 px-3 py-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-lg text-xs font-medium transition-colors"
-                        >
-                          <QrCode className="w-4 h-4" />
-                          QR Koda
-                        </button>
+                        <div className="flex items-center justify-end gap-2">
+                          {event.paymentStatus !== 'paid' && (
+                            <button
+                              onClick={() => {
+                                setEditingEvent(event);
+                                setEditAmount(total.toString());
+                              }}
+                              className="inline-flex items-center justify-center px-3 py-1.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 rounded-lg text-xs font-medium transition-colors"
+                            >
+                              Označi kot plačano
+                            </button>
+                          )}
+                          <button
+                            onClick={() => setSelectedEventForQR(event)}
+                            className="inline-flex items-center justify-center gap-2 px-3 py-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-lg text-xs font-medium transition-colors"
+                          >
+                            <QrCode className="w-4 h-4" />
+                            QR Koda
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -436,6 +512,47 @@ export default function Admin() {
           eventUrl={`${window.location.origin}/event/${selectedEventForQR.id}`}
           initialDesignId={selectedEventForQR.selectedDesignId}
         />
+      )}
+      {/* Edit Payment Modal */}
+      {editingEvent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+            <div className="p-6 border-b border-gray-100">
+              <h3 className="text-xl font-bold text-gray-900">Označi kot plačano</h3>
+              <p className="text-sm text-gray-500 mt-1">Dogodek: {editingEvent.eventName}</p>
+            </div>
+            <form onSubmit={handleUpdatePayment} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Plačan znesek (€)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={editAmount}
+                  onChange={(e) => setEditAmount(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                  required
+                />
+                <p className="text-xs text-gray-500 mt-2">Vnesi 0, če je bil uporabljen 100% popust.</p>
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setEditingEvent(null)}
+                  className="flex-1 px-4 py-3 border border-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors"
+                >
+                  Prekliči
+                </button>
+                <button
+                  type="submit"
+                  disabled={isUpdating}
+                  className="flex-1 px-4 py-3 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50"
+                >
+                  {isUpdating ? 'Shranjujem...' : 'Shrani'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );
