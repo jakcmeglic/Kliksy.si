@@ -1073,6 +1073,11 @@ function StripePaymentForm({
         elements,
         confirmParams: {
           return_url: `${window.location.origin}/dashboard?eventId=${docRef.id}&success=true`,
+          payment_method_data: {
+            billing_details: {
+              email: user.email || undefined,
+            }
+          }
         },
       });
 
