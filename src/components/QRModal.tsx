@@ -54,11 +54,18 @@ export default function QRModal({ isOpen, onClose, event, eventUrl, initialDesig
         }
       }
 
+      // Wait a moment for fonts and SVG to fully render
+      await new Promise(resolve => setTimeout(resolve, 500));
+
       // Capture the hidden element using html-to-image to support modern CSS like oklch
       const imgData = await htmlToImage.toJpeg(printRef.current, {
         quality: 0.9,
         pixelRatio: 2, // Equivalent to scale: 2
         backgroundColor: selected.bg,
+        style: {
+          transform: 'scale(1)',
+          transformOrigin: 'top left'
+        }
       });
 
       if (!imgData || imgData === 'data:,') {
@@ -235,7 +242,7 @@ export default function QRModal({ isOpen, onClose, event, eventUrl, initialDesig
             {selected.render({
               event,
               eventUrl,
-              QRCodeComponent: QRCodeCanvas,
+              QRCodeComponent: QRCodeSVG, // Use SVG instead of Canvas for better rendering with html-to-image
               qrSize: 180,
               isPrint: true
             })}
