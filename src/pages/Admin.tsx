@@ -17,9 +17,11 @@ interface EventData {
   id: string;
   eventName: string;
   eventType: string;
+  partner1?: string;
+  partner2?: string;
   date: string;
   email: string;
-  plan: 'basic' | 'standard' | 'premium';
+  plan: 'basic' | 'plus' | 'premium';
   deliveryMode: 'self_print' | 'home_delivery';
   standsQuantity: number;
   printedQrQuantity: number;
@@ -38,17 +40,29 @@ interface EventData {
 
 const PLAN_PRICES = {
   basic: 39,
-  standard: 79,
-  premium: 149
+  plus: 49,
+  premium: 79
 };
 
-const getUpsellPrice = (stands: number, printed: number) => {
+const getUpsellPrice = (stands: number, printed: number, deliveryMode: string = 'self_print') => {
   let price = 0;
-  if (stands > 0) price += stands * 15.99;
-  if (printed === 5) price += 19.99;
-  else if (printed === 10) price += 29.99;
-  else if (printed === 20) price += 39.99;
-  else if (printed === 30) price += 49.99;
+  if (deliveryMode === 'home_delivery') {
+    if (printed === 5) price += 19.99;
+    else if (printed === 10) price += 29.99;
+    else if (printed === 20) price += 39.99;
+    else if (printed === 30) price += 49.99;
+    else if (printed > 0) price += 19.99;
+
+    if (stands === 5) price += 4.99;
+    else if (stands === 10) price += 9.99;
+    else if (stands === 20) price += 12.99;
+    else if (stands === 30) price += 14.99;
+  } else {
+    if (stands === 5) price += 19.99;
+    else if (stands === 10) price += 24.99;
+    else if (stands === 20) price += 29.99;
+    else if (stands === 30) price += 34.99;
+  }
   return price;
 };
 
@@ -146,8 +160,7 @@ export default function Admin() {
         
         if (event.amountPaid !== undefined) {
           // If amountPaid is explicitly set, use it.
-          // We assume upsell price is fixed based on quantities, and base price is the rest.
-          upsellPrice = getUpsellPrice(event.standsQuantity || 0, event.printedQrQuantity || 0);
+          upsellPrice = getUpsellPrice(event.standsQuantity || 0, event.printedQrQuantity || 0, event.deliveryMode);
           basePrice = Math.max(0, event.amountPaid - upsellPrice);
         } else {
           // Legacy calculation for events without amountPaid
@@ -156,7 +169,7 @@ export default function Admin() {
           } else {
             basePrice = PLAN_PRICES[event.plan] || 0;
           }
-          upsellPrice = getUpsellPrice(event.standsQuantity || 0, event.printedQrQuantity || 0);
+          upsellPrice = getUpsellPrice(event.standsQuantity || 0, event.printedQrQuantity || 0, event.deliveryMode);
         }
         
         totalEventsRevenue += basePrice;
@@ -200,7 +213,7 @@ export default function Admin() {
         let upsellPrice = 0;
         
         if (event.amountPaid !== undefined) {
-          upsellPrice = getUpsellPrice(event.standsQuantity || 0, event.printedQrQuantity || 0);
+          upsellPrice = getUpsellPrice(event.standsQuantity || 0, event.printedQrQuantity || 0, event.deliveryMode);
           basePrice = Math.max(0, event.amountPaid - upsellPrice);
         } else {
           if (event.discountCode) {
@@ -208,7 +221,7 @@ export default function Admin() {
           } else {
             basePrice = PLAN_PRICES[event.plan] || 0;
           }
-          upsellPrice = getUpsellPrice(event.standsQuantity || 0, event.printedQrQuantity || 0);
+          upsellPrice = getUpsellPrice(event.standsQuantity || 0, event.printedQrQuantity || 0, event.deliveryMode);
         }
         
         if (dataMap.has(dateStr)) {
@@ -420,10 +433,10 @@ export default function Admin() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {events.map((event) => {
+                {filteredEvents.map((event) => {
                   const basePrice = PLAN_PRICES[event.plan] || 0;
-                  const upsellPrice = getUpsellPrice(event.standsQuantity || 0, event.printedQrQuantity || 0);
-                  const total = basePrice + upsellPrice;
+                  const upsellPrice = getUpsellPrice(event.standsQuantity || 0, event.printedQrQuantity || 0, event.deliveryMode);
+                  const total = event.amountPaid !== undefined ? event.amountPaid : (basePrice + upsellPrice);
                   
                   return (
                     <tr key={event.id} className="hover:bg-gray-50 transition-colors">
