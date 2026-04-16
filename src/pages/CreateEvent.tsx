@@ -30,7 +30,10 @@ export default function CreateEvent() {
     isCompanyInvoice: false,
     companyName: '',
     companyAddress: '',
-    companyTaxId: ''
+    companyTaxId: '',
+    deliveryAddress: '',
+    deliveryCity: '',
+    deliveryPostcode: ''
   });
   const [expandedPlan, setExpandedPlan] = useState<Plan | null>(initialPlan);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -224,6 +227,9 @@ export default function CreateEvent() {
         companyName: formData.isCompanyInvoice ? formData.companyName : null,
         companyAddress: formData.isCompanyInvoice ? formData.companyAddress : null,
         companyTaxId: formData.isCompanyInvoice ? formData.companyTaxId : null,
+        deliveryAddress: deliveryMode === 'home_delivery' ? formData.deliveryAddress : null,
+        deliveryCity: deliveryMode === 'home_delivery' ? formData.deliveryCity : null,
+        deliveryPostcode: deliveryMode === 'home_delivery' ? formData.deliveryPostcode : null,
         ownerId: user.uid,
         createdAt: serverTimestamp(),
         paymentStatus: 'paid'
@@ -667,7 +673,7 @@ export default function CreateEvent() {
                           >
                             <div className="pt-2 border-t border-indigo-100/50">
                               <p className="text-sm font-medium mb-2 text-gray-700">Število natisnjenih QR kod:</p>
-                              <div className="grid grid-cols-4 gap-2">
+                              <div className="grid grid-cols-4 gap-2 mb-4">
                                 {[5, 10, 20, 30].map((qty) => (
                                   <button
                                     key={qty}
@@ -679,6 +685,35 @@ export default function CreateEvent() {
                                     {qty}
                                   </button>
                                 ))}
+                              </div>
+                              
+                              <div className="space-y-3 pt-4 border-t border-indigo-100/50">
+                                <p className="text-sm font-medium text-gray-700">Naslov za dostavo:</p>
+                                <div>
+                                  <input
+                                    type="text"
+                                    placeholder="Ulica in hišna številka"
+                                    value={formData.deliveryAddress}
+                                    onChange={(e) => setFormData({...formData, deliveryAddress: e.target.value})}
+                                    className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-black focus:border-black outline-none transition-all text-sm"
+                                  />
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                  <input
+                                    type="text"
+                                    placeholder="Poštna številka"
+                                    value={formData.deliveryPostcode}
+                                    onChange={(e) => setFormData({...formData, deliveryPostcode: e.target.value})}
+                                    className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-black focus:border-black outline-none transition-all text-sm"
+                                  />
+                                  <input
+                                    type="text"
+                                    placeholder="Mesto"
+                                    value={formData.deliveryCity}
+                                    onChange={(e) => setFormData({...formData, deliveryCity: e.target.value})}
+                                    className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-black focus:border-black outline-none transition-all text-sm"
+                                  />
+                                </div>
                               </div>
                             </div>
                           </motion.div>
@@ -1000,6 +1035,9 @@ function StripePaymentForm({
         companyName: formData.isCompanyInvoice ? formData.companyName : null,
         companyAddress: formData.isCompanyInvoice ? formData.companyAddress : null,
         companyTaxId: formData.isCompanyInvoice ? formData.companyTaxId : null,
+        deliveryAddress: deliveryMode === 'home_delivery' ? formData.deliveryAddress : null,
+        deliveryCity: deliveryMode === 'home_delivery' ? formData.deliveryCity : null,
+        deliveryPostcode: deliveryMode === 'home_delivery' ? formData.deliveryPostcode : null,
         ownerId: user.uid,
         createdAt: serverTimestamp(),
         paymentStatus: 'pending'

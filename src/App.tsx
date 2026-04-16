@@ -4,6 +4,7 @@ import CreateEvent from './pages/CreateEvent';
 import GuestView from './pages/GuestView';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
+import Admin from './pages/Admin';
 import { AuthProvider } from './components/AuthProvider';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
@@ -17,6 +18,7 @@ export default function App() {
             <Route path="/create" element={<CreateEvent />} />
             <Route path="/event/:id" element={<GuestView />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/admin" element={<Admin />} />
             <Route path="/login" element={<Login />} />
           </Routes>
         </BrowserRouter>

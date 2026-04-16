@@ -4,6 +4,8 @@ import { X, Download, Loader2 } from 'lucide-react';
 import { QRCodeSVG, QRCodeCanvas } from 'qrcode.react';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
+import { doc, updateDoc } from 'firebase/firestore';
+import { db } from '../firebase';
 
 import { DESIGNS } from './QRDesigns';
 
@@ -14,11 +16,12 @@ interface QRModalProps {
   onClose: () => void;
   event: any;
   eventUrl: string;
+  initialDesignId?: string;
 }
 
-export default function QRModal({ isOpen, onClose, event, eventUrl }: QRModalProps) {
+export default function QRModal({ isOpen, onClose, event, eventUrl, initialDesignId }: QRModalProps) {
   const [activeCategory, setActiveCategory] = useState(CATEGORIES[0]);
-  const [selectedDesignId, setSelectedDesignId] = useState(DESIGNS[0].id);
+  const [selectedDesignId, setSelectedDesignId] = useState(initialDesignId || DESIGNS[0].id);
   const [isGenerating, setIsGenerating] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -31,6 +34,17 @@ export default function QRModal({ isOpen, onClose, event, eventUrl }: QRModalPro
     if (!printRef.current) return;
     setIsGenerating(true);
     try {
+      // Save selected design to Firestore
+      if (event && event.id) {
+        try {
+          await updateDoc(doc(db, 'events', event.id), {
+            selectedDesignId: selectedDesignId
+          });
+        } catch (err) {
+          console.error("Failed to save selected design:", err);
+        }
+      }
+
       // Capture the hidden element
       const canvas = await html2canvas(printRef.current, {
         scale: 2, // Good balance between quality and memory
