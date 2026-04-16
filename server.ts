@@ -112,9 +112,9 @@ async function startServer() {
         else if (standsQuantity === 30) upsellAmount += 3499;
       }
 
-      if (discountCode?.toLowerCase() === 'test99') {
+      if (discountCode?.trim().toLowerCase() === 'test99') {
         amount = upsellAmount;
-      } else if (discountCode?.toLowerCase() === 'prvi50') {
+      } else if (discountCode?.trim().toLowerCase() === 'prvi50') {
         amount = Math.round((amount + upsellAmount) * 0.5);
       } else {
         amount += upsellAmount;
@@ -190,9 +190,9 @@ async function startServer() {
         else if (standsQuantity === 30) upsellAmount += 3499;
       }
 
-      if (discountCode?.toLowerCase() === 'test99') {
+      if (discountCode?.trim().toLowerCase() === 'test99') {
         amount = upsellAmount;
-      } else if (discountCode?.toLowerCase() === 'prvi50') {
+      } else if (discountCode?.trim().toLowerCase() === 'prvi50') {
         amount = Math.round((amount + upsellAmount) * 0.5);
       } else {
         amount += upsellAmount;

@@ -66,6 +66,7 @@ export default function CreateEvent() {
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [clientSecret, setClientSecret] = useState('');
   const [stripePaymentIntentId, setStripePaymentIntentId] = useState('');
+  const [isUpdatingPrice, setIsUpdatingPrice] = useState(false);
 
   const plans = {
     basic: { 
@@ -166,6 +167,9 @@ export default function CreateEvent() {
 
   useEffect(() => {
     if (step >= 3 && finalPrice > 0) {
+      let isSubscribed = true;
+      setIsUpdatingPrice(true);
+      
       const fetchClientSecret = async () => {
         try {
           setStripeError('');
@@ -181,6 +185,8 @@ export default function CreateEvent() {
             })
           });
           
+          if (!isSubscribed) return;
+
           const contentType = res.headers.get("content-type");
           if (contentType && contentType.indexOf("application/json") !== -1) {
             const data = await res.json();
@@ -198,8 +204,13 @@ export default function CreateEvent() {
             setStripeError(`Napaka strežnika: API zahtevki ne pridejo do Node.js zaledja. Hostinger (Apache/Nginx) verjetno prestreza zahtevek in vrača HTML. Preverite .htaccess ali nastavitve usmerjanja na Hostingerju.`);
           }
         } catch (err: any) {
+          if (!isSubscribed) return;
           console.error(err);
           setStripeError(err.message || 'Napaka pri povezavi s strežnikom.');
+        } finally {
+          if (isSubscribed) {
+            setIsUpdatingPrice(false);
+          }
         }
       };
       
@@ -208,9 +219,12 @@ export default function CreateEvent() {
         fetchClientSecret();
       }, 500);
       
-      return () => clearTimeout(timeoutId);
+      return () => {
+        clearTimeout(timeoutId);
+        isSubscribed = false;
+      };
     }
-  }, [step, finalPrice, formData.plan, discountApplied, deliveryMode, standsQuantity, printedQrQuantity]);
+  }, [step, finalPrice, formData.plan, discountApplied, discountCode, deliveryMode, standsQuantity, printedQrQuantity]);
 
   const handleCheckoutFree = async () => {
     if (!user || user.isAnonymous) {
@@ -955,6 +969,7 @@ export default function CreateEvent() {
                             discountApplied={discountApplied}
                             discountCode={discountCode}
                             stripePaymentIntentId={stripePaymentIntentId}
+                            isUpdatingPrice={isUpdatingPrice}
                           />
                         </Elements>
                       ) : stripeError ? (
@@ -1027,7 +1042,8 @@ function StripePaymentForm({
   finalPrice,
   discountApplied,
   discountCode,
-  stripePaymentIntentId
+  stripePaymentIntentId,
+  isUpdatingPrice
 }: any) {
   const stripe = useStripe();
   const elements = useElements();
@@ -1108,13 +1124,13 @@ function StripePaymentForm({
       </div>
       <button 
         type="submit"
-        disabled={isProcessing || !stripe || !elements}
+        disabled={isProcessing || !stripe || !elements || isUpdatingPrice}
         className="w-full bg-gray-900 text-white py-4 rounded-xl font-medium hover:bg-black transition-colors flex items-center justify-center gap-2 mt-8 disabled:opacity-70"
       >
-        {isProcessing ? (
+        {isProcessing || isUpdatingPrice ? (
           <span className="flex items-center gap-2">
             <Loader2 className="w-5 h-5 animate-spin" />
-            Obdelujem...
+            {isUpdatingPrice ? 'Osvežujem ceno...' : 'Obdelujem...'}
           </span>
         ) : (
           <span className="flex items-center gap-2">
