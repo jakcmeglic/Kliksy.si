@@ -23,7 +23,16 @@ export default function QRModal({ isOpen, onClose, event, eventUrl, initialDesig
   const [activeCategory, setActiveCategory] = useState(CATEGORIES[0]);
   const [selectedDesignId, setSelectedDesignId] = useState(initialDesignId || DESIGNS[0].id);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedPdfUrl, setGeneratedPdfUrl] = useState<{url: string, filename: string} | null>(null);
   const printRef = useRef<HTMLDivElement>(null);
+
+  // Reset generated PDF when design changes
+  React.useEffect(() => {
+    if (generatedPdfUrl) {
+      URL.revokeObjectURL(generatedPdfUrl.url);
+      setGeneratedPdfUrl(null);
+    }
+  }, [selectedDesignId, activeCategory]);
 
   if (!isOpen || !event) return null;
 
@@ -54,6 +63,9 @@ export default function QRModal({ isOpen, onClose, event, eventUrl, initialDesig
       });
 
       const imgData = canvas.toDataURL('image/jpeg', 0.9);
+      if (imgData === 'data:,') {
+        throw new Error("Canvas je prazen (napaka pri izrisu)");
+      }
       
       // Create A4 PDF
       const pdf = new jsPDF({
@@ -77,45 +89,12 @@ export default function QRModal({ isOpen, onClose, event, eventUrl, initialDesig
       const filename = `QR-Listici-${eventNameStr}.pdf`;
       const pdfBlob = pdf.output('blob');
       
-      // Try Web Share API first for mobile devices
-      let shared = false;
-      if (navigator.canShare) {
-        const file = new File([pdfBlob], filename, { type: 'application/pdf' });
-        if (navigator.canShare({ files: [file] })) {
-          try {
-            await navigator.share({
-              files: [file],
-              title: 'QR Lističi',
-              text: 'Tukaj so QR lističi za dogodek!',
-            });
-            shared = true;
-          } catch (shareError) {
-            console.log("Share cancelled or failed, falling back to download", shareError);
-          }
-        }
-      }
+      const url = URL.createObjectURL(pdfBlob);
+      setGeneratedPdfUrl({ url, filename });
       
-      // Standard save fallback if share wasn't successful
-      if (!shared) {
-        try {
-          pdf.save(filename);
-        } catch (saveError) {
-          console.warn("Standard save failed, trying fallback...", saveError);
-          const url = URL.createObjectURL(pdfBlob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = filename;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          setTimeout(() => URL.revokeObjectURL(url), 100);
-        }
-      }
-      
-      onClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Napaka pri generiranju PDF:", error);
-      alert("Prišlo je do napake pri generiranju PDF-ja. Poskusite znova ali uporabite drug brskalnik.");
+      alert(`Prišlo je do napake pri generiranju PDF-ja: ${error?.message || 'Neznana napaka'}. Poskusite znova ali uporabite drug brskalnik.`);
     } finally {
       setIsGenerating(false);
     }
@@ -199,32 +178,57 @@ export default function QRModal({ isOpen, onClose, event, eventUrl, initialDesig
           </div>
 
           {/* Footer */}
-          <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
-            <button onClick={onClose} className="px-6 py-2 rounded-xl font-medium text-gray-600 hover:bg-gray-200 transition-colors">
-              Prekliči
-            </button>
-            <button
-              onClick={generatePDF}
-              disabled={isGenerating}
-              className="px-6 py-2 rounded-xl font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-70"
-            >
-              {isGenerating ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Generiram PDF...
-                </>
-              ) : (
-                <>
-                  <Download className="w-5 h-5" />
-                  Prenesi PDF (A4)
-                </>
+          <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-between items-center gap-3">
+            <div>
+              {generatedPdfUrl && (
+                <p className="text-sm text-green-600 font-medium animate-pulse">
+                  PDF je pripravljen! Kliknite 'Prenesi zdaj'.
+                </p>
               )}
-            </button>
+            </div>
+            <div className="flex gap-3">
+              <button onClick={onClose} className="px-6 py-2 rounded-xl font-medium text-gray-600 hover:bg-gray-200 transition-colors">
+                Prekliči
+              </button>
+              
+              {generatedPdfUrl ? (
+                <a
+                  href={generatedPdfUrl.url}
+                  download={generatedPdfUrl.filename}
+                  onClick={() => {
+                    // Optional: close modal after a short delay
+                    setTimeout(onClose, 1000);
+                  }}
+                  className="px-6 py-2 rounded-xl font-medium bg-green-600 text-white hover:bg-green-700 transition-colors flex items-center gap-2"
+                >
+                  <Download className="w-5 h-5" />
+                  Prenesi zdaj
+                </a>
+              ) : (
+                <button
+                  onClick={generatePDF}
+                  disabled={isGenerating}
+                  className="px-6 py-2 rounded-xl font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-70"
+                >
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Pripravljam PDF...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="w-5 h-5" />
+                      Generiraj PDF (A4)
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
           </div>
         </motion.div>
 
         {/* Hidden high-res container for html2canvas */}
-        <div style={{ position: 'fixed', top: 0, left: 0, opacity: 0.001, pointerEvents: 'none', zIndex: -50 }} aria-hidden="true">
+        <div style={{ position: 'absolute', top: 0, left: 0, zIndex: -1, opacity: 0, pointerEvents: 'none' }} aria-hidden="true">
           <div 
             ref={printRef} 
             className="relative w-[400px] h-[566px] flex flex-col items-center justify-center overflow-hidden"
