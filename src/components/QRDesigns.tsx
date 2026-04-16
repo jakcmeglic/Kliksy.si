@@ -53,9 +53,9 @@ export const LeafFrame = ({ children, isPrint }: { children: React.ReactNode, is
 export const FloralCornerTopRight = () => (
   <svg className="absolute top-0 right-0 w-full h-full pointer-events-none" viewBox="0 0 400 600" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMaxYMin slice">
     <g opacity="0.8">
-      <circle cx="350" cy="50" r="80" fill="#FBCFE8" opacity="0.4" filter="blur(20px)" />
-      <circle cx="400" cy="150" r="60" fill="#FDE68A" opacity="0.3" filter="blur(20px)" />
-      <circle cx="280" cy="-20" r="70" fill="#A7F3D0" opacity="0.3" filter="blur(20px)" />
+      <circle cx="350" cy="50" r="80" fill="#FBCFE8" opacity="0.15" />
+      <circle cx="400" cy="150" r="60" fill="#FDE68A" opacity="0.1" />
+      <circle cx="280" cy="-20" r="70" fill="#A7F3D0" opacity="0.1" />
       
       <path d="M280 50 Q 250 80 260 120 Q 300 100 280 50" fill="#86EFAC" opacity="0.6" />
       <path d="M350 150 Q 330 190 370 210 Q 390 170 350 150" fill="#86EFAC" opacity="0.6" />
@@ -78,9 +78,9 @@ export const FloralCornerTopRight = () => (
 export const FloralCornerBottomLeft = () => (
   <svg className="absolute bottom-0 left-0 w-full h-full pointer-events-none" viewBox="0 0 400 600" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMax slice">
     <g opacity="0.8">
-      <circle cx="50" cy="550" r="80" fill="#FBCFE8" opacity="0.4" filter="blur(20px)" />
-      <circle cx="0" cy="450" r="60" fill="#FDE68A" opacity="0.3" filter="blur(20px)" />
-      <circle cx="120" cy="620" r="70" fill="#A7F3D0" opacity="0.3" filter="blur(20px)" />
+      <circle cx="50" cy="550" r="80" fill="#FBCFE8" opacity="0.15" />
+      <circle cx="0" cy="450" r="60" fill="#FDE68A" opacity="0.1" />
+      <circle cx="120" cy="620" r="70" fill="#A7F3D0" opacity="0.1" />
       
       <path d="M120 550 Q 150 520 140 480 Q 100 500 120 550" fill="#86EFAC" opacity="0.6" />
       <path d="M50 450 Q 70 410 30 390 Q 10 430 50 450" fill="#86EFAC" opacity="0.6" />
@@ -386,7 +386,7 @@ export const DESIGNS = [
       const date = new Date(event.date).toLocaleDateString('sl-SI');
       return (
         <div className="relative w-full h-full flex flex-col items-center justify-between p-8 text-center z-10 bg-yellow-50 overflow-hidden">
-          <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(#ca8a04 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
+          <div className="absolute inset-0 opacity-10 bg-yellow-600"></div>
           <div className="w-full flex flex-col items-center mt-8 z-10 bg-white/80 py-4 px-8 rounded-full shadow-sm backdrop-blur-sm">
             <h1 className={`font-serif text-yellow-900 font-bold ${isPrint ? 'text-4xl' : 'text-xl'}`}>{title}</h1>
           </div>
@@ -683,7 +683,7 @@ export const DESIGNS = [
         <div className="relative w-full h-full flex flex-col items-center justify-center p-8 text-center z-10 bg-zinc-900">
           <div className="absolute inset-6 border-2 border-pink-500 rounded-2xl opacity-50 pointer-events-none"></div>
           
-          <h1 className={`font-sans text-pink-400 ${isPrint ? 'text-5xl mb-10' : 'text-2xl mb-6'} font-black uppercase tracking-widest drop-shadow-[0_0_10px_rgba(236,72,153,0.8)]`}>
+          <h1 className={`font-sans text-pink-400 ${isPrint ? 'text-5xl mb-10' : 'text-2xl mb-6'} font-black uppercase tracking-widest`} style={{ textShadow: '0 0 10px rgba(236,72,153,0.8)' }}>
             Deli fotke<br/>z nami!
           </h1>
           
@@ -849,9 +849,9 @@ export const DESIGNS = [
       const title = event.eventName || 'Poslovni dogodek';
       return (
         <div className="relative w-full h-full flex flex-col items-center justify-between p-8 text-center z-10 bg-zinc-700 overflow-hidden">
-          <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'repeating-linear-gradient(45deg, #000 0, #000 1px, transparent 0, transparent 50%)', backgroundSize: '10px 10px' }}></div>
+          <div className="absolute inset-0 opacity-10 bg-black"></div>
           <div className="w-full flex flex-col items-center mt-10 z-10 bg-zinc-500/80 py-4 px-8 rounded-xl backdrop-blur-sm shadow-lg">
-            <h1 className={`font-sans text-white font-bold tracking-wide drop-shadow-md ${isPrint ? 'text-3xl' : 'text-lg'}`}>{title}</h1>
+            <h1 className={`font-sans text-white font-bold tracking-wide ${isPrint ? 'text-3xl' : 'text-lg'}`} style={{ textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>{title}</h1>
           </div>
           <div className="flex flex-col items-center z-10 mt-4">
             <p className={`font-sans text-zinc-200 font-medium mb-6 ${isPrint ? 'text-xl px-10' : 'text-xs px-2'}`}>Vaše fotografije bogatijo naš dogodek. Skenirajte in delite.</p>
