@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Download, Loader2 } from 'lucide-react';
 import { QRCodeSVG, QRCodeCanvas } from 'qrcode.react';
 import { jsPDF } from 'jspdf';
-import html2canvas from 'html2canvas';
+import * as htmlToImage from 'html-to-image';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 
@@ -54,17 +54,15 @@ export default function QRModal({ isOpen, onClose, event, eventUrl, initialDesig
         }
       }
 
-      // Capture the hidden element
-      const canvas = await html2canvas(printRef.current, {
-        scale: 2, // Good balance between quality and memory
-        useCORS: true,
-        logging: false,
+      // Capture the hidden element using html-to-image to support modern CSS like oklch
+      const imgData = await htmlToImage.toJpeg(printRef.current, {
+        quality: 0.9,
+        pixelRatio: 2, // Equivalent to scale: 2
         backgroundColor: selected.bg,
       });
 
-      const imgData = canvas.toDataURL('image/jpeg', 0.9);
-      if (imgData === 'data:,') {
-        throw new Error("Canvas je prazen (napaka pri izrisu)");
+      if (!imgData || imgData === 'data:,') {
+        throw new Error("Slika je prazna (napaka pri izrisu)");
       }
       
       // Create A4 PDF
@@ -227,7 +225,7 @@ export default function QRModal({ isOpen, onClose, event, eventUrl, initialDesig
           </div>
         </motion.div>
 
-        {/* Hidden high-res container for html2canvas */}
+        {/* Hidden high-res container for html-to-image */}
         <div style={{ position: 'absolute', top: 0, left: 0, zIndex: -1, opacity: 0, pointerEvents: 'none' }} aria-hidden="true">
           <div 
             ref={printRef} 
