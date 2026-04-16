@@ -5,6 +5,7 @@ import GuestView from './pages/GuestView';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Admin from './pages/Admin';
+import EmailTest from './pages/EmailTest';
 import { AuthProvider } from './components/AuthProvider';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
@@ -20,6 +21,7 @@ export default function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/email-test" element={<EmailTest />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>
