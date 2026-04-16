@@ -26,6 +26,60 @@ async function startServer() {
     res.json(requestLogs);
   });
 
+  app.post("/api/send-welcome-email", async (req, res) => {
+    const { email, displayName } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({ error: "Email is required" });
+    }
+
+    const smtpHost = process.env.SMTP_HOST;
+    const smtpPort = Number(process.env.SMTP_PORT) || 587;
+    const smtpUser = process.env.SMTP_USER;
+    const smtpPass = process.env.SMTP_PASS;
+
+    if (!smtpHost || !smtpUser || !smtpPass) {
+      console.warn("SMTP configuration missing. Skipping welcome email.");
+      return res.json({ success: false, message: "SMTP not configured" });
+    }
+
+    try {
+      const nodemailer = await import("nodemailer");
+      const transporter = nodemailer.createTransport({
+        host: smtpHost,
+        port: smtpPort,
+        secure: smtpPort === 465,
+        auth: {
+          user: smtpUser,
+          pass: smtpPass,
+        },
+      });
+
+      const mailOptions = {
+        from: `"Kliksy" <${smtpUser}>`,
+        to: email,
+        subject: "Dobrodošli pri Kliksy!",
+        html: `
+          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+            <h1 style="color: #4f46e5;">Dobrodošli pri Kliksy!</h1>
+            <p>Pozdravljeni ${displayName || ''},</p>
+            <p>Hvala, ker ste se registrirali pri Kliksy. Veseli smo, da ste se nam pridružili!</p>
+            <p>Z našo aplikacijo lahko preprosto ustvarite unikatne QR kode za vaše dogodke in zbirate fotografije vaših gostov na enem mestu.</p>
+            <p>Če imate kakršna koli vprašanja, nam preprosto odgovorite na ta email.</p>
+            <br />
+            <p>Lep pozdrav,<br />Ekipa Kliksy</p>
+          </div>
+        `,
+      };
+
+      await transporter.sendMail(mailOptions);
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Error sending welcome email:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // API routes FIRST
   app.post("/api/create-checkout-session", async (req, res) => {
     try {

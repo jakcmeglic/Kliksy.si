@@ -22,6 +22,20 @@ export const createUserProfile = async (user: any) => {
         photoURL: user.photoURL || '',
         createdAt: serverTimestamp(),
       });
+
+      // Send welcome email via API
+      try {
+        fetch('/api/send-welcome-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            email: user.email, 
+            displayName: user.displayName || '' 
+          })
+        }).catch(err => console.error("Failed to trigger welcome email:", err));
+      } catch (e) {
+        console.error("Error in welcome email trigger:", e);
+      }
     }
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, `users/${user.uid}`);
