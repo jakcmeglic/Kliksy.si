@@ -52,9 +52,9 @@ export default function CreateEvent() {
   const [viewingImage, setViewingImage] = useState<number | null>(null);
 
   const standImages = [
-    "/hf_20260402_042506_9c8ed65f-ea7f-49b0-a82b-514d73de11e0.png",
-    "/hf_20260402_042524_4ac5d4b1-0070-45c3-b3c4-75f0f1a9fb14.png",
-    "/hf_20260402_042605_6a668101-3fa9-4d41-849a-41503b830156.png"
+    "https://i.postimg.cc/BQH9hJr5/hf-20260402-042506-9c8ed65f-ea7f-49b0-a82b-514d73de11e0.png",
+    "https://i.postimg.cc/Qx1G6j2S/hf-20260402-042524-4ac5d4b1-0070-45c3-b3c4-75f0f1a9fb14.png",
+    "https://i.postimg.cc/HsXDSTqz/hf-20260402-042605-6a668101-3fa9-4d41-849a-41503b830156.png"
   ];
 
   // Discount states
