@@ -132,7 +132,8 @@ export default function Admin() {
     let paidOrders = 0;
 
     filteredEvents.forEach(event => {
-      if (event.paymentStatus === 'paid') {
+      const isPaid = event.paymentStatus === 'paid' || !event.paymentStatus;
+      if (isPaid) {
         paidOrders++;
         const basePrice = PLAN_PRICES[event.plan] || 0;
         const upsellPrice = getUpsellPrice(event.standsQuantity || 0, event.printedQrQuantity || 0);
@@ -170,7 +171,8 @@ export default function Admin() {
     }
 
     filteredEvents.forEach(event => {
-      if (event.paymentStatus === 'paid' && event.createdAt) {
+      const isPaid = event.paymentStatus === 'paid' || !event.paymentStatus;
+      if (isPaid && event.createdAt) {
         const dateStr = format(event.createdAt.toDate(), 'dd. MM.');
         const basePrice = PLAN_PRICES[event.plan] || 0;
         const upsellPrice = getUpsellPrice(event.standsQuantity || 0, event.printedQrQuantity || 0);
@@ -395,9 +397,9 @@ export default function Admin() {
                       </td>
                       <td className="px-6 py-4">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          event.paymentStatus === 'paid' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                          (event.paymentStatus === 'paid' || !event.paymentStatus) ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
                         }`}>
-                          {event.paymentStatus === 'paid' ? 'Plačano' : 'V čakanju'}
+                          {(event.paymentStatus === 'paid' || !event.paymentStatus) ? 'Plačano' : 'V čakanju'}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right">
