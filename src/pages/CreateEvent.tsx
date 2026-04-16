@@ -155,7 +155,14 @@ export default function CreateEvent() {
     else if (standsQuantity === 30) upsellPrice += 34.99;
   }
 
-  const finalPrice = (discountApplied ? 0 : originalPrice) + upsellPrice;
+  let finalPrice = originalPrice + upsellPrice;
+  if (discountApplied) {
+    if (discountCode.toLowerCase() === 'test99') {
+      finalPrice = upsellPrice;
+    } else if (discountCode.toLowerCase() === 'prvi50') {
+      finalPrice = finalPrice * 0.5;
+    }
+  }
 
   useEffect(() => {
     if (step >= 3 && finalPrice > 0) {
@@ -167,7 +174,7 @@ export default function CreateEvent() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
               plan: formData.plan, 
-              discountCode: discountApplied ? 'test99' : '',
+              discountCode: discountApplied ? discountCode : '',
               deliveryMode,
               standsQuantity,
               printedQrQuantity
@@ -830,7 +837,8 @@ export default function CreateEvent() {
                             setDiscountApplied(false);
                             setDiscountCode('');
                           } else {
-                            if (discountCode.toLowerCase() === 'test99') {
+                            const code = discountCode.toLowerCase();
+                            if (code === 'test99' || code === 'prvi50') {
                               setDiscountApplied(true);
                               setDiscountError('');
                             } else {
@@ -844,7 +852,8 @@ export default function CreateEvent() {
                       </button>
                     </div>
                     {discountError && <p className="text-red-500 text-sm mt-2">{discountError}</p>}
-                    {discountApplied && <p className="text-green-600 text-sm mt-2">Koda uspešno unovčena! (-100%)</p>}
+                    {discountApplied && discountCode.toLowerCase() === 'test99' && <p className="text-green-600 text-sm mt-2">Koda uspešno unovčena! (-100% na osnovni paket)</p>}
+                    {discountApplied && discountCode.toLowerCase() === 'prvi50' && <p className="text-green-600 text-sm mt-2">Koda uspešno unovčena! (-50% na celoten znesek)</p>}
                   </div>
 
                   <div className="mb-4 pb-4 border-b border-gray-200">

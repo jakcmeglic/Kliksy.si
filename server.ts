@@ -39,10 +39,6 @@ async function startServer() {
 
       let amount = plans[plan as keyof typeof plans] || 4900;
 
-      if (discountCode?.toLowerCase() === 'test99') {
-        amount = 0;
-      }
-
       let upsellAmount = 0;
       if (deliveryMode === 'home_delivery') {
         if (printedQrQuantity === 5) upsellAmount += 1999;
@@ -62,7 +58,13 @@ async function startServer() {
         else if (standsQuantity === 30) upsellAmount += 3499;
       }
 
-      amount += upsellAmount;
+      if (discountCode?.toLowerCase() === 'test99') {
+        amount = upsellAmount;
+      } else if (discountCode?.toLowerCase() === 'prvi50') {
+        amount = Math.round((amount + upsellAmount) * 0.5);
+      } else {
+        amount += upsellAmount;
+      }
 
       if (amount === 0) {
         return res.json({ url: successUrl, free: true });
@@ -115,10 +117,6 @@ async function startServer() {
 
       let amount = plans[plan as keyof typeof plans] || 4900;
 
-      if (discountCode?.toLowerCase() === 'test99') {
-        amount = 0;
-      }
-
       let upsellAmount = 0;
       if (deliveryMode === 'home_delivery') {
         if (printedQrQuantity === 5) upsellAmount += 1999;
@@ -138,7 +136,13 @@ async function startServer() {
         else if (standsQuantity === 30) upsellAmount += 3499;
       }
 
-      amount += upsellAmount;
+      if (discountCode?.toLowerCase() === 'test99') {
+        amount = upsellAmount;
+      } else if (discountCode?.toLowerCase() === 'prvi50') {
+        amount = Math.round((amount + upsellAmount) * 0.5);
+      } else {
+        amount += upsellAmount;
+      }
 
       if (amount === 0) {
         return res.json({ clientSecret: null, free: true });
