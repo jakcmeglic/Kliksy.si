@@ -247,48 +247,203 @@ export const DESIGNS = [
       );
     }
   },
+
   {
-    id: 'w4', category: 'Poročni', name: 'Noč za spomine (Po meri)', bg: '#ffffff',
+    id: 'w5', category: 'Poročni', name: 'Luksuz: Kraljevo Modra', bg: '#0f172a',
     render: ({ event, eventUrl, QRCodeComponent, qrSize, isPrint }: DesignProps) => {
       const title = event.eventType === 'poroka' || !event.eventType ? `${event.partner1} & ${event.partner2}` : event.eventName;
       const date = new Date(event.date).toLocaleDateString('sl-SI');
-      
       return (
-        <div className="relative w-full h-full flex flex-col items-center justify-center z-10 bg-white overflow-hidden">
-          {/* Ozadje - slika, ki jo naloži uporabnik */}
-          <img 
-            src="https://raw.githubusercontent.com/jakcmeglic/Kliksy.si/88eed03337e18f3e03a77a25db4b8d9e018dfe69/public/template-custom.png" 
-            alt="Custom Template Background" 
-            className="absolute inset-0 w-full h-full object-cover z-0"
-            onError={(e) => {
-              // Fallback, če slika še ni naložena
-              (e.target as HTMLImageElement).style.display = 'none';
-            }}
-          />
-          
-          {/* Fallback ozadje, če slike ni */}
-          <div className="absolute inset-0 bg-gray-100 z-[-1] flex items-center justify-center text-gray-400 text-sm text-center px-4">
-            Slika ozadja manjka.<br/>Naloži 'template-custom.png' v mapo 'public'.
+        <div className="relative w-full h-full flex flex-col items-center justify-between p-8 text-center z-10 bg-slate-900 border-8 border-slate-800 overflow-hidden">
+          <div className="w-full flex flex-col items-center mt-4">
+            <h1 className={`font-serif text-yellow-500 font-bold ${isPrint ? 'text-5xl' : 'text-2xl'}`}>{title}</h1>
+            <p className={`font-sans text-slate-300 tracking-widest uppercase ${isPrint ? 'text-xl mt-4' : 'text-xs mt-2'}`}>{date}</p>
           </div>
-
-          {/* Dinamična vsebina */}
-          <div className="absolute inset-0 z-10 flex flex-col items-center w-full h-full">
-            
-            {/* Ime dogodka in datum - pozicionirano na ~18% od vrha */}
-            <div className="absolute top-[17%] w-full flex flex-col items-center justify-center text-center px-8">
-              <h1 className={`font-sans text-black font-black uppercase tracking-wide ${isPrint ? 'text-4xl' : 'text-xl'}`} style={{ textShadow: '2px 2px 0px white, -2px -2px 0px white, 2px -2px 0px white, -2px 2px 0px white' }}>
-                {title}
-              </h1>
-              <p className={`font-sans text-black font-bold uppercase ${isPrint ? 'text-2xl mt-2' : 'text-sm mt-1'}`} style={{ textShadow: '1px 1px 0px white, -1px -1px 0px white, 1px -1px 0px white, -1px 1px 0px white' }}>
-                {date}
-              </p>
+          <div className="flex flex-col items-center my-6">
+            <p className={`font-serif text-yellow-400 italic mb-6 ${isPrint ? 'text-2xl px-12' : 'text-sm px-4'}`}>"Ujemi trenutek. Poskeniraj in deli svoje fotografije z nama."</p>
+            <div className={`p-4 bg-white rounded-xl shadow-2xl ring-4 ring-yellow-500/30`}>
+              <QRCodeComponent value={eventUrl} size={qrSize * 1.1} bgColor="#ffffff" fgColor="#0f172a" level="Q" includeMargin={false} />
             </div>
-
-            {/* QR Koda - pozicionirana na sredini (~50% od vrha) */}
-            <div className="absolute top-[50%] left-[50%] transform -translate-x-1/2 -translate-y-1/2 bg-white p-3 rounded-xl shadow-lg">
-              <QRCodeComponent value={eventUrl} size={qrSize * 1.4} bgColor="#ffffff" fgColor="#000000" level="Q" includeMargin={false} />
+          </div>
+          <div className="mb-4">
+            <p className={`font-sans text-slate-300 uppercase tracking-widest ${isPrint ? 'text-lg' : 'text-[10px]'}`}>Hvala, ker delite najin dan</p>
+          </div>
+        </div>
+      );
+    }
+  },
+  {
+    id: 'w6', category: 'Poročni', name: 'Luksuz: Smaragdna Eleganca', bg: '#064e3b',
+    render: ({ event, eventUrl, QRCodeComponent, qrSize, isPrint }: DesignProps) => {
+      const title = event.eventType === 'poroka' || !event.eventType ? `${event.partner1} & ${event.partner2}` : event.eventName;
+      const date = new Date(event.date).toLocaleDateString('sl-SI');
+      return (
+        <div className="relative w-full h-full flex flex-col items-center justify-between p-8 text-center z-10 bg-emerald-900 overflow-hidden">
+          <div className="absolute inset-4 border-[1px] border-emerald-700/50 pointer-events-none"></div>
+          <div className="absolute inset-6 border-[1px] border-emerald-600/30 pointer-events-none"></div>
+          <div className="w-full flex flex-col items-center mt-8 z-10">
+            <h1 className={`font-serif text-emerald-50 font-light tracking-wide ${isPrint ? 'text-5xl' : 'text-2xl'}`}>{title}</h1>
+            <div className={`h-px bg-emerald-700 w-24 ${isPrint ? 'my-6' : 'my-3'}`}></div>
+            <p className={`font-sans text-emerald-200 tracking-[0.3em] uppercase ${isPrint ? 'text-lg' : 'text-[10px]'}`}>{date}</p>
+          </div>
+          <div className="flex flex-col items-center z-10">
+            <p className={`font-sans font-light text-white mb-6 ${isPrint ? 'text-xl px-12' : 'text-xs px-4'}`}>Bodi najin fotograf! Deli svoje utrinke preko QR kode.</p>
+            <div className={`p-3 bg-emerald-50 rounded-sm shadow-xl`}>
+              <QRCodeComponent value={eventUrl} size={qrSize * 1.1} bgColor="#f8fafc" fgColor="#064e3b" level="Q" includeMargin={false} />
             </div>
-            
+          </div>
+          <div className="mb-8 z-10">
+            <CameraIcon className={`${isPrint ? 'w-8 h-8' : 'w-4 h-4'} mx-auto text-emerald-300 opacity-80`} color="currentColor" />
+          </div>
+        </div>
+      );
+    }
+  },
+  {
+    id: 'w7', category: 'Poročni', name: 'Luksuz: Žametna Vrtnica', bg: '#4c0519',
+    render: ({ event, eventUrl, QRCodeComponent, qrSize, isPrint }: DesignProps) => {
+      const title = event.eventType === 'poroka' || !event.eventType ? `${event.partner1} & ${event.partner2}` : event.eventName;
+      const date = new Date(event.date).toLocaleDateString('sl-SI');
+      return (
+        <div className="relative w-full h-full flex flex-col items-center justify-between p-8 text-center z-10 bg-rose-950 overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-rose-900/50 to-transparent"></div>
+          <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-rose-900/50 to-transparent"></div>
+          <div className="w-full flex flex-col items-center mt-6 z-10">
+            <p className={`font-serif text-rose-200 italic ${isPrint ? 'text-2xl mb-4' : 'text-xs mb-2'}`}>Dobrodošli na najini poroki</p>
+            <h1 className={`font-serif text-white font-medium ${isPrint ? 'text-5xl' : 'text-2xl'}`}>{title}</h1>
+          </div>
+          <div className="flex flex-col items-center z-10">
+            <div className={`p-4 bg-white/95 backdrop-blur-sm rounded-full shadow-2xl mb-6`}>
+              <QRCodeComponent value={eventUrl} size={qrSize * 1.1} bgColor="#ffffff" fgColor="#4c0519" level="Q" includeMargin={false} />
+            </div>
+            <p className={`font-sans text-rose-100 font-light ${isPrint ? 'text-xl px-12' : 'text-xs px-4'}`}>Najin dan skozi tvoje oči. Slikaj in naloži tukaj.</p>
+          </div>
+          <div className="mb-6 z-10">
+            <p className={`font-sans text-rose-200 tracking-widest uppercase ${isPrint ? 'text-lg' : 'text-[10px]'}`}>{date}</p>
+          </div>
+        </div>
+      );
+    }
+  },
+  {
+    id: 'w8', category: 'Poročni', name: 'Boho: Terakota', bg: '#fff7ed',
+    render: ({ event, eventUrl, QRCodeComponent, qrSize, isPrint }: DesignProps) => {
+      const title = event.eventType === 'poroka' || !event.eventType ? `${event.partner1} & ${event.partner2}` : event.eventName;
+      const date = new Date(event.date).toLocaleDateString('sl-SI');
+      return (
+        <div className="relative w-full h-full flex flex-col items-center justify-between p-8 text-center z-10 bg-orange-50 overflow-hidden">
+          <svg className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <path d="M0,0 Q50,20 100,0 L100,100 Q50,80 0,100 Z" fill="#c2410c" />
+          </svg>
+          <div className="w-full flex flex-col items-center mt-8 z-10">
+            <h1 className={`font-serif text-orange-900 font-bold ${isPrint ? 'text-5xl' : 'text-2xl'}`}>{title}</h1>
+            <p className={`font-sans text-orange-700 tracking-wider uppercase ${isPrint ? 'text-lg mt-4' : 'text-[10px] mt-2'}`}>{date}</p>
+          </div>
+          <div className="flex flex-col items-center z-10 bg-white/60 p-6 rounded-3xl backdrop-blur-sm border border-orange-200/50 shadow-xl">
+            <p className={`font-serif text-orange-800 italic mb-6 ${isPrint ? 'text-2xl px-4' : 'text-xs px-2'}`}>Ustvarimo spomine skupaj.<br/>Poskeniraj za deljenje slik.</p>
+            <div className={`p-2 bg-white rounded-xl`}>
+              <QRCodeComponent value={eventUrl} size={qrSize * 1.1} bgColor="#ffffff" fgColor="#9a3412" level="Q" includeMargin={false} />
+            </div>
+          </div>
+          <div className="mb-8 z-10">
+            <span className={`inline-block w-12 h-1 bg-orange-300 rounded-full`}></span>
+          </div>
+        </div>
+      );
+    }
+  },
+  {
+    id: 'w9', category: 'Poročni', name: 'Boho: Žajbelj', bg: '#f0fdf4',
+    render: ({ event, eventUrl, QRCodeComponent, qrSize, isPrint }: DesignProps) => {
+      const title = event.eventType === 'poroka' || !event.eventType ? `${event.partner1} & ${event.partner2}` : event.eventName;
+      const date = new Date(event.date).toLocaleDateString('sl-SI');
+      return (
+        <div className="relative w-full h-full flex flex-col items-center justify-between p-8 text-center z-10 bg-green-50 overflow-hidden">
+          <div className="absolute inset-0 border-[12px] border-green-100/50 rounded-3xl m-4 pointer-events-none"></div>
+          <div className="w-full flex flex-col items-center mt-10 z-10">
+            <h1 className={`font-serif text-green-900 font-medium ${isPrint ? 'text-4xl' : 'text-xl'}`}>{title}</h1>
+            <p className={`font-sans text-green-700 tracking-widest uppercase ${isPrint ? 'text-md mt-3' : 'text-[9px] mt-1'}`}>{date}</p>
+          </div>
+          <div className="flex flex-col items-center z-10">
+            <div className={`p-3 bg-white rounded-2xl shadow-lg border border-green-100 mb-5`}>
+              <QRCodeComponent value={eventUrl} size={qrSize * 1.1} bgColor="#ffffff" fgColor="#14532d" level="Q" includeMargin={false} />
+            </div>
+            <p className={`font-sans text-green-800 font-medium ${isPrint ? 'text-xl px-10' : 'text-[11px] px-4'}`}>Deli ljubezen, deli slike!<br/>Poskeniraj QR kodo.</p>
+          </div>
+          <div className="mb-10 z-10">
+            <svg className={`${isPrint ? 'w-10 h-10' : 'w-5 h-5'} text-green-300`} fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+            </svg>
+          </div>
+        </div>
+      );
+    }
+  },
+  {
+    id: 'w10', category: 'Poročni', name: 'Boho: Topel Pesek', bg: '#fefce8',
+    render: ({ event, eventUrl, QRCodeComponent, qrSize, isPrint }: DesignProps) => {
+      const title = event.eventType === 'poroka' || !event.eventType ? `${event.partner1} & ${event.partner2}` : event.eventName;
+      const date = new Date(event.date).toLocaleDateString('sl-SI');
+      return (
+        <div className="relative w-full h-full flex flex-col items-center justify-between p-8 text-center z-10 bg-yellow-50 overflow-hidden">
+          <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(#ca8a04 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
+          <div className="w-full flex flex-col items-center mt-8 z-10 bg-white/80 py-4 px-8 rounded-full shadow-sm backdrop-blur-sm">
+            <h1 className={`font-serif text-yellow-900 font-bold ${isPrint ? 'text-4xl' : 'text-xl'}`}>{title}</h1>
+          </div>
+          <div className="flex flex-col items-center z-10 mt-4">
+            <p className={`font-sans text-yellow-800 font-medium mb-6 ${isPrint ? 'text-2xl px-10' : 'text-xs px-2'}`}>Tvoj pogled na najin dan.<br/>Naloži fotografije tukaj.</p>
+            <div className={`p-4 bg-white rounded-full shadow-xl border-4 border-yellow-100`}>
+              <QRCodeComponent value={eventUrl} size={qrSize * 1.1} bgColor="#ffffff" fgColor="#713f12" level="Q" includeMargin={false} />
+            </div>
+          </div>
+          <div className="mb-8 z-10 bg-white/80 py-2 px-6 rounded-full shadow-sm backdrop-blur-sm">
+            <p className={`font-sans text-yellow-800 tracking-widest uppercase ${isPrint ? 'text-lg' : 'text-[10px]'}`}>{date}</p>
+          </div>
+        </div>
+      );
+    }
+  },
+  {
+    id: 'w11', category: 'Poročni', name: 'Nevtralno: Čisti Minimalizem', bg: '#ffffff',
+    render: ({ event, eventUrl, QRCodeComponent, qrSize, isPrint }: DesignProps) => {
+      const title = event.eventType === 'poroka' || !event.eventType ? `${event.partner1} & ${event.partner2}` : event.eventName;
+      const date = new Date(event.date).toLocaleDateString('sl-SI');
+      return (
+        <div className="relative w-full h-full flex flex-col items-center justify-between p-8 text-center z-10 bg-white overflow-hidden border-[1px] border-gray-100">
+          <div className="w-full flex flex-col items-center mt-12 z-10">
+            <h1 className={`font-sans text-gray-900 font-light tracking-tight ${isPrint ? 'text-5xl' : 'text-2xl'}`}>{title}</h1>
+            <p className={`font-sans text-gray-400 tracking-[0.2em] uppercase ${isPrint ? 'text-sm mt-4' : 'text-[8px] mt-2'}`}>{date}</p>
+          </div>
+          <div className="flex flex-col items-center z-10">
+            <div className={`p-1`}>
+              <QRCodeComponent value={eventUrl} size={qrSize * 1.2} bgColor="#ffffff" fgColor="#000000" level="Q" includeMargin={false} />
+            </div>
+          </div>
+          <div className="mb-12 z-10">
+            <p className={`font-sans text-gray-600 font-light ${isPrint ? 'text-xl px-12' : 'text-xs px-4'}`}>Pomagaj nama ujeti vsak nasmeh.<br/>Skeniraj in deli.</p>
+          </div>
+        </div>
+      );
+    }
+  },
+  {
+    id: 'w12', category: 'Poročni', name: 'Nevtralno: Nežna Sivina', bg: '#f9fafb',
+    render: ({ event, eventUrl, QRCodeComponent, qrSize, isPrint }: DesignProps) => {
+      const title = event.eventType === 'poroka' || !event.eventType ? `${event.partner1} & ${event.partner2}` : event.eventName;
+      const date = new Date(event.date).toLocaleDateString('sl-SI');
+      return (
+        <div className="relative w-full h-full flex flex-col items-center justify-between p-8 text-center z-10 bg-gray-50 overflow-hidden">
+          <div className="absolute inset-6 border-[1px] border-gray-200 rounded-2xl pointer-events-none"></div>
+          <div className="w-full flex flex-col items-center mt-10 z-10">
+            <p className={`font-serif text-gray-500 italic ${isPrint ? 'text-xl mb-4' : 'text-[10px] mb-2'}`}>Praznujta z nama</p>
+            <h1 className={`font-serif text-gray-800 font-medium ${isPrint ? 'text-4xl' : 'text-xl'}`}>{title}</h1>
+          </div>
+          <div className="flex flex-col items-center z-10 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+            <QRCodeComponent value={eventUrl} size={qrSize * 1.1} bgColor="#ffffff" fgColor="#1f2937" level="Q" includeMargin={false} />
+            <p className={`font-sans text-gray-600 mt-4 ${isPrint ? 'text-lg' : 'text-[10px]'}`}>Slikaj, poskeniraj, deli!<br/>Hvala, ker si z nama.</p>
+          </div>
+          <div className="mb-10 z-10">
+            <p className={`font-sans text-gray-400 tracking-widest uppercase ${isPrint ? 'text-md' : 'text-[9px]'}`}>{date}</p>
           </div>
         </div>
       );
@@ -361,7 +516,7 @@ export const DESIGNS = [
     render: ({ event, eventUrl, QRCodeComponent, qrSize, isPrint }: DesignProps) => {
       return (
         <div className="relative w-full h-full flex flex-col items-center justify-center p-8 text-center z-10 bg-gray-900">
-          <p className={`font-sans text-gray-400 ${isPrint ? 'text-xl mb-8' : 'text-[10px] mb-4'} uppercase tracking-widest`}>
+          <p className={`font-sans text-gray-300 ${isPrint ? 'text-xl mb-8' : 'text-[10px] mb-4'} uppercase tracking-widest`}>
             {event.eventName}
           </p>
           
@@ -435,7 +590,7 @@ export const DESIGNS = [
     render: ({ event, eventUrl, QRCodeComponent, qrSize, isPrint }: DesignProps) => {
       return (
         <div className="relative w-full h-full flex flex-col items-center justify-between p-10 text-center z-10 bg-slate-900">
-          <p className={`font-sans text-slate-400 ${isPrint ? 'text-xl' : 'text-xs'} uppercase tracking-widest font-medium`}>
+          <p className={`font-sans text-slate-300 ${isPrint ? 'text-xl' : 'text-xs'} uppercase tracking-widest font-medium`}>
             {event.eventName}
           </p>
           
@@ -528,7 +683,7 @@ export const DESIGNS = [
         <div className="relative w-full h-full flex flex-col items-center justify-center p-8 text-center z-10 bg-zinc-900">
           <div className="absolute inset-6 border-2 border-pink-500 rounded-2xl opacity-50 pointer-events-none"></div>
           
-          <h1 className={`font-sans text-pink-500 ${isPrint ? 'text-5xl mb-10' : 'text-2xl mb-6'} font-black uppercase tracking-widest drop-shadow-[0_0_10px_rgba(236,72,153,0.8)]`}>
+          <h1 className={`font-sans text-pink-400 ${isPrint ? 'text-5xl mb-10' : 'text-2xl mb-6'} font-black uppercase tracking-widest drop-shadow-[0_0_10px_rgba(236,72,153,0.8)]`}>
             Deli fotke<br/>z nami!
           </h1>
           
@@ -536,7 +691,7 @@ export const DESIGNS = [
             <QRCodeComponent value={eventUrl} size={qrSize} bgColor="#ffffff" fgColor="#111827" level="Q" includeMargin={false} />
           </div>
           
-          <p className={`font-sans text-cyan-400 ${isPrint ? 'text-xl' : 'text-xs'} font-bold uppercase tracking-widest`}>
+          <p className={`font-sans text-cyan-300 ${isPrint ? 'text-xl' : 'text-xs'} font-bold uppercase tracking-widest`}>
             {event.eventName}
           </p>
         </div>
@@ -563,6 +718,195 @@ export const DESIGNS = [
           <p className={`font-sans text-black ${isPrint ? 'text-2xl' : 'text-sm'} font-bold uppercase bg-white px-4 py-1 border-4 border-black z-20`}>
             {event.eventName}
           </p>
+        </div>
+      );
+    }
+  },
+
+  // ==========================================
+  // POSLOVNI DIZAJNI
+  // ==========================================
+  {
+    id: 'b5', category: 'Poslovni', name: 'Korporativna Modra', bg: '#1e3a8a',
+    render: ({ event, eventUrl, QRCodeComponent, qrSize, isPrint }: DesignProps) => {
+      const title = event.eventName || 'Poslovni dogodek';
+      return (
+        <div className="relative w-full h-full flex flex-col items-center justify-between p-8 text-center z-10 bg-blue-900 overflow-hidden">
+          <div className="w-full flex flex-col items-center mt-8 z-10">
+            <h1 className={`font-sans text-white font-bold uppercase tracking-wider ${isPrint ? 'text-4xl' : 'text-xl'}`}>{title}</h1>
+            <div className={`h-1 bg-blue-500 w-16 ${isPrint ? 'mt-6' : 'mt-3'}`}></div>
+          </div>
+          <div className="flex flex-col items-center z-10">
+            <p className={`font-sans text-blue-100 font-light mb-6 ${isPrint ? 'text-xl px-12' : 'text-xs px-4'}`}>Slikajte in delite fotografije z nami. Skenirajte QR kodo.</p>
+            <div className={`p-4 bg-white rounded-sm shadow-xl`}>
+              <QRCodeComponent value={eventUrl} size={qrSize * 1.1} bgColor="#ffffff" fgColor="#1e3a8a" level="Q" includeMargin={false} />
+            </div>
+          </div>
+          <div className={`absolute bottom-0 w-full flex justify-center ${isPrint ? 'pb-8' : 'pb-4'} z-10`}>
+            <p className={`font-sans font-semibold tracking-widest text-blue-200 opacity-80 ${isPrint ? 'text-sm' : 'text-[8px]'}`}>Kliksy.si</p>
+          </div>
+        </div>
+      );
+    }
+  },
+  {
+    id: 'b7', category: 'Poslovni', name: 'Svetla Minimalistična', bg: '#f8fafc',
+    render: ({ event, eventUrl, QRCodeComponent, qrSize, isPrint }: DesignProps) => {
+      const title = event.eventName || 'Poslovni dogodek';
+      return (
+        <div className="relative w-full h-full flex flex-col items-center justify-between p-8 text-center z-10 bg-slate-50 overflow-hidden">
+          <div className="w-full flex flex-col items-center mt-12 z-10">
+            <h1 className={`font-sans text-slate-800 font-bold tracking-tight ${isPrint ? 'text-5xl' : 'text-2xl'}`}>{title}</h1>
+          </div>
+          <div className="flex flex-col items-center z-10">
+            <p className={`font-sans text-slate-600 font-medium mb-6 ${isPrint ? 'text-xl px-8' : 'text-xs px-2'}`}>Vaš pogled na dogodek. Skenirajte in naložite fotografije.</p>
+            <div className={`p-1`}>
+              <QRCodeComponent value={eventUrl} size={qrSize * 1.2} bgColor="#f8fafc" fgColor="#0f172a" level="Q" includeMargin={false} />
+            </div>
+          </div>
+          <div className={`absolute bottom-0 w-full flex justify-center ${isPrint ? 'pb-8' : 'pb-4'} z-10`}>
+            <p className={`font-sans font-bold tracking-widest text-slate-300 ${isPrint ? 'text-sm' : 'text-[8px]'}`}>Kliksy.si</p>
+          </div>
+        </div>
+      );
+    }
+  },
+  {
+    id: 'b8', category: 'Poslovni', name: 'Zlati Poudarki', bg: '#000000',
+    render: ({ event, eventUrl, QRCodeComponent, qrSize, isPrint }: DesignProps) => {
+      const title = event.eventName || 'Poslovni dogodek';
+      return (
+        <div className="relative w-full h-full flex flex-col items-center justify-between p-8 text-center z-10 bg-black overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-2 bg-yellow-600"></div>
+          <div className="w-full flex flex-col items-center mt-10 z-10">
+            <h1 className={`font-serif text-white font-medium ${isPrint ? 'text-4xl' : 'text-xl'}`}>{title}</h1>
+            <p className={`font-sans text-yellow-400 uppercase tracking-widest ${isPrint ? 'text-sm mt-4' : 'text-[8px] mt-2'}`}>Uradna galerija</p>
+          </div>
+          <div className="flex flex-col items-center z-10">
+            <div className={`p-4 bg-white rounded-sm shadow-[0_0_15px_rgba(202,138,4,0.3)] mb-6`}>
+              <QRCodeComponent value={eventUrl} size={qrSize * 1.1} bgColor="#ffffff" fgColor="#000000" level="Q" includeMargin={false} />
+            </div>
+            <p className={`font-sans text-gray-300 font-light ${isPrint ? 'text-lg px-12' : 'text-[10px] px-4'}`}>Zabeležite trenutke. Skenirajte kodo za deljenje slik z nami.</p>
+          </div>
+          <div className={`absolute bottom-0 w-full flex justify-center ${isPrint ? 'pb-8' : 'pb-4'} z-10`}>
+            <p className={`font-sans font-semibold tracking-widest text-yellow-400 opacity-90 ${isPrint ? 'text-sm' : 'text-[8px]'}`}>Kliksy.si</p>
+          </div>
+        </div>
+      );
+    }
+  },
+  {
+    id: 'b9', category: 'Poslovni', name: 'Srebrna Linija', bg: '#f3f4f6',
+    render: ({ event, eventUrl, QRCodeComponent, qrSize, isPrint }: DesignProps) => {
+      const title = event.eventName || 'Poslovni dogodek';
+      return (
+        <div className="relative w-full h-full flex flex-col items-center justify-between p-8 text-center z-10 bg-gray-100 overflow-hidden">
+          <div className="w-full flex flex-col items-center mt-10 z-10">
+            <div className={`h-px bg-gray-400 w-full ${isPrint ? 'mb-6' : 'mb-3'}`}></div>
+            <h1 className={`font-sans text-gray-800 font-bold uppercase tracking-widest ${isPrint ? 'text-3xl' : 'text-sm'}`}>{title}</h1>
+            <div className={`h-px bg-gray-400 w-full ${isPrint ? 'mt-6' : 'mt-3'}`}></div>
+          </div>
+          <div className="flex flex-col items-center z-10">
+            <p className={`font-sans text-gray-600 font-medium mb-6 ${isPrint ? 'text-xl px-10' : 'text-xs px-2'}`}>Ustvarjamo zgodbo dogodka. Slikajte in delite fotografije.</p>
+            <div className={`p-3 bg-white border border-gray-300 shadow-sm`}>
+              <QRCodeComponent value={eventUrl} size={qrSize * 1.1} bgColor="#ffffff" fgColor="#1f2937" level="Q" includeMargin={false} />
+            </div>
+          </div>
+          <div className={`absolute bottom-0 w-full flex justify-center ${isPrint ? 'pb-8' : 'pb-4'} z-10`}>
+            <p className={`font-sans font-bold tracking-widest text-gray-400 ${isPrint ? 'text-sm' : 'text-[8px]'}`}>Kliksy.si</p>
+          </div>
+        </div>
+      );
+    }
+  },
+  {
+    id: 'b10', category: 'Poslovni', name: 'Globoka Zelena', bg: '#064e3b',
+    render: ({ event, eventUrl, QRCodeComponent, qrSize, isPrint }: DesignProps) => {
+      const title = event.eventName || 'Poslovni dogodek';
+      const date = event.date ? new Date(event.date).toLocaleDateString('sl-SI') : '';
+      return (
+        <div className="relative w-full h-full flex flex-col items-center justify-between p-8 text-center z-10 bg-emerald-950 overflow-hidden">
+          <div className="w-full flex flex-col items-center mt-12 z-10">
+            <h1 className={`font-serif text-emerald-100 font-medium ${isPrint ? 'text-4xl' : 'text-xl'}`}>{title}</h1>
+            {date && <p className={`font-sans text-emerald-100 mt-2 tracking-widest uppercase ${isPrint ? 'text-lg' : 'text-[10px]'}`}>{date}</p>}
+          </div>
+          <div className="flex flex-col items-center z-10">
+            <div className={`p-4 bg-emerald-50 rounded-lg shadow-2xl mb-6`}>
+              <QRCodeComponent value={eventUrl} size={qrSize * 1.1} bgColor="#f0fdf4" fgColor="#022c22" level="Q" includeMargin={false} />
+            </div>
+            <p className={`font-sans text-emerald-100 font-light ${isPrint ? 'text-lg px-12' : 'text-[10px] px-4'}`}>Prispevajte v skupno galerijo. Skenirajte in delite utrinke.</p>
+          </div>
+          <div className={`absolute bottom-0 w-full flex justify-center ${isPrint ? 'pb-8' : 'pb-4'} z-10`}>
+            <p className={`font-sans font-semibold tracking-widest text-emerald-400 opacity-80 ${isPrint ? 'text-sm' : 'text-[8px]'}`}>Kliksy.si</p>
+          </div>
+        </div>
+      );
+    }
+  },
+  {
+    id: 'b11', category: 'Poslovni', name: 'Sodobna Siva', bg: '#3f3f46',
+    render: ({ event, eventUrl, QRCodeComponent, qrSize, isPrint }: DesignProps) => {
+      const title = event.eventName || 'Poslovni dogodek';
+      return (
+        <div className="relative w-full h-full flex flex-col items-center justify-between p-8 text-center z-10 bg-zinc-700 overflow-hidden">
+          <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'repeating-linear-gradient(45deg, #000 0, #000 1px, transparent 0, transparent 50%)', backgroundSize: '10px 10px' }}></div>
+          <div className="w-full flex flex-col items-center mt-10 z-10 bg-zinc-500/80 py-4 px-8 rounded-xl backdrop-blur-sm shadow-lg">
+            <h1 className={`font-sans text-white font-bold tracking-wide drop-shadow-md ${isPrint ? 'text-3xl' : 'text-lg'}`}>{title}</h1>
+          </div>
+          <div className="flex flex-col items-center z-10 mt-4">
+            <p className={`font-sans text-zinc-200 font-medium mb-6 ${isPrint ? 'text-xl px-10' : 'text-xs px-2'}`}>Vaše fotografije bogatijo naš dogodek. Skenirajte in delite.</p>
+            <div className={`p-3 bg-white rounded-xl shadow-lg`}>
+              <QRCodeComponent value={eventUrl} size={qrSize * 1.1} bgColor="#ffffff" fgColor="#27272a" level="Q" includeMargin={false} />
+            </div>
+          </div>
+          <div className={`absolute bottom-0 w-full flex justify-center ${isPrint ? 'pb-8' : 'pb-4'} z-10`}>
+            <p className={`font-sans font-bold tracking-widest text-zinc-300 opacity-60 ${isPrint ? 'text-sm' : 'text-[8px]'}`}>Kliksy.si</p>
+          </div>
+        </div>
+      );
+    }
+  },
+  {
+    id: 'b12', category: 'Poslovni', name: 'Čista Profesionalnost', bg: '#ffffff',
+    render: ({ event, eventUrl, QRCodeComponent, qrSize, isPrint }: DesignProps) => {
+      const title = event.eventName || 'Poslovni dogodek';
+      return (
+        <div className="relative w-full h-full flex flex-col items-center justify-between p-8 text-center z-10 bg-white border-4 border-slate-900 overflow-hidden">
+          <div className="w-full flex flex-col items-center mt-8 z-10">
+            <h1 className={`font-serif text-slate-900 font-bold ${isPrint ? 'text-4xl' : 'text-xl'}`}>{title}</h1>
+          </div>
+          <div className="flex flex-col items-center z-10">
+            <div className={`p-1 mb-6 border-2 border-slate-200`}>
+              <QRCodeComponent value={eventUrl} size={qrSize * 1.1} bgColor="#ffffff" fgColor="#0f172a" level="Q" includeMargin={false} />
+            </div>
+            <p className={`font-sans text-slate-700 font-medium uppercase tracking-wider ${isPrint ? 'text-lg px-8' : 'text-[9px] px-2'}`}>Slikaj in deli fotografije z nami.<br/>Poskeniraj QR kodo.</p>
+          </div>
+          <div className={`absolute bottom-0 w-full flex justify-center ${isPrint ? 'pb-8' : 'pb-4'} z-10`}>
+            <p className={`font-sans font-bold tracking-widest text-slate-300 ${isPrint ? 'text-sm' : 'text-[8px]'}`}>Kliksy.si</p>
+          </div>
+        </div>
+      );
+    }
+  },
+  {
+    id: 'b13', category: 'Poslovni', name: 'Topla Poslovna', bg: '#fafaf9',
+    render: ({ event, eventUrl, QRCodeComponent, qrSize, isPrint }: DesignProps) => {
+      const title = event.eventName || 'Poslovni dogodek';
+      return (
+        <div className="relative w-full h-full flex flex-col items-center justify-between p-8 text-center z-10 bg-stone-50 overflow-hidden">
+          <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-stone-200/50 to-transparent pointer-events-none"></div>
+          <div className="w-full flex flex-col items-center mt-10 z-10">
+            <h1 className={`font-sans text-stone-800 font-semibold tracking-tight ${isPrint ? 'text-4xl' : 'text-xl'}`}>{title}</h1>
+          </div>
+          <div className="flex flex-col items-center z-10">
+            <p className={`font-sans text-stone-600 mb-6 ${isPrint ? 'text-xl px-12' : 'text-xs px-4'}`}>Shranimo spomine skupaj. Slikajte, poskenirajte in delite.</p>
+            <div className={`p-4 bg-white rounded-2xl shadow-md border border-stone-100`}>
+              <QRCodeComponent value={eventUrl} size={qrSize * 1.1} bgColor="#ffffff" fgColor="#44403c" level="Q" includeMargin={false} />
+            </div>
+          </div>
+          <div className={`absolute bottom-0 w-full flex justify-center ${isPrint ? 'pb-8' : 'pb-4'} z-10`}>
+            <p className={`font-sans font-semibold tracking-widest text-stone-300 ${isPrint ? 'text-sm' : 'text-[8px]'}`}>Kliksy.si</p>
+          </div>
         </div>
       );
     }
