@@ -941,7 +941,7 @@ export default function CreateEvent() {
                     
                     {finalPrice > 0 ? (
                       clientSecret ? (
-                        <Elements stripe={stripePromise} options={{ clientSecret, appearance: { theme: 'stripe' }, locale: 'sl' }}>
+                        <Elements key={clientSecret} stripe={stripePromise} options={{ clientSecret, appearance: { theme: 'stripe' }, locale: 'sl' }}>
                           <StripePaymentForm 
                             user={user}
                             formData={formData}
@@ -1091,7 +1091,14 @@ function StripePaymentForm({
       <div className="mb-6 p-5 border border-gray-200 rounded-xl bg-gray-50 space-y-4">
         <h4 className="font-medium text-gray-900 mb-2">Podatki za plačilo</h4>
         <div className="bg-white p-3 rounded-lg border border-gray-300">
-          <PaymentElement />
+          <PaymentElement options={{ 
+            layout: 'accordion',
+            fields: {
+              billingDetails: {
+                email: 'never'
+              }
+            }
+          }} />
         </div>
       </div>
       <button 
