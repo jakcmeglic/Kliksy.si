@@ -90,8 +90,8 @@ export default function QRModal({ isOpen, onClose, event, eventUrl, initialDesig
       pdf.addImage(imgData, 'JPEG', 0, 148.5, cardW, cardH);
       pdf.addImage(imgData, 'JPEG', 105, 148.5, cardW, cardH);
 
-      const eventNameStr = event.eventType === 'poroka' || !event.eventType ? `${event.partner1}-${event.partner2}` : event.eventName;
-      const filename = `QR-Listici-${eventNameStr}.pdf`;
+      const eventNameStr = event.eventType === 'poroka' ? `${event.partner1 || 'Dogodek'}-${event.partner2 || ''}` : (event.eventName || 'Dogodek');
+      const filename = `QR-Listici-${eventNameStr.replace(/\s+/g, '-')}.pdf`;
       const pdfBlob = pdf.output('blob');
       
       const url = URL.createObjectURL(pdfBlob);
@@ -165,7 +165,13 @@ export default function QRModal({ isOpen, onClose, event, eventUrl, initialDesig
                   {/* Mini preview */}
                   <div className="absolute inset-0 pointer-events-none">
                     {design.render({
-                      event,
+                      event: {
+                        ...event,
+                        partner1: event.partner1 || 'Partner 1',
+                        partner2: event.partner2 || 'Partner 2',
+                        eventName: event.eventName || 'Dogodek',
+                        date: event.date || new Date().toISOString()
+                      },
                       eventUrl,
                       QRCodeComponent: QRCodeSVG,
                       qrSize: 80,
@@ -233,14 +239,20 @@ export default function QRModal({ isOpen, onClose, event, eventUrl, initialDesig
         </motion.div>
 
         {/* Hidden high-res container for html-to-image */}
-        <div style={{ position: 'absolute', top: 0, left: 0, zIndex: -1, opacity: 0, pointerEvents: 'none' }} aria-hidden="true">
+        <div style={{ position: 'fixed', top: '-10000px', left: '-10000px', zIndex: -9999 }} aria-hidden="true">
           <div 
             ref={printRef} 
-            className="relative w-[400px] h-[566px] flex flex-col items-center justify-center overflow-hidden"
+            className="w-[400px] h-[566px] flex flex-col items-center justify-center overflow-hidden relative"
             style={{ boxSizing: 'border-box', backgroundColor: selected.bg }}
           >
             {selected.render({
-              event,
+              event: {
+                ...event,
+                partner1: event.partner1 || 'Partner 1',
+                partner2: event.partner2 || 'Partner 2',
+                eventName: event.eventName || 'Dogodek',
+                date: event.date || new Date().toISOString()
+              },
               eventUrl,
               QRCodeComponent: QRCodeSVG, // Use SVG instead of Canvas for better rendering with html-to-image
               qrSize: 180,

@@ -155,9 +155,14 @@ export const ComicRays = ({ className, color }: { className?: string, color: str
   </svg>
 );
 
+const getEventTitle = (event: any) => {
+  if (event.eventType === 'poroka') return `${event.partner1 || 'Partner 1'} & ${event.partner2 || 'Partner 2'}`;
+  return event.eventName || 'Dogodek';
+};
+
 const WeddingTextContent = ({ event, isPrint }: { event: any, isPrint: boolean }) => {
-  const title = event.eventType === 'poroka' || !event.eventType ? `${event.partner1} & ${event.partner2}` : event.eventName;
-  const date = new Date(event.date).toLocaleDateString('sl-SI');
+  const title = getEventTitle(event);
+  const dateStr = event.date ? new Date(event.date).toLocaleDateString('sl-SI') : '';
   
   return (
     <div className="flex flex-col items-center mb-4 z-10 relative">
@@ -166,7 +171,7 @@ const WeddingTextContent = ({ event, isPrint }: { event: any, isPrint: boolean }
       </h1>
       <div className={`text-center ${isPrint ? 'mt-8' : 'mt-4'}`}>
         <p className={`font-sans text-[#9A7B4F] ${isPrint ? 'text-xl' : 'text-xs'} uppercase tracking-widest font-medium`}>{title}</p>
-        <p className={`font-sans text-[#9A7B4F] ${isPrint ? 'text-lg' : 'text-[10px]'} uppercase tracking-widest mt-1`}>{date}</p>
+        <p className={`font-sans text-[#9A7B4F] ${isPrint ? 'text-lg' : 'text-[10px]'} uppercase tracking-widest mt-1`}>{dateStr}</p>
       </div>
     </div>
   );
