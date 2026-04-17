@@ -7,7 +7,7 @@ import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import { useAuth } from "../components/AuthProvider";
 import { db, handleFirestoreError, OperationType } from "../firebase";
-import { collection, query, where, getDocs, onSnapshot, doc, getDoc, orderBy, updateDoc } from "firebase/firestore";
+import { collection, query, where, getDocs, onSnapshot, doc, getDoc, orderBy, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore";
 import QRModal from "../components/QRModal";
 import ImageViewer from "../components/ImageViewer";
 
@@ -111,6 +111,35 @@ export default function Dashboard() {
 
     return () => unsubscribe();
   }, [event]);
+
+  const handleToggleLike = async (photoId: string) => {
+    if (!event || !user?.uid) return;
+
+    try {
+      const photoRef = doc(db, "events", event.id, "photos", photoId);
+      const photoSnap = await getDoc(photoRef);
+      
+      if (photoSnap.exists()) {
+        const photoData = photoSnap.data();
+        const likedBy = photoData.likedBy || [];
+        const isLiked = likedBy.includes(user.uid);
+        
+        if (isLiked) {
+          await updateDoc(photoRef, {
+            likedBy: arrayRemove(user.uid),
+            likes: Math.max(0, (photoData.likes || 1) - 1)
+          });
+        } else {
+          await updateDoc(photoRef, {
+            likedBy: arrayUnion(user.uid),
+            likes: (photoData.likes || 0) + 1
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error toggling like:", error);
+    }
+  };
 
   if (authLoading || loading) {
     return (
@@ -390,6 +419,13 @@ export default function Dashboard() {
                             <Download className="w-5 h-5 text-gray-900" />
                           </button>
                         </div>
+                        {/* Thumb Like Indicator */}
+                        {photo.likes > 0 && (
+                          <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-black/50 backdrop-blur-md px-2 py-1 rounded-full pointer-events-none">
+                            <Heart className="w-3 h-3 text-red-500 fill-red-500" />
+                            <span className="text-white text-xs font-bold">{photo.likes}</span>
+                          </div>
+                        )}
                       </div>
                     ))}
                     {photos.length === 0 && (
@@ -418,6 +454,13 @@ export default function Dashboard() {
                         <Download className="w-5 h-5 text-gray-900" />
                       </button>
                     </div>
+                    {/* Thumb Like Indicator */}
+                    {photo.likes > 0 && (
+                      <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-black/50 backdrop-blur-md px-2 py-1 rounded-full pointer-events-none">
+                        <Heart className="w-3 h-3 text-red-500 fill-red-500" />
+                        <span className="text-white text-xs font-bold">{photo.likes}</span>
+                      </div>
+                    )}
                   </div>
                 ))}
                 {photos.length === 0 && (
@@ -494,6 +537,8 @@ export default function Dashboard() {
           images={photos}
           initialIndex={selectedImageIndex}
           onClose={() => setSelectedImageIndex(null)}
+          onToggleLike={handleToggleLike}
+          currentUserId={user?.uid}
         />
       )}
     </div>

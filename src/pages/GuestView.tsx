@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Camera, Upload, CheckCircle2, Plus, Heart, Loader2, Download } from "lucide-react";
 import { db, storage, handleFirestoreError, OperationType } from "../firebase";
-import { doc, getDoc, collection, addDoc, serverTimestamp, Timestamp, query, orderBy, limit, onSnapshot, getDocs } from "firebase/firestore";
+import { doc, getDoc, collection, addDoc, serverTimestamp, Timestamp, query, orderBy, limit, onSnapshot, getDocs, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { signInAnonymously, onAuthStateChanged } from "firebase/auth";
 import { auth } from "../firebase";
@@ -91,6 +91,35 @@ export default function GuestView() {
 
     return () => unsubscribe();
   }, [id]);
+
+  const handleToggleLike = async (photoId: string) => {
+    if (!id || !deviceId) return;
+
+    try {
+      const photoRef = doc(db, "events", id, "photos", photoId);
+      const photoSnap = await getDoc(photoRef);
+      
+      if (photoSnap.exists()) {
+        const photoData = photoSnap.data();
+        const likedBy = photoData.likedBy || [];
+        const isLiked = likedBy.includes(deviceId);
+        
+        if (isLiked) {
+          await updateDoc(photoRef, {
+            likedBy: arrayRemove(deviceId),
+            likes: Math.max(0, (photoData.likes || 1) - 1)
+          });
+        } else {
+          await updateDoc(photoRef, {
+            likedBy: arrayUnion(deviceId),
+            likes: (photoData.likes || 0) + 1
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error toggling like:", error);
+    }
+  };
 
   const fileToBase64 = (file: File | Blob): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -320,10 +349,18 @@ export default function GuestView() {
                   key={photo.id}
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="aspect-square rounded-xl overflow-hidden bg-gray-100 cursor-pointer"
+                  className="aspect-square rounded-xl overflow-hidden bg-gray-100 cursor-pointer relative"
                   onClick={() => setSelectedImageIndex(index)}
                 >
                   <img src={photo.url} alt="Wedding moment" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                  
+                  {/* Thumb Like Indicator */}
+                  {photo.likes > 0 && (
+                    <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-black/50 backdrop-blur-md px-2 py-1 rounded-full pointer-events-none">
+                      <Heart className="w-3 h-3 text-red-500 fill-red-500" />
+                      <span className="text-white text-xs font-bold">{photo.likes}</span>
+                    </div>
+                  )}
                 </motion.div>
               ))}
               {recentPhotos.length === 0 && (
@@ -342,6 +379,8 @@ export default function GuestView() {
           images={recentPhotos}
           initialIndex={selectedImageIndex}
           onClose={() => setSelectedImageIndex(null)}
+          onToggleLike={handleToggleLike}
+          currentUserId={deviceId}
         />
       )}
     </div>

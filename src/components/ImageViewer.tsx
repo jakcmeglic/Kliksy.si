@@ -1,15 +1,24 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Heart } from 'lucide-react';
 
 interface ImageViewerProps {
-  images: { id: string; url: string }[];
+  images: { id: string; url: string; likes?: number; likedBy?: string[] }[];
   initialIndex: number;
   onClose: () => void;
+  onToggleLike?: (photoId: string) => void;
+  currentUserId?: string;
 }
 
-export default function ImageViewer({ images, initialIndex, onClose }: ImageViewerProps) {
-  const [currentIndex, setCurrentIndex] = React.useState(initialIndex);
+export default function ImageViewer({ images, initialIndex, onClose, onToggleLike, currentUserId }: ImageViewerProps) {
+  const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  
+  // Create a local optimistic state for likes to make the UI feel responsive
+  const [optimisticLiked, setOptimisticLiked] = useState<Record<string, boolean>>({});
+  
+  useEffect(() => {
+    setCurrentIndex(initialIndex);
+  }, [initialIndex]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -32,6 +41,26 @@ export default function ImageViewer({ images, initialIndex, onClose }: ImageView
   };
 
   if (!images || images.length === 0) return null;
+  
+  const currentImage = images[currentIndex];
+  // Determine if it's liked by looking at the optimistic state first, then the actual data
+  const isLikedOptimistically = optimisticLiked[currentImage.id];
+  const isLikedInData = currentUserId ? currentImage.likedBy?.includes(currentUserId) : false;
+  // We consider it liked if either is true (optimistic applies immediately, data catches up)
+  const isLiked = isLikedOptimistically !== undefined ? isLikedOptimistically : isLikedInData;
+
+  const handleLikeClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!onToggleLike || !currentUserId) return;
+    
+    // Toggle optimistic state
+    setOptimisticLiked(prev => ({
+      ...prev,
+      [currentImage.id]: !isLiked
+    }));
+    
+    onToggleLike(currentImage.id);
+  };
 
   return (
     <AnimatePresence>
@@ -69,18 +98,49 @@ export default function ImageViewer({ images, initialIndex, onClose }: ImageView
           </>
         )}
 
-        <div className="relative w-full h-full flex items-center justify-center p-4 md:p-12">
+        <div className="relative w-full h-full flex flex-col items-center justify-center p-4 md:p-12" onClick={handleNext}>
           <motion.img
             key={currentIndex}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.2 }}
-            src={images[currentIndex].url}
+            src={currentImage.url}
             alt="Gallery image"
             className="max-w-full max-h-full object-contain select-none"
             referrerPolicy="no-referrer"
             onClick={(e) => e.stopPropagation()}
           />
+          
+          {/* Like button and counter at bottom */}
+          {onToggleLike && currentUserId && (
+            <div 
+              className="absolute bottom-20 flex flex-col items-center gap-2" 
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={handleLikeClick}
+                className="w-16 h-16 rounded-full bg-black/60 shadow-lg flex items-center justify-center backdrop-blur-md border border-white/10 hover:scale-110 active:scale-95 transition-all"
+              >
+                <Heart 
+                  className={`w-8 h-8 transition-colors ${
+                    isLiked 
+                      ? "text-red-500 fill-red-500 scale-110" 
+                      : "text-white"
+                  }`} 
+                />
+              </button>
+              {/* Adjust like count optimally: if previously unliked and now liked -> add 1. If previously liked and now unliked -> sub 1 */}
+              {(currentImage.likes !== undefined && currentImage.likes > 0) || (isLiked && !isLikedInData) ? (
+                <span className="text-white/90 font-medium text-lg drop-shadow-md">
+                  {isLiked && !isLikedInData 
+                    ? (currentImage.likes || 0) + 1 
+                    : !isLiked && isLikedInData 
+                      ? Math.max(0, (currentImage.likes || 1) - 1)
+                      : (currentImage.likes || 0)}
+                </span>
+              ) : null}
+            </div>
+          )}
         </div>
         
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/70 text-sm font-medium bg-black/50 px-4 py-2 rounded-full">
