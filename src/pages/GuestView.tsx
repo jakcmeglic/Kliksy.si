@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Camera, Upload, CheckCircle2, Plus, Heart, Loader2, Download } from "lucide-react";
+import { Camera, Upload, CheckCircle2, Plus, Heart, Loader2, Download, ArrowLeft } from "lucide-react";
 import { db, storage, handleFirestoreError, OperationType } from "../firebase";
 import { doc, getDoc, collection, addDoc, serverTimestamp, Timestamp, query, orderBy, limit, onSnapshot, getDocs, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -14,6 +14,37 @@ import { saveAs } from "file-saver";
 
 import ImageViewer from "../components/ImageViewer";
 
+function TikTokLikeButton({ photo, deviceId, onToggleLike }: any) {
+  const isLikedInData = photo.likedBy?.includes(deviceId);
+  const [optimisticLiked, setOptimisticLiked] = useState<boolean | undefined>(undefined);
+  
+  const isLiked = optimisticLiked !== undefined ? optimisticLiked : isLikedInData;
+  
+  const handleLike = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setOptimisticLiked(!isLiked);
+    onToggleLike(photo.id);
+  };
+
+  const likesCount = isLiked && !isLikedInData 
+    ? (photo.likes || 0) + 1 
+    : !isLiked && isLikedInData 
+      ? Math.max(0, (photo.likes || 1) - 1)
+      : (photo.likes || 0);
+
+  return (
+    <div className="absolute right-4 bottom-24 flex flex-col items-center gap-2 z-50">
+      <button 
+        onClick={handleLike} 
+        className="w-14 h-14 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center hover:scale-110 active:scale-95 transition-all outline-none border border-white/10"
+      >
+        <Heart className={`w-8 h-8 transition-colors ${isLiked ? 'text-red-500 fill-red-500 scale-110' : 'text-white'}`} />
+      </button>
+      {likesCount > 0 && <span className="text-white font-bold drop-shadow-md text-lg">{likesCount}</span>}
+    </div>
+  );
+}
+
 export default function GuestView() {
   const { id } = useParams();
   const [event, setEvent] = useState<any>(null);
@@ -23,6 +54,8 @@ export default function GuestView() {
   const [uploadError, setUploadError] = useState('');
   const [recentPhotos, setRecentPhotos] = useState<any[]>([]);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
+  const [showGallery, setShowGallery] = useState(false);
+  const [allPhotos, setAllPhotos] = useState<any[]>([]);
   
   const [deviceId] = useState(() => {
     let id = localStorage.getItem('guestDeviceId');
@@ -91,6 +124,27 @@ export default function GuestView() {
 
     return () => unsubscribe();
   }, [id]);
+
+  useEffect(() => {
+    if (!id || !showGallery) return;
+
+    const q = query(
+      collection(db, "events", id, "photos"),
+      orderBy("createdAt", "desc")
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const newPhotos = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setAllPhotos(newPhotos);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, `events/${id}/photos_gallery`);
+    });
+
+    return () => unsubscribe();
+  }, [id, showGallery]);
 
   const handleToggleLike = async (photoId: string) => {
     if (!id || !deviceId) return;
@@ -340,8 +394,15 @@ export default function GuestView() {
             className="w-full mt-12"
           >
             <div className="flex items-center justify-between mb-4 px-2">
-              <h3 className="font-bold text-lg text-gray-900">Zadnji spomini</h3>
-              <span className="text-xs font-medium bg-indigo-50 px-2 py-1 rounded-full text-indigo-600">V živo</span>
+              <div className="flex items-center gap-2">
+                <h3 className="font-bold text-lg text-gray-900">Zadnji spomini</h3>
+                <span className="text-xs font-medium bg-indigo-50 px-2 py-1 rounded-full text-indigo-600">V živo</span>
+              </div>
+              {recentPhotos.length > 0 && (
+                <button onClick={() => setShowGallery(true)} className="text-sm font-bold text-indigo-600 hover:text-indigo-700">
+                  Poglej vse
+                </button>
+              )}
             </div>
             <div className="grid grid-cols-3 gap-2">
               {recentPhotos.map((photo, index) => (
@@ -383,6 +444,58 @@ export default function GuestView() {
           currentUserId={deviceId}
         />
       )}
+
+      {/* TikTok Gallery Overlay */}
+      <AnimatePresence>
+        {showGallery && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-black flex flex-col"
+          >
+            <style>{`
+              .hide-scrollbar::-webkit-scrollbar {
+                display: none;
+              }
+              .hide-scrollbar {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+              }
+            `}</style>
+            
+            {/* Top Bar Navigation */}
+            <div className="absolute top-0 inset-x-0 p-4 pt-safe flex items-center justify-between z-50 bg-gradient-to-b from-black/60 to-transparent pointer-events-none">
+              <button 
+                onClick={() => setShowGallery(false)}
+                className="w-12 h-12 flex items-center justify-center bg-black/40 backdrop-blur-md rounded-full text-white pointer-events-auto active:scale-95 transition-transform border border-white/10"
+              >
+                <ArrowLeft className="w-6 h-6" />
+              </button>
+              <div className="text-white/90 font-bold px-5 py-2 bg-black/40 backdrop-blur-md rounded-full pointer-events-auto border border-white/10 shadow-lg">
+                Galerija
+              </div>
+              <div className="w-12 h-12" /> {/* Spacer for centering */}
+            </div>
+
+            {/* Scrollable Area */}
+            <div className="flex-1 overflow-y-auto snap-y snap-mandatory h-full hide-scrollbar">
+              {allPhotos.map((photo) => (
+                <div key={photo.id} className="w-full h-[100dvh] snap-start snap-always relative flex items-center justify-center bg-black">
+                  <img src={photo.url} alt="Gallery item" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                  <TikTokLikeButton photo={photo} deviceId={deviceId} onToggleLike={handleToggleLike} />
+                </div>
+              ))}
+              
+              {allPhotos.length === 0 && (
+                <div className="flex items-center justify-center h-full text-white/60">
+                  <Loader2 className="w-8 h-8 animate-spin" />
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

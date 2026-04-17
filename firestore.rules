@@ -36,8 +36,12 @@ service cloud.firestore {
         // Anyone (including anonymous guests) can upload a photo
         allow create: if true;
         
+        // Allow event owner to update any field, and others to update ONLY likes and likedBy
+        allow update: if (isAuthenticated() && get(/databases/$(database)/documents/events/$(eventId)).data.ownerId == request.auth.uid) || 
+                         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes', 'likedBy']);
+        
         // Only the event owner can delete photos
-        allow update, delete: if isAuthenticated() && get(/databases/$(database)/documents/events/$(eventId)).data.ownerId == request.auth.uid;
+        allow delete: if isAuthenticated() && get(/databases/$(database)/documents/events/$(eventId)).data.ownerId == request.auth.uid;
       }
     }
   }
