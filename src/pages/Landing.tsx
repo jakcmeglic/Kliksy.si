@@ -105,7 +105,7 @@ export default function Landing() {
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20">
               <Link to="/create" className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-indigo-600 text-white px-8 py-4 rounded-full text-lg font-medium hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/20 hover:shadow-indigo-600/30 active:scale-95">
-                Ustvari dogodek brezplačno <ArrowRight className="w-5 h-5" />
+                Ustvari dogodek <ArrowRight className="w-5 h-5" />
               </Link>
               <Link to="/event/demo" className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white text-gray-900 border border-gray-200 px-8 py-4 rounded-full text-lg font-medium hover:bg-gray-50 transition-all shadow-sm active:scale-95">
                 <Play className="w-5 h-5" /> Poglej demo
@@ -460,8 +460,8 @@ export default function Landing() {
           <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-pink-500/20 rounded-full blur-[80px]" />
           
           <div className="relative z-10">
-            <h2 className="text-4xl md:text-5xl font-extrabold mb-6 text-white tracking-tight">Ste pripravljeni na zbiranje spominov?</h2>
-            <p className="text-xl text-gray-300 mb-10 max-w-2xl mx-auto">
+            <h2 className="text-4xl md:text-5xl font-extrabold mb-6 text-white tracking-tight block">Ste pripravljeni na zbiranje spominov?</h2>
+            <p className="text-xl text-white/90 mb-10 max-w-2xl mx-auto font-medium">
               Ustvarite svoj dogodek v manj kot 2 minutah in prejmite svojo QR kodo takoj.
             </p>
             <Link to="/create" className="inline-flex items-center justify-center gap-2 bg-indigo-600 text-white px-10 py-5 rounded-full text-lg font-bold hover:bg-indigo-700 transition-all hover:scale-105 active:scale-95 shadow-xl shadow-indigo-600/30">

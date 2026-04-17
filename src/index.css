@@ -28,7 +28,6 @@ body {
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-sans); /* Switching to sans for modern look, can use serif for accents */
-  color: var(--color-brand-dark);
 }
 
 /* Hide scrollbar for clean look */
