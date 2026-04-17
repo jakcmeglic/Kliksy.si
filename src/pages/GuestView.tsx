@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Camera, Upload, CheckCircle2, Plus, Heart, Loader2, Download, ArrowLeft } from "lucide-react";
+import { Camera, Upload, CheckCircle2, Plus, Heart, Loader2, Download, ArrowLeft, ChevronUp } from "lucide-react";
 import { db, storage, handleFirestoreError, OperationType } from "../firebase";
 import { doc, getDoc, collection, addDoc, serverTimestamp, Timestamp, query, orderBy, limit, onSnapshot, getDocs, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -56,6 +56,7 @@ export default function GuestView() {
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const [showGallery, setShowGallery] = useState(false);
   const [allPhotos, setAllPhotos] = useState<any[]>([]);
+  const [hasScrolledGallery, setHasScrolledGallery] = useState(false);
   
   const [deviceId] = useState(() => {
     let id = localStorage.getItem('guestDeviceId');
@@ -124,6 +125,10 @@ export default function GuestView() {
 
     return () => unsubscribe();
   }, [id]);
+
+  useEffect(() => {
+    if (showGallery) setHasScrolledGallery(false);
+  }, [showGallery]);
 
   useEffect(() => {
     if (!id || !showGallery) return;
@@ -479,7 +484,10 @@ export default function GuestView() {
             </div>
 
             {/* Scrollable Area */}
-            <div className="flex-1 overflow-y-auto snap-y snap-mandatory h-full hide-scrollbar">
+            <div 
+              className="flex-1 overflow-y-auto snap-y snap-mandatory h-full hide-scrollbar"
+              onScroll={() => { if (!hasScrolledGallery) setHasScrolledGallery(true); }}
+            >
               {allPhotos.map((photo) => (
                 <div key={photo.id} className="w-full h-[100dvh] snap-start snap-always relative flex items-center justify-center bg-black">
                   <img src={photo.url} alt="Gallery item" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
@@ -493,6 +501,28 @@ export default function GuestView() {
                 </div>
               )}
             </div>
+            
+            {/* Scroll Indiciator Hint */}
+            <AnimatePresence>
+              {!hasScrolledGallery && allPhotos.length > 1 && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute bottom-12 left-1/2 -translate-x-1/2 z-[60] flex flex-col items-center pointer-events-none"
+                >
+                  <motion.div
+                    animate={{ y: [0, -15, 0], opacity: [0.5, 1, 0.5] }}
+                    transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                    className="flex flex-col items-center"
+                  >
+                    <span className="text-white font-medium text-sm mb-2 drop-shadow-lg bg-black/40 px-3 py-1 rounded-full backdrop-blur-md">Potegni navzgor</span>
+                    <ChevronUp className="w-8 h-8 text-white drop-shadow-lg" />
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+            
           </motion.div>
         )}
       </AnimatePresence>
