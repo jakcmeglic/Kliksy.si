@@ -439,68 +439,89 @@ export default function Admin() {
                   const total = event.amountPaid !== undefined ? event.amountPaid : (basePrice + upsellPrice);
                   
                   return (
-                    <tr key={event.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap text-gray-500">
-                        {event.createdAt ? format(event.createdAt.toDate(), 'dd. MM. yyyy HH:mm') : 'N/A'}
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="font-medium text-gray-900">{event.eventName}</div>
-                        <div className="text-gray-500 text-xs">{event.eventType}</div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="font-medium text-gray-900">{event.email}</div>
-                        {event.isCompanyInvoice && (
-                          <div className="text-xs text-indigo-600 font-medium mt-1">Podjetje: {event.companyName}</div>
-                        )}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 uppercase">
-                          {event.plan}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-gray-500">
-                        {event.deliveryMode === 'home_delivery' ? (
-                          <div className="flex flex-col gap-1">
-                            {event.printedQrQuantity > 0 && <span>{event.printedQrQuantity}x Print QR</span>}
-                            {event.standsQuantity > 0 && <span>{event.standsQuantity}x Stojalo</span>}
-                          </div>
-                        ) : (
-                          <span className="text-gray-400">Brez dodatkov</span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 font-medium text-gray-900">
-                        €{total.toFixed(2)}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          event.paymentStatus === 'paid' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                        }`}>
-                          {event.paymentStatus === 'paid' ? 'Plačano' : 'V čakanju'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          {event.paymentStatus !== 'paid' && (
-                            <button
-                              onClick={() => {
-                                setEditingEvent(event);
-                                setEditAmount(total.toString());
-                              }}
-                              className="inline-flex items-center justify-center px-3 py-1.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 rounded-lg text-xs font-medium transition-colors"
-                            >
-                              Označi kot plačano
-                            </button>
+                    <React.Fragment key={event.id}>
+                      <tr className="hover:bg-gray-50 transition-colors">
+                        <td className="px-6 py-4 whitespace-nowrap text-gray-500 border-b-0">
+                          {event.createdAt ? format(event.createdAt.toDate(), 'dd. MM. yyyy HH:mm') : 'N/A'}
+                        </td>
+                        <td className="px-6 py-4 border-b-0">
+                          <div className="font-medium text-gray-900">{event.eventName}</div>
+                          <div className="text-gray-500 text-xs">{event.eventType}</div>
+                        </td>
+                        <td className="px-6 py-4 border-b-0">
+                          <div className="font-medium text-gray-900">{event.email}</div>
+                          {event.isCompanyInvoice && (
+                            <div className="text-xs text-indigo-600 font-medium mt-1">Podjetje: {event.companyName}</div>
                           )}
-                          <button
-                            onClick={() => setSelectedEventForQR(event)}
-                            className="inline-flex items-center justify-center gap-2 px-3 py-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-lg text-xs font-medium transition-colors"
-                          >
-                            <QrCode className="w-4 h-4" />
-                            QR Koda
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
+                        </td>
+                        <td className="px-6 py-4 border-b-0">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 uppercase">
+                            {event.plan}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-gray-500 border-b-0">
+                          {event.deliveryMode === 'home_delivery' ? (
+                            <div className="flex flex-col gap-1">
+                              {event.printedQrQuantity > 0 && <span>{event.printedQrQuantity}x Print QR</span>}
+                              {event.standsQuantity > 0 && <span>{event.standsQuantity}x Stojalo</span>}
+                            </div>
+                          ) : (
+                            <span className="text-gray-400">Brez dodatkov</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 font-medium text-gray-900 border-b-0">
+                          €{total.toFixed(2)}
+                        </td>
+                        <td className="px-6 py-4 border-b-0">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            event.paymentStatus === 'paid' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                          }`}>
+                            {event.paymentStatus === 'paid' ? 'Plačano' : 'V čakanju'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-right border-b-0">
+                          <div className="flex items-center justify-end gap-2">
+                            {event.paymentStatus !== 'paid' && (
+                              <button
+                                onClick={() => {
+                                  setEditingEvent(event);
+                                  setEditAmount(total.toString());
+                                }}
+                                className="inline-flex items-center justify-center px-3 py-1.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 rounded-lg text-xs font-medium transition-colors"
+                              >
+                                Označi kot plačano
+                              </button>
+                            )}
+                            <button
+                              onClick={() => setSelectedEventForQR(event)}
+                              className="inline-flex items-center justify-center gap-2 px-3 py-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-lg text-xs font-medium transition-colors"
+                            >
+                              <QrCode className="w-4 h-4" />
+                              QR Koda
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      {(event.deliveryMode === 'home_delivery' || event.isCompanyInvoice) && (
+                        <tr className="bg-gray-50/50">
+                          <td colSpan={8} className="px-6 pb-4 pt-1 text-sm text-gray-600">
+                            <div className="flex gap-x-8">
+                              {event.deliveryMode === 'home_delivery' && (
+                                <div>
+                                  <strong className="text-gray-900">Dostava:</strong> {event.deliveryAddress}, {event.deliveryPostcode} {event.deliveryCity}
+                                  {event.selectedDesignId && <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-800 rounded font-medium text-xs">Dizajn: {event.selectedDesignId}</span>}
+                                </div>
+                              )}
+                              {event.isCompanyInvoice && (
+                                <div>
+                                  <strong className="text-gray-900">Podjetje:</strong> {event.companyName}, {event.companyAddress} (Davčna: {event.companyTaxId})
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
                   );
                 })}
                 {events.length === 0 && !loading && (

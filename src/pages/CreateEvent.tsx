@@ -8,6 +8,8 @@ import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import ImageViewer from '../components/ImageViewer';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { DESIGNS } from '../components/QRDesigns';
+import { QRCodeSVG } from 'qrcode.react';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
 
@@ -49,7 +51,15 @@ export default function CreateEvent() {
   const [standsQuantity, setStandsQuantity] = useState<0 | 5 | 10 | 20 | 30>(0);
   const [printedQrQuantity, setPrintedQrQuantity] = useState<5 | 10 | 20 | 30>(5);
   const [selectedStand, setSelectedStand] = useState<number>(0);
+  const [selectedQrDesign, setSelectedQrDesign] = useState<string>(DESIGNS[0].id);
   const [viewingImage, setViewingImage] = useState<number | null>(null);
+
+  useEffect(() => {
+    const validDesigns = DESIGNS.filter(d => formData.eventType === 'poroka' ? d.category === 'Poročni' : d.category !== 'Poročni');
+    if (validDesigns.length > 0 && !validDesigns.find(d => d.id === selectedQrDesign)) {
+      setSelectedQrDesign(validDesigns[0].id);
+    }
+  }, [formData.eventType, selectedQrDesign]);
 
   const standImages = [
     "https://i.postimg.cc/BQH9hJr5/hf-20260402-042506-9c8ed65f-ea7f-49b0-a82b-514d73de11e0.png",
@@ -255,6 +265,7 @@ export default function CreateEvent() {
         deliveryAddress: deliveryMode === 'home_delivery' ? formData.deliveryAddress : null,
         deliveryCity: deliveryMode === 'home_delivery' ? formData.deliveryCity : null,
         deliveryPostcode: deliveryMode === 'home_delivery' ? formData.deliveryPostcode : null,
+        selectedDesignId: deliveryMode === 'home_delivery' ? selectedQrDesign : null,
         ownerId: user.uid,
         createdAt: serverTimestamp(),
         paymentStatus: 'paid',
@@ -714,6 +725,37 @@ export default function CreateEvent() {
                                 ))}
                               </div>
                               
+                              <div className="pt-4 border-t border-indigo-100/50">
+                                <p className="text-sm font-medium mb-3 text-gray-700">Dizajn QR lističev (papir):</p>
+                                <div className="flex overflow-x-auto gap-4 pb-4 snap-x">
+                                  {DESIGNS.filter(d => formData.eventType === 'poroka' ? d.category === 'Poročni' : d.category !== 'Poročni').map((design) => (
+                                    <button
+                                      key={design.id}
+                                      onClick={() => setSelectedQrDesign(design.id)}
+                                      className={`flex-none w-32 relative aspect-[1/1.414] rounded-lg overflow-hidden border-2 transition-all flex flex-col items-center justify-center p-2 snap-center cursor-pointer bg-white ${
+                                        selectedQrDesign === design.id 
+                                          ? 'border-indigo-600 ring-2 ring-indigo-600/20 shadow-lg' 
+                                          : 'border-gray-200 hover:border-gray-300'
+                                      }`}
+                                      style={{ backgroundColor: design.bg }}
+                                    >
+                                      <div className="absolute inset-0 pointer-events-none transform scale-[0.3] origin-top-left flex items-center justify-center" style={{ width: '333%', height: '333%' }}>
+                                        {design.render({
+                                          event: formData,
+                                          eventUrl: 'https://kliksy.si/demo',
+                                          QRCodeComponent: QRCodeSVG,
+                                          qrSize: 60,
+                                          isPrint: false
+                                        })}
+                                      </div>
+                                      <div className="absolute bottom-0 left-0 right-0 bg-black/80 text-white text-[10px] py-1 font-medium z-20 text-center">
+                                        {design.name}
+                                      </div>
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                              
                               <div className="space-y-3 pt-4 border-t border-indigo-100/50">
                                 <p className="text-sm font-medium text-gray-700">Naslov za dostavo:</p>
                                 <div>
@@ -970,6 +1012,7 @@ export default function CreateEvent() {
                             discountCode={discountCode}
                             stripePaymentIntentId={stripePaymentIntentId}
                             isUpdatingPrice={isUpdatingPrice}
+                            selectedQrDesign={selectedQrDesign}
                           />
                         </Elements>
                       ) : stripeError ? (
@@ -1043,7 +1086,8 @@ function StripePaymentForm({
   discountApplied,
   discountCode,
   stripePaymentIntentId,
-  isUpdatingPrice
+  isUpdatingPrice,
+  selectedQrDesign
 }: any) {
   const stripe = useStripe();
   const elements = useElements();
@@ -1077,6 +1121,7 @@ function StripePaymentForm({
         deliveryAddress: deliveryMode === 'home_delivery' ? formData.deliveryAddress : null,
         deliveryCity: deliveryMode === 'home_delivery' ? formData.deliveryCity : null,
         deliveryPostcode: deliveryMode === 'home_delivery' ? formData.deliveryPostcode : null,
+        selectedDesignId: deliveryMode === 'home_delivery' ? selectedQrDesign : null,
         ownerId: user.uid,
         createdAt: serverTimestamp(),
         paymentStatus: 'pending',
