@@ -107,9 +107,6 @@ export default function Landing() {
               <Link to="/create" className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-indigo-600 text-white px-8 py-4 rounded-full text-lg font-medium hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/20 hover:shadow-indigo-600/30 active:scale-95">
                 Ustvari dogodek <ArrowRight className="w-5 h-5" />
               </Link>
-              <Link to="/event/demo" className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white text-gray-900 border border-gray-200 px-8 py-4 rounded-full text-lg font-medium hover:bg-gray-50 transition-all shadow-sm active:scale-95">
-                <Play className="w-5 h-5" /> Poglej demo
-              </Link>
             </div>
 
             {LANDING_IMAGES.heroPhoneMockup && (
@@ -156,17 +153,6 @@ export default function Landing() {
               </motion.div>
             )}
           </div>
-        </div>
-      </section>
-
-      {/* Logos / Trust */}
-      <section className="py-10 border-y border-gray-100 bg-white overflow-hidden">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-8 opacity-60 grayscale">
-          <p className="font-serif text-xl font-bold">VOGUE</p>
-          <p className="font-serif text-xl font-bold">BRIDES</p>
-          <p className="font-serif text-xl font-bold">The Knot</p>
-          <p className="font-serif text-xl font-bold">WeddingWire</p>
-          <p className="font-serif text-xl font-bold">Style Me Pretty</p>
         </div>
       </section>
 
@@ -493,7 +479,6 @@ export default function Landing() {
                 <li><a href="#kako-deluje" className="hover:text-indigo-600 transition-colors">Kako deluje</a></li>
                 <li><a href="#prednosti" className="hover:text-indigo-600 transition-colors">Prednosti</a></li>
                 <li><a href="#paketi" className="hover:text-indigo-600 transition-colors">Cenik</a></li>
-                <li><Link to="/event/demo" className="hover:text-indigo-600 transition-colors">Demo galerija</Link></li>
               </ul>
             </div>
             <div>
