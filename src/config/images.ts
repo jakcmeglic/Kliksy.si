@@ -14,7 +14,7 @@ export const LANDING_IMAGES = {
   printQrCode: "https://i.postimg.cc/nZdF2mhQ/Secondsection.jpg",
 
   // "Kako deluje" - Sekcija 2 (Slika gosta, ki slika)
-  guestTakingPhoto: "https://i.postimg.cc/DFCv6GwG/Middlesection.png",
+  guestTakingPhoto: "https://i.postimg.cc/g2WPNxsw/Middlesection.png",
 
   // "Kako deluje" - Sekcija 3 (Mreža slik v galeriji)
   galleryGrid1: "https://i.postimg.cc/ZZYY6H4N/Bottomsection.jpg",
