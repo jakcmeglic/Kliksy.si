@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Download, Loader2 } from 'lucide-react';
 import { QRCodeSVG, QRCodeCanvas } from 'qrcode.react';
 import { jsPDF } from 'jspdf';
-import * as htmlToImage from 'html-to-image';
+import html2canvas from 'html2canvas';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 
@@ -57,16 +57,15 @@ export default function QRModal({ isOpen, onClose, event, eventUrl, initialDesig
       // Wait a moment for fonts and SVG to fully render
       await new Promise(resolve => setTimeout(resolve, 500));
 
-      // Capture the hidden element using html-to-image to support modern CSS like oklch
-      const imgData = await htmlToImage.toJpeg(printRef.current, {
-        quality: 0.9,
-        pixelRatio: 2, // Equivalent to scale: 2
+      // Capture the hidden element using html2canvas
+      const canvas = await html2canvas(printRef.current, {
+        scale: 2,
         backgroundColor: selected.bg,
-        style: {
-          transform: 'scale(1)',
-          transformOrigin: 'top left'
-        }
+        useCORS: true,
+        logging: false
       });
+      
+      const imgData = canvas.toDataURL('image/jpeg', 0.9);
 
       if (!imgData || imgData === 'data:,') {
         throw new Error("Slika je prazna (napaka pri izrisu)");
