@@ -430,7 +430,7 @@ export default function Admin() {
           <h3 className="text-lg font-bold text-gray-900 mb-6">Prodaja po dnevih</h3>
           <div className="h-[400px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={timeframe === 'lifetime' ? chartData : chartData.reverse()} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+              <BarChart data={timeframe === 'lifetime' ? chartData : [...chartData].reverse()} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
                 <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 12 }} dy={10} />
                 <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 12 }} tickFormatter={(value) => `€${value}`} />

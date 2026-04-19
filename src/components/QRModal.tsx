@@ -150,7 +150,7 @@ export default function QRModal({ isOpen, onClose, event, eventUrl, initialDesig
 
             {/* Designs Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-              {/* {filteredDesigns.map((design) => (
+              {filteredDesigns.map((design) => (
                 <button
                   key={design.id}
                   onClick={() => setSelectedDesignId(design.id)}
@@ -181,7 +181,7 @@ export default function QRModal({ isOpen, onClose, event, eventUrl, initialDesig
                     {design.name}
                   </div>
                 </button>
-              ))} */}
+              ))}
             </div>
           </div>
 
@@ -242,7 +242,7 @@ export default function QRModal({ isOpen, onClose, event, eventUrl, initialDesig
             className="w-[400px] h-[566px] flex flex-col items-center justify-center overflow-hidden relative"
             style={{ boxSizing: 'border-box', backgroundColor: selected.bg }}
           >
-            {/* {selected.render({
+            {selected.render({
               event: {
                 ...event,
                 partner1: event.partner1 || 'Partner 1',
@@ -254,7 +254,7 @@ export default function QRModal({ isOpen, onClose, event, eventUrl, initialDesig
               QRCodeComponent: QRCodeSVG, 
               qrSize: 180,
               isPrint: true
-            })} */}
+            })}
           </div>
         </div>
       </div>
