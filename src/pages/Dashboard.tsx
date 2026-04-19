@@ -40,7 +40,31 @@ export default function Dashboard() {
         // Handle successful payment redirect
         if (isSuccess && urlEventId) {
           try {
-            await updateDoc(doc(db, "events", urlEventId), { paymentStatus: 'paid' });
+            const eventDocRef = doc(db, "events", urlEventId);
+            const eventSnap = await getDoc(eventDocRef);
+            
+            if (eventSnap.exists()) {
+              const eventData = eventSnap.data();
+              if (eventData.paymentStatus !== 'paid') {
+                await updateDoc(eventDocRef, { paymentStatus: 'paid' });
+                
+                // Trigger order summary email
+                fetch('/api/send-order-summary', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    email: eventData.email || user.email,
+                    eventName: eventData.eventName || (eventData.partner1 ? `${eventData.partner1} & ${eventData.partner2}` : 'Vaš dogodek'),
+                    plan: eventData.plan,
+                    amountPaid: eventData.amountPaid,
+                    standsQuantity: eventData.standsQuantity,
+                    printedQrQuantity: eventData.printedQrQuantity,
+                    deliveryMode: eventData.deliveryMode
+                  })
+                }).catch(err => console.error("Failed to send order summary email:", err));
+              }
+            }
+
             // Clean up URL to prevent re-triggering on refresh
             navigate(`/dashboard?eventId=${urlEventId}`, { replace: true });
             return; // The navigate will re-trigger the useEffect without success=true

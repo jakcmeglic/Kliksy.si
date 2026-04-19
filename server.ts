@@ -57,8 +57,10 @@ async function startServer() {
 
       const mailOptions = {
         from: `"Kliksy" <${smtpUser}>`,
+        replyTo: `"Kliksy Podpora" <info@kliksy.si>`,
         to: email,
         subject: "Dobrodošli pri Kliksy!",
+        text: `Dobrodošli pri Kliksy!\n\nPozdravljeni ${displayName || ''},\n\nHvala, ker ste se registrirali pri Kliksy. Veseli smo, da ste se nam pridružili!\n\nZ našo aplikacijo lahko preprosto ustvarite unikatne QR kode za vaše dogodke in zbirate fotografije vaših gostov na enem mestu.\n\nČe imate kakršna koli vprašanja, nam preprosto odgovorite na ta email.\n\nLep pozdrav,\nEkipa Kliksy`,
         html: `
           <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
             <h1 style="color: #4f46e5;">Dobrodošli pri Kliksy!</h1>
@@ -76,6 +78,81 @@ async function startServer() {
       res.json({ success: true });
     } catch (error: any) {
       console.error("Error sending welcome email:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/send-order-summary", async (req, res) => {
+    const { email, eventName, plan, amountPaid, standsQuantity, printedQrQuantity, deliveryMode } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({ error: "Email is required" });
+    }
+
+    const smtpHost = process.env.SMTP_HOST;
+    const smtpPort = Number(process.env.SMTP_PORT) || 587;
+    const smtpUser = process.env.SMTP_USER;
+    const smtpPass = process.env.SMTP_PASS;
+
+    if (!smtpHost || !smtpUser || !smtpPass) {
+      console.warn("SMTP configuration missing. Skipping order summary email.");
+      return res.json({ success: false, message: "SMTP not configured" });
+    }
+
+    try {
+      const nodemailer = await import("nodemailer");
+      const transporter = nodemailer.createTransport({
+        host: smtpHost,
+        port: smtpPort,
+        secure: smtpPort === 465,
+        auth: {
+          user: smtpUser,
+          pass: smtpPass,
+        },
+      });
+
+      const hasExtras = deliveryMode === 'home_delivery' || standsQuantity > 0;
+      let extrasHtml = '';
+      if (hasExtras) {
+        extrasHtml = `
+          <h3>Dodatki</h3>
+          <ul>
+            ${deliveryMode === 'home_delivery' && printedQrQuantity > 0 ? `<li>Natisnjene QR kode: ${printedQrQuantity} kosov</li>` : ''}
+            ${standsQuantity > 0 ? `<li>Podstavki za mizo: ${standsQuantity} kosov</li>` : ''}
+          </ul>
+        `;
+      }
+
+      const mailOptions = {
+        from: `"Kliksy" <${smtpUser}>`,
+        replyTo: `"Kliksy Podpora" <info@kliksy.si>`,
+        to: email,
+        subject: "Povzetek vašega naročila pri Kliksy",
+        text: `Uspešno naročilo!\n\nHvala za vaš nakup! Vaš dogodek ${eventName || 'brez imena'} smo uspešno pripravili.\n\nPodrobnosti naročila:\nPaket: ${plan ? plan.toUpperCase() : 'Neznano'}\nSkupaj plačano: €${Number(amountPaid || 0).toFixed(2)}\n\nDo nadzorne plošče in urejanja vašega dogodka lahko dostopate na naši spletni strani.\n\nZ lepimi pozdravi,\nVaša ekipa Kliksy`,
+        html: `
+          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+            <h1 style="color: #4f46e5;">Uspešno naročilo!</h1>
+            <p>Hvala za vaš nakup! Vaš dogodek <strong>${eventName || 'brez imena'}</strong> smo uspešno pripravili.</p>
+            
+            <div style="background-color: #f9fafb; padding: 20px; border-radius: 12px; margin: 20px 0;">
+              <h2 style="margin-top: 0;">Podrobnosti naročila</h2>
+              <p><strong>Paket:</strong> ${plan ? plan.toUpperCase() : 'Neznano'}</p>
+              ${extrasHtml}
+              <hr style="border: 1px solid #e5e7eb; margin: 15px 0;"/>
+              <p style="font-size: 1.1em;"><strong>Skupaj plačano:</strong> €${Number(amountPaid || 0).toFixed(2)}</p>
+            </div>
+            
+            <p>Do nadzorne plošče in urejanja vašega dogodka lahko dostopate na naši spletni strani.</p>
+            <br />
+            <p>Z lepimi pozdravi,<br />Vaša ekipa Kliksy</p>
+          </div>
+        `,
+      };
+
+      await transporter.sendMail(mailOptions);
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Error sending order summary email:", error);
       res.status(500).json({ error: error.message });
     }
   });
