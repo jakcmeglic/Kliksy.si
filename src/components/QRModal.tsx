@@ -150,7 +150,7 @@ export default function QRModal({ isOpen, onClose, event, eventUrl, initialDesig
 
             {/* Designs Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-              {filteredDesigns.map((design) => (
+              {/* {filteredDesigns.map((design) => (
                 <button
                   key={design.id}
                   onClick={() => setSelectedDesignId(design.id)}
@@ -161,7 +161,6 @@ export default function QRModal({ isOpen, onClose, event, eventUrl, initialDesig
                   }`}
                   style={{ backgroundColor: design.bg }}
                 >
-                  {/* Mini preview */}
                   <div className="absolute inset-0 pointer-events-none">
                     {design.render({
                       event: {
@@ -178,12 +177,11 @@ export default function QRModal({ isOpen, onClose, event, eventUrl, initialDesig
                     })}
                   </div>
                   
-                  {/* Label */}
                   <div className="absolute bottom-0 left-0 right-0 bg-black/80 text-white text-xs py-2 font-medium z-20">
                     {design.name}
                   </div>
                 </button>
-              ))}
+              ))} */}
             </div>
           </div>
 
@@ -244,7 +242,7 @@ export default function QRModal({ isOpen, onClose, event, eventUrl, initialDesig
             className="w-[400px] h-[566px] flex flex-col items-center justify-center overflow-hidden relative"
             style={{ boxSizing: 'border-box', backgroundColor: selected.bg }}
           >
-            {selected.render({
+            {/* {selected.render({
               event: {
                 ...event,
                 partner1: event.partner1 || 'Partner 1',
@@ -253,10 +251,10 @@ export default function QRModal({ isOpen, onClose, event, eventUrl, initialDesig
                 date: event.date || new Date().toISOString()
               },
               eventUrl,
-              QRCodeComponent: QRCodeSVG, // Use SVG instead of Canvas for better rendering with html-to-image
+              QRCodeComponent: QRCodeSVG, 
               qrSize: 180,
               isPrint: true
-            })}
+            })} */}
           </div>
         </div>
       </div>
