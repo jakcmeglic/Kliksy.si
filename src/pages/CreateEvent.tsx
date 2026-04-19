@@ -253,8 +253,18 @@ export default function CreateEvent() {
       return;
     }
     
+    if (
+      (deliveryMode === 'home_delivery' || standsQuantity > 0) &&
+      (!formData.deliveryAddress || !formData.deliveryPostcode || !formData.deliveryCity)
+    ) {
+      setStripeError('Za dostavo fizičnih izdelkov morate izpolniti vse podatke o naslovu za dostavo!');
+      return;
+    }
+    
     setIsProcessing(true);
     setStripeError('');
+    
+    const requiresDelivery = deliveryMode === 'home_delivery' || standsQuantity > 0;
     
     try {
       const docRef = await addDoc(collection(db, "events"), {
@@ -273,9 +283,9 @@ export default function CreateEvent() {
         companyName: formData.isCompanyInvoice ? formData.companyName : null,
         companyAddress: formData.isCompanyInvoice ? formData.companyAddress : null,
         companyTaxId: formData.isCompanyInvoice ? formData.companyTaxId : null,
-        deliveryAddress: deliveryMode === 'home_delivery' ? formData.deliveryAddress : null,
-        deliveryCity: deliveryMode === 'home_delivery' ? formData.deliveryCity : null,
-        deliveryPostcode: deliveryMode === 'home_delivery' ? formData.deliveryPostcode : null,
+        deliveryAddress: requiresDelivery ? formData.deliveryAddress : null,
+        deliveryCity: requiresDelivery ? formData.deliveryCity : null,
+        deliveryPostcode: requiresDelivery ? formData.deliveryPostcode : null,
         selectedDesignId: deliveryMode === 'home_delivery' ? selectedQrDesign : null,
         ownerId: user.uid,
         createdAt: serverTimestamp(),
@@ -803,35 +813,6 @@ export default function CreateEvent() {
                                   ))}
                                 </div>
                               </div>
-                              
-                              <div className="space-y-3 pt-4 border-t border-indigo-100/50">
-                                <p className="text-sm font-medium text-gray-700">Naslov za dostavo:</p>
-                                <div>
-                                  <input
-                                    type="text"
-                                    placeholder="Ulica in hišna številka"
-                                    value={formData.deliveryAddress}
-                                    onChange={(e) => setFormData({...formData, deliveryAddress: e.target.value})}
-                                    className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-black focus:border-black outline-none transition-all text-sm"
-                                  />
-                                </div>
-                                <div className="grid grid-cols-2 gap-3">
-                                  <input
-                                    type="text"
-                                    placeholder="Poštna številka"
-                                    value={formData.deliveryPostcode}
-                                    onChange={(e) => setFormData({...formData, deliveryPostcode: e.target.value})}
-                                    className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-black focus:border-black outline-none transition-all text-sm"
-                                  />
-                                  <input
-                                    type="text"
-                                    placeholder="Mesto"
-                                    value={formData.deliveryCity}
-                                    onChange={(e) => setFormData({...formData, deliveryCity: e.target.value})}
-                                    className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-black focus:border-black outline-none transition-all text-sm"
-                                  />
-                                </div>
-                              </div>
                             </div>
                           </motion.div>
                         )}
@@ -905,6 +886,48 @@ export default function CreateEvent() {
                       })}
                     </div>
                   </div>
+
+                  <AnimatePresence>
+                    {(deliveryMode === 'home_delivery' || standsQuantity > 0) && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="mt-8 overflow-hidden"
+                      >
+                        <div className="p-6 bg-indigo-50 border border-indigo-100 rounded-2xl">
+                          <h4 className="font-bold mb-4 text-indigo-900">Naslov za dostavo</h4>
+                          <div className="space-y-3">
+                            <div>
+                              <input
+                                type="text"
+                                placeholder="Ulica in hišna številka"
+                                value={formData.deliveryAddress}
+                                onChange={(e) => setFormData({...formData, deliveryAddress: e.target.value})}
+                                className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none transition-all text-sm"
+                              />
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                              <input
+                                type="text"
+                                placeholder="Poštna številka"
+                                value={formData.deliveryPostcode}
+                                onChange={(e) => setFormData({...formData, deliveryPostcode: e.target.value})}
+                                className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none transition-all text-sm"
+                              />
+                              <input
+                                type="text"
+                                placeholder="Mesto"
+                                value={formData.deliveryCity}
+                                onChange={(e) => setFormData({...formData, deliveryCity: e.target.value})}
+                                className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none transition-all text-sm"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
 
                 <div className="bg-gray-50 p-6 rounded-2xl mb-8">
@@ -1145,8 +1168,18 @@ function StripePaymentForm({
     e.preventDefault();
     if (!stripe || !elements || !user) return;
 
+    if (
+      (deliveryMode === 'home_delivery' || standsQuantity > 0) &&
+      (!formData.deliveryAddress || !formData.deliveryPostcode || !formData.deliveryCity)
+    ) {
+      onError('Za dostavo fizičnih izdelkov morate izpolniti vse podatke o naslovu za dostavo!');
+      return;
+    }
+
     setIsProcessing(true);
     onError('');
+
+    const requiresDelivery = deliveryMode === 'home_delivery' || standsQuantity > 0;
 
     try {
       // Create document first
@@ -1166,9 +1199,9 @@ function StripePaymentForm({
         companyName: formData.isCompanyInvoice ? formData.companyName : null,
         companyAddress: formData.isCompanyInvoice ? formData.companyAddress : null,
         companyTaxId: formData.isCompanyInvoice ? formData.companyTaxId : null,
-        deliveryAddress: deliveryMode === 'home_delivery' ? formData.deliveryAddress : null,
-        deliveryCity: deliveryMode === 'home_delivery' ? formData.deliveryCity : null,
-        deliveryPostcode: deliveryMode === 'home_delivery' ? formData.deliveryPostcode : null,
+        deliveryAddress: requiresDelivery ? formData.deliveryAddress : null,
+        deliveryCity: requiresDelivery ? formData.deliveryCity : null,
+        deliveryPostcode: requiresDelivery ? formData.deliveryPostcode : null,
         selectedDesignId: deliveryMode === 'home_delivery' ? selectedQrDesign : null,
         ownerId: user.uid,
         createdAt: serverTimestamp(),

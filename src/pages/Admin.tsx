@@ -31,6 +31,11 @@ interface EventData {
   createdAt: any;
   ownerId: string;
   selectedDesignId?: string;
+  // Delivery info
+  deliveryAddress?: string;
+  deliveryCity?: string;
+  deliveryPostcode?: string;
+  selectedStand?: string;
   // Company info
   isCompanyInvoice?: boolean;
   companyName?: string;
@@ -447,6 +452,11 @@ export default function Admin() {
                         <td className="px-6 py-4 border-b-0">
                           <div className="font-medium text-gray-900">{event.eventName}</div>
                           <div className="text-gray-500 text-xs">{event.eventType}</div>
+                          {event.date && (
+                            <div className="text-xs text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md inline-block mt-1 border border-indigo-100">
+                              Datum: {format(new Date(event.date), 'dd. MM. yyyy')}
+                            </div>
+                          )}
                         </td>
                         <td className="px-6 py-4 border-b-0">
                           <div className="font-medium text-gray-900">{event.email}</div>
@@ -460,10 +470,29 @@ export default function Admin() {
                           </span>
                         </td>
                         <td className="px-6 py-4 text-gray-500 border-b-0">
-                          {event.deliveryMode === 'home_delivery' ? (
+                          {(event.deliveryMode === 'home_delivery' || event.standsQuantity > 0) ? (
                             <div className="flex flex-col gap-1">
-                              {event.printedQrQuantity > 0 && <span>{event.printedQrQuantity}x Print QR</span>}
-                              {event.standsQuantity > 0 && <span>{event.standsQuantity}x Stojalo</span>}
+                              {event.deliveryMode === 'home_delivery' && event.printedQrQuantity > 0 && <span>{event.printedQrQuantity}x Print QR</span>}
+                              {event.standsQuantity > 0 && (
+                                <div className="flex flex-col gap-1">
+                                  <span>{event.standsQuantity}x Podstavek</span>
+                                  {event.selectedStand && (
+                                    <a href={event.selectedStand} target="_blank" rel="noreferrer" className="text-xs text-indigo-600 hover:text-indigo-800 transition-colors inline-block mt-0.5">
+                                      Poglej izbran dizajn &rarr;
+                                    </a>
+                                  )}
+                                </div>
+                              )}
+                              
+                              {(event.deliveryAddress) && (
+                                <div className="text-xs mt-1 bg-gray-50 p-2 rounded border border-gray-100">
+                                  <div className="font-medium text-gray-700 mb-0.5">Dostava:</div>
+                                  <div className="text-gray-600 leading-tight">
+                                    {event.deliveryAddress}<br />
+                                    {event.deliveryPostcode} {event.deliveryCity}
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           ) : (
                             <span className="text-gray-400">Brez dodatkov</span>
