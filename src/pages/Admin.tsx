@@ -10,6 +10,34 @@ import { sl } from 'date-fns/locale';
 import { QrCode, Package, CreditCard, Users, Calendar, ArrowLeft, LogOut, Download } from 'lucide-react';
 import QRModal from '../components/QRModal';
 
+class QRErrorBoundary extends React.Component<{children: React.ReactNode, onClose: () => void}, {hasError: boolean, errorText: string}> {
+  constructor(props: {children: React.ReactNode, onClose: () => void}) {
+    super(props);
+    this.state = { hasError: false, errorText: '' };
+  }
+  static getDerivedStateFromError(error: any) {
+    return { hasError: true, errorText: error.toString() + "\n" + (error.stack || '') };
+  }
+  render() {
+    if (this.state.hasError) {
+       return (
+         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80">
+           <div className="bg-white p-6 rounded-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+              <h2 className="text-red-600 font-bold text-xl mb-4">Error loading QR Modal</h2>
+              <pre className="text-[10px] bg-red-50 p-4 rounded whitespace-pre-wrap font-mono text-red-900 border border-red-200" style={{maxHeight: '60vh', overflowY: 'auto'}}>
+                {this.state.errorText}
+              </pre>
+              <div className="mt-6">
+                <button className="px-6 py-2 bg-gray-900 text-white font-medium rounded-lg" onClick={this.props.onClose}>Close & Return</button>
+              </div>
+           </div>
+         </div>
+       );
+    }
+    return this.props.children;
+  }
+}
+
 const ADMIN_USER = 'admin';
 const ADMIN_PASS = 'kliksyadmin2026'; // Simple hardcoded password for now
 
@@ -570,13 +598,15 @@ export default function Admin() {
 
       {/* QR Modal for Admin */}
       {selectedEventForQR && (
-        <QRModal 
-          isOpen={!!selectedEventForQR}
-          onClose={() => setSelectedEventForQR(null)}
-          event={selectedEventForQR}
-          eventUrl={`${window.location.origin}/event/${selectedEventForQR.id}`}
-          initialDesignId={selectedEventForQR.selectedDesignId}
-        />
+        <QRErrorBoundary onClose={() => setSelectedEventForQR(null)}>
+          <QRModal 
+            isOpen={!!selectedEventForQR}
+            onClose={() => setSelectedEventForQR(null)}
+            event={selectedEventForQR}
+            eventUrl={`${window.location.origin}/event/${selectedEventForQR.id}`}
+            initialDesignId={selectedEventForQR.selectedDesignId}
+          />
+        </QRErrorBoundary>
       )}
       {/* Edit Payment Modal */}
       {editingEvent && (
