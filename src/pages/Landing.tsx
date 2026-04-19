@@ -423,7 +423,7 @@ export default function Landing() {
               <p className="text-gray-500 text-sm mb-6">Za tiste, ki želijo nekaj več.</p>
               <div className="text-5xl font-extrabold mb-8 text-gray-900 tracking-tight">79€</div>
               <ul className="space-y-4 mb-10">
-                {['Unikatna QR koda', 'Neomejeno število gostov', 'Neomejeno fotografij', 'Dostop do galerije 2 leti', 'Prenos vseh slik (ZIP)', 'Live galerija (projekcija)', 'Personalizirana stran z imeni', 'Premium design predloge', 'Prioritetna podpora'].map((f, i) => (
+                {['Unikatna QR koda', 'Neomejeno število gostov', 'Neomejeno fotografij', 'Do 100 videoposnetkov', 'Dostop do galerije 2 leti', 'Prenos vseh slik (ZIP)', 'Live galerija (projekcija)', 'Personalizirana stran z imeni', 'Premium design predloge', 'Prioritetna podpora'].map((f, i) => (
                   <li key={i} className="flex items-start gap-3 text-sm text-gray-700 font-medium">
                     <Check className="w-5 h-5 text-indigo-400 shrink-0" /> 
                     <span>{f}</span>

@@ -93,7 +93,7 @@ export default function CreateEvent() {
     premium: { 
       name: 'Premium', 
       price: 79,
-      features: ['Unikatna QR koda', 'Neomejeno število gostov', 'Neomejeno fotografij', 'Dostop do galerije 2 leti', 'Prenos vseh slik (ZIP)', 'Live galerija (projekcija)', 'Personalizirana stran z imeni', 'Premium design predloge', 'Prioritetna podpora']
+      features: ['Unikatna QR koda', 'Neomejeno število gostov', 'Neomejeno fotografij', 'Do 100 videoposnetkov', 'Dostop do galerije 2 leti', 'Prenos vseh slik (ZIP)', 'Live galerija (projekcija)', 'Personalizirana stran z imeni', 'Premium design predloge', 'Prioritetna podpora']
     }
   };
 
