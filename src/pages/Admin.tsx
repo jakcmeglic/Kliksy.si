@@ -136,6 +136,8 @@ export default function Admin() {
 
     return events.filter(event => {
       if (!event.createdAt) return false;
+      if (event.paymentStatus !== 'paid') return false;
+      
       const eventDate = event.createdAt.toDate();
       
       switch (timeframe) {
