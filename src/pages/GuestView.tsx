@@ -200,32 +200,31 @@ export default function GuestView() {
       for (const file of files) {
         try {
           let fileToUpload: File | Blob = file;
+          console.log("Starting upload for file:", file.name, file.size);
           
-          // Optionally compress only insanely large files to avoid browser crashes, 
-          // otherwise keep original quality
-          if (file.size > 15 * 1024 * 1024) { // over 15MB
+          if (file.size > 15 * 1024 * 1024) { 
+            console.log("File > 15MB, attempting compression...");
             try {
-              const options = {
-                maxSizeMB: 10,
-                maxWidthOrHeight: 4000,
-                useWebWorker: true,
-              };
+              const options = { maxSizeMB: 10, maxWidthOrHeight: 4000, useWebWorker: true };
               fileToUpload = await imageCompression(file, options);
+              console.log("Compression successful");
             } catch (compressionError) {
               console.warn("Compression failed, using original file:", compressionError);
             }
           }
 
-          // Generate unique file name and create storage reference
           const extension = file.name.split('.').pop() || 'jpg';
           const fileName = `${Date.now()}-${uuidv4()}.${extension}`;
           const storageRef = ref(storage, `events/${id}/${fileName}`);
           
-          // Upload to Firebase Storage
+          console.log("Uploading to Storage:", `events/${id}/${fileName}`);
           await uploadBytes(storageRef, fileToUpload);
+          
+          console.log("Getting download URL...");
           const downloadUrl = await getDownloadURL(storageRef);
+          console.log("Download URL obtained:", downloadUrl);
 
-          // Save link directly to Firestore
+          console.log("Saving to Firestore...");
           await addDoc(collection(db, "events", id, "photos"), {
             url: downloadUrl,
             eventId: id,
@@ -235,9 +234,11 @@ export default function GuestView() {
             likedBy: []
           });
           
+          console.log("Successfully saved photo doc");
           successCount++;
-        } catch (fileError) {
-          console.error("Error uploading a file:", fileError);
+        } catch (fileError: any) {
+          console.error("Error uploading a file in loop:", fileError, fileError?.message, fileError?.code);
+          throw fileError; // Re-throw to catch block below to update UI
         }
       }
 
