@@ -2,12 +2,12 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { QRCodeSVG } from "qrcode.react";
-import { Download, Image as ImageIcon, Users, Clock, Settings, ExternalLink, LogOut, Heart, Loader2, ArrowLeft, Plus } from "lucide-react";
+import { Download, Image as ImageIcon, Users, Clock, Settings, ExternalLink, LogOut, Heart, Loader2, ArrowLeft, Plus, Trash2 } from "lucide-react";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import { useAuth } from "../components/AuthProvider";
 import { db, handleFirestoreError, OperationType } from "../firebase";
-import { collection, query, where, getDocs, onSnapshot, doc, getDoc, orderBy, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore";
+import { collection, query, where, getDocs, onSnapshot, doc, getDoc, orderBy, updateDoc, arrayUnion, arrayRemove, deleteDoc } from "firebase/firestore";
 import QRModal from "../components/QRModal";
 import ImageViewer from "../components/ImageViewer";
 
@@ -203,6 +203,19 @@ export default function Dashboard() {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+  };
+
+  const handleDeleteImage = async (photoId: string) => {
+    if (!window.confirm("Ste prepričani, da želite trajno izbrisati to sliko?")) return;
+    
+    try {
+      await deleteDoc(doc(db, "events", event.id, "photos", photoId));
+      // Photo will be automatically removed from the list via onSnapshot, or we remove it manually if needed, 
+      // but we have a realtime listener so it should sync automatically.
+    } catch (error) {
+      console.error("Napaka pri brisanju slike:", error);
+      alert("Napake pri brisanju slike. Preverite povezavo ali pravice.");
+    }
   };
 
   const handleDownloadAll = async () => {
@@ -473,9 +486,12 @@ export default function Dashboard() {
                 {photos.map((photo, i) => (
                   <div key={photo.id} className="aspect-square rounded-xl overflow-hidden bg-gray-100 group relative cursor-pointer" onClick={() => setSelectedImageIndex(i)}>
                     <img src={photo.url} alt="Wedding moment" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" />
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100 gap-3">
                       <button onClick={(e) => { e.stopPropagation(); handleDownloadSingle(photo.url, i); }} className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg transform scale-90 group-hover:scale-100 transition-transform">
                         <Download className="w-5 h-5 text-gray-900" />
+                      </button>
+                      <button onClick={(e) => { e.stopPropagation(); handleDeleteImage(photo.id); }} className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg transform scale-90 group-hover:scale-100 transition-transform hover:bg-red-50 group/delete">
+                        <Trash2 className="w-5 h-5 text-red-500 group-hover/delete:text-red-600" />
                       </button>
                     </div>
                     {/* Thumb Like Indicator */}
