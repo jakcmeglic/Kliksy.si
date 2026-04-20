@@ -33,6 +33,8 @@ export default function CreateEvent() {
     companyName: '',
     companyAddress: '',
     companyTaxId: '',
+    deliveryName: '',
+    deliverySurname: '',
     deliveryAddress: '',
     deliveryCity: '',
     deliveryPostcode: ''
@@ -255,9 +257,9 @@ export default function CreateEvent() {
     
     if (
       (deliveryMode === 'home_delivery' || standsQuantity > 0) &&
-      (!formData.deliveryAddress || !formData.deliveryPostcode || !formData.deliveryCity)
+      (!formData.deliveryName || !formData.deliverySurname || !formData.deliveryAddress || !formData.deliveryPostcode || !formData.deliveryCity)
     ) {
-      setStripeError('Za dostavo fizičnih izdelkov morate izpolniti vse podatke o naslovu za dostavo!');
+      setStripeError('Za dostavo fizičnih izdelkov morate izpolniti vse podatke o prejemniku in naslovu za dostavo!');
       return;
     }
     
@@ -283,6 +285,8 @@ export default function CreateEvent() {
         companyName: formData.isCompanyInvoice ? formData.companyName : null,
         companyAddress: formData.isCompanyInvoice ? formData.companyAddress : null,
         companyTaxId: formData.isCompanyInvoice ? formData.companyTaxId : null,
+        deliveryName: requiresDelivery ? formData.deliveryName : null,
+        deliverySurname: requiresDelivery ? formData.deliverySurname : null,
         deliveryAddress: requiresDelivery ? formData.deliveryAddress : null,
         deliveryCity: requiresDelivery ? formData.deliveryCity : null,
         deliveryPostcode: requiresDelivery ? formData.deliveryPostcode : null,
@@ -896,8 +900,24 @@ export default function CreateEvent() {
                         className="mt-8 overflow-hidden"
                       >
                         <div className="p-6 bg-indigo-50 border border-indigo-100 rounded-2xl">
-                          <h4 className="font-bold mb-4 text-indigo-900">Naslov za dostavo</h4>
+                          <h4 className="font-bold mb-4 text-indigo-900">Prejemnik in naslov za dostavo</h4>
                           <div className="space-y-3">
+                            <div className="grid grid-cols-2 gap-3">
+                              <input
+                                type="text"
+                                placeholder="Ime"
+                                value={formData.deliveryName}
+                                onChange={(e) => setFormData({...formData, deliveryName: e.target.value})}
+                                className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none transition-all text-sm"
+                              />
+                              <input
+                                type="text"
+                                placeholder="Priimek"
+                                value={formData.deliverySurname}
+                                onChange={(e) => setFormData({...formData, deliverySurname: e.target.value})}
+                                className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none transition-all text-sm"
+                              />
+                            </div>
                             <div>
                               <input
                                 type="text"
@@ -1170,9 +1190,9 @@ function StripePaymentForm({
 
     if (
       (deliveryMode === 'home_delivery' || standsQuantity > 0) &&
-      (!formData.deliveryAddress || !formData.deliveryPostcode || !formData.deliveryCity)
+      (!formData.deliveryName || !formData.deliverySurname || !formData.deliveryAddress || !formData.deliveryPostcode || !formData.deliveryCity)
     ) {
-      onError('Za dostavo fizičnih izdelkov morate izpolniti vse podatke o naslovu za dostavo!');
+      onError('Za dostavo fizičnih izdelkov morate izpolniti vse podatke o prejemniku in naslovu za dostavo!');
       return;
     }
 
@@ -1199,6 +1219,8 @@ function StripePaymentForm({
         companyName: formData.isCompanyInvoice ? formData.companyName : null,
         companyAddress: formData.isCompanyInvoice ? formData.companyAddress : null,
         companyTaxId: formData.isCompanyInvoice ? formData.companyTaxId : null,
+        deliveryName: requiresDelivery ? formData.deliveryName : null,
+        deliverySurname: requiresDelivery ? formData.deliverySurname : null,
         deliveryAddress: requiresDelivery ? formData.deliveryAddress : null,
         deliveryCity: requiresDelivery ? formData.deliveryCity : null,
         deliveryPostcode: requiresDelivery ? formData.deliveryPostcode : null,
