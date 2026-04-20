@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronLeft, ChevronRight, Heart } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Heart, Trash2 } from 'lucide-react';
 
 interface ImageViewerProps {
   images: { id: string; url: string; likes?: number; likedBy?: string[] }[];
   initialIndex: number;
   onClose: () => void;
   onToggleLike?: (photoId: string) => void;
+  onDelete?: (photoId: string) => void;
   currentUserId?: string;
 }
 
-export default function ImageViewer({ images, initialIndex, onClose, onToggleLike, currentUserId }: ImageViewerProps) {
+export default function ImageViewer({ images, initialIndex, onClose, onToggleLike, onDelete, currentUserId }: ImageViewerProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   
   // Create a local optimistic state for likes to make the UI feel responsive
@@ -112,35 +113,56 @@ export default function ImageViewer({ images, initialIndex, onClose, onToggleLik
           />
           
           {/* Like button and counter at bottom */}
-          {onToggleLike && currentUserId && (
-            <div 
-              className="absolute bottom-20 flex flex-col items-center gap-2" 
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                onClick={handleLikeClick}
-                className="w-16 h-16 rounded-full bg-black/60 shadow-lg flex items-center justify-center backdrop-blur-md border border-white/10 hover:scale-110 active:scale-95 transition-all"
-              >
-                <Heart 
-                  className={`w-8 h-8 transition-colors ${
-                    isLiked 
-                      ? "text-red-500 fill-red-500 scale-110" 
-                      : "text-white"
-                  }`} 
-                />
-              </button>
-              {/* Adjust like count optimally: if previously unliked and now liked -> add 1. If previously liked and now unliked -> sub 1 */}
-              {(currentImage.likes !== undefined && currentImage.likes > 0) || (isLiked && !isLikedInData) ? (
-                <span className="text-white/90 font-medium text-lg drop-shadow-md">
-                  {isLiked && !isLikedInData 
-                    ? (currentImage.likes || 0) + 1 
-                    : !isLiked && isLikedInData 
-                      ? Math.max(0, (currentImage.likes || 1) - 1)
-                      : (currentImage.likes || 0)}
-                </span>
-              ) : null}
-            </div>
-          )}
+          <div 
+            className="absolute bottom-20 flex items-end justify-center gap-6" 
+            onClick={(e) => e.stopPropagation()}
+          >
+            {onToggleLike && currentUserId && (
+              <div className="flex flex-col items-center gap-2">
+                <button
+                  onClick={handleLikeClick}
+                  className="w-16 h-16 rounded-full bg-black/60 shadow-lg flex items-center justify-center backdrop-blur-md border border-white/10 hover:scale-110 active:scale-95 transition-all"
+                >
+                  <Heart 
+                    className={`w-8 h-8 transition-colors ${
+                      isLiked 
+                        ? "text-red-500 fill-red-500 scale-110" 
+                        : "text-white"
+                    }`} 
+                  />
+                </button>
+                {/* Adjust like count optimally: if previously unliked and now liked -> add 1. If previously liked and now unliked -> sub 1 */}
+                {(currentImage.likes !== undefined && currentImage.likes > 0) || (isLiked && !isLikedInData) ? (
+                  <span className="text-white/90 font-medium text-lg drop-shadow-md">
+                    {isLiked && !isLikedInData 
+                      ? (currentImage.likes || 0) + 1 
+                      : !isLiked && isLikedInData 
+                        ? Math.max(0, (currentImage.likes || 1) - 1)
+                        : (currentImage.likes || 0)}
+                  </span>
+                ) : null}
+              </div>
+            )}
+            
+            {onDelete && (
+              <div className="flex flex-col items-center gap-2 pb-[34px]">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(currentImage.id);
+                    if (images.length <= 1) {
+                      onClose();
+                    } else if (currentIndex >= images.length - 1) {
+                      setCurrentIndex(images.length - 2);
+                    }
+                  }}
+                  className="w-16 h-16 rounded-full bg-red-500/80 shadow-lg flex items-center justify-center backdrop-blur-md border border-white/10 hover:bg-red-600 hover:scale-110 active:scale-95 transition-all"
+                >
+                  <Trash2 className="w-8 h-8 text-white transition-colors" />
+                </button>
+              </div>
+            )}
+          </div>
         </div>
         
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/70 text-sm font-medium bg-black/50 px-4 py-2 rounded-full">

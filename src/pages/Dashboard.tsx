@@ -209,9 +209,27 @@ export default function Dashboard() {
     if (!window.confirm("Ste prepričani, da želite trajno izbrisati to sliko?")) return;
     
     try {
+      const photoToDelete = photos.find(p => p.id === photoId);
+      if (photoToDelete && photoToDelete.url) {
+        // Find storage reference from URL (optimistic try)
+        try {
+          const { ref, deleteObject } = await import('firebase/storage');
+          const { storage } = await import('../firebase');
+          const photoRef = ref(storage, photoToDelete.url);
+          await deleteObject(photoRef);
+        } catch (e) {
+          console.error("Warning: Could not delete from storage, but continuing document deletion", e);
+        }
+      }
+
       await deleteDoc(doc(db, "events", event.id, "photos", photoId));
-      // Photo will be automatically removed from the list via onSnapshot, or we remove it manually if needed, 
-      // but we have a realtime listener so it should sync automatically.
+      
+      // Close ImageViewer if it was single image deleted and no others left
+      if (photos.length <= 1) {
+        setSelectedImageIndex(null);
+      } else if (selectedImageIndex !== null && selectedImageIndex >= photos.length - 1) {
+        setSelectedImageIndex(photos.length - 2);
+      }
     } catch (error) {
       console.error("Napaka pri brisanju slike:", error);
       alert("Napake pri brisanju slike. Preverite povezavo ali pravice.");
@@ -486,12 +504,17 @@ export default function Dashboard() {
                 {photos.map((photo, i) => (
                   <div key={photo.id} className="aspect-square rounded-xl overflow-hidden bg-gray-100 group relative cursor-pointer" onClick={() => setSelectedImageIndex(i)}>
                     <img src={photo.url} alt="Wedding moment" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" />
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100 gap-3">
-                      <button onClick={(e) => { e.stopPropagation(); handleDownloadSingle(photo.url, i); }} className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg transform scale-90 group-hover:scale-100 transition-transform">
-                        <Download className="w-5 h-5 text-gray-900" />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors pointer-events-none"></div>
+                    
+                    {/* Action buttons (always visible on mobile, hover on desktop) */}
+                    <div className="absolute top-2 right-2 flex gap-2 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity z-10 duration-300">
+                      <button onClick={(e) => { e.stopPropagation(); handleDeleteImage(photo.id); }} className="w-9 h-9 md:w-10 md:h-10 bg-white/95 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-red-50 group/delete transition-colors">
+                        <Trash2 className="w-4 h-4 md:w-5 md:h-5 text-red-500 group-hover/delete:text-red-600" />
                       </button>
-                      <button onClick={(e) => { e.stopPropagation(); handleDeleteImage(photo.id); }} className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg transform scale-90 group-hover:scale-100 transition-transform hover:bg-red-50 group/delete">
-                        <Trash2 className="w-5 h-5 text-red-500 group-hover/delete:text-red-600" />
+                    </div>
+                    <div className="absolute top-2 left-2 flex gap-2 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity z-10 duration-300">
+                      <button onClick={(e) => { e.stopPropagation(); handleDownloadSingle(photo.url, i); }} className="w-9 h-9 md:w-10 md:h-10 bg-white/95 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-gray-50 transition-colors">
+                        <Download className="w-4 h-4 md:w-5 md:h-5 text-gray-900" />
                       </button>
                     </div>
                     {/* Thumb Like Indicator */}
@@ -578,6 +601,7 @@ export default function Dashboard() {
           initialIndex={selectedImageIndex}
           onClose={() => setSelectedImageIndex(null)}
           onToggleLike={handleToggleLike}
+          onDelete={handleDeleteImage}
           currentUserId={user?.uid}
         />
       )}
