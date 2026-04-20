@@ -28,6 +28,7 @@ export default function Dashboard() {
   const [downloadError, setDownloadError] = useState('');
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
+  const [imageToDelete, setImageToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     if (authLoading) return;
@@ -206,12 +207,16 @@ export default function Dashboard() {
     document.body.removeChild(a);
   };
 
-  const handleDeleteImage = async (photoId: string) => {
-    if (!window.confirm("Trajno izbrišem to sliko?")) return;
+  const handleDeleteImage = (photoId: string) => {
+    setImageToDelete(photoId);
+  };
+
+  const confirmDelete = async () => {
+    if (!imageToDelete) return;
     
     try {
       // Images are stored directly in Firestore as base64 string, so we only delete the document.
-      await deleteDoc(doc(db, "events", event.id, "photos", photoId));
+      await deleteDoc(doc(db, "events", event.id, "photos", imageToDelete));
       
       // Close ImageViewer if it was single image deleted and no others left
       if (photos.length <= 1) {
@@ -221,7 +226,9 @@ export default function Dashboard() {
       }
     } catch (error) {
       console.error("Napaka pri brisanju slike:", error);
-      alert("Napake pri brisanju slike. Preverite povezavo ali pravice.");
+      // Fallback alert for network errors, etc. Not blocked by all browsers, but console handle is enough.
+    } finally {
+      setImageToDelete(null);
     }
   };
 
@@ -601,6 +608,38 @@ export default function Dashboard() {
           onDelete={handleDeleteImage}
           currentUserId={user?.uid}
         />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {imageToDelete && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm -moz-backdrop-blur" onClick={() => setImageToDelete(null)}>
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-2xl p-6 text-center max-w-sm w-full shadow-xl"
+          >
+            <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Trash2 className="w-8 h-8 text-red-500" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Izbris slike</h3>
+            <p className="text-gray-500 mb-6 font-medium leading-relaxed">Ta slika bo trajno izbrisana in odstranjena iz galerije. Tega dejanja ni mogoče razveljaviti.</p>
+            <div className="flex gap-3">
+              <button 
+                onClick={() => setImageToDelete(null)}
+                className="flex-1 px-4 py-3 bg-gray-100 font-bold text-gray-700 rounded-xl hover:bg-gray-200 transition-colors"
+              >
+                Prekliči
+              </button>
+              <button 
+                onClick={confirmDelete}
+                className="flex-1 px-4 py-3 bg-red-500 font-bold text-white rounded-xl hover:bg-red-600 transition-colors shadow-sm shadow-red-200"
+              >
+                Izbriši
+              </button>
+            </div>
+          </motion.div>
+        </div>
       )}
     </div>
   );
