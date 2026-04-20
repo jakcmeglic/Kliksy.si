@@ -197,14 +197,31 @@ export default function Dashboard() {
     { label: "Zadnja slika", value: photos.length > 0 ? "Pravkar" : "-", icon: Clock },
   ];
 
-  const handleDownloadSingle = (url: string, index: number) => {
-    const a = document.createElement('a');
-    a.href = url;
-    const eventNameStr = event.eventType === 'poroka' || !event.eventType ? `${event.partner1}-${event.partner2}` : event.eventName;
-    a.download = `Kliksy-${eventNameStr}-${index + 1}.jpg`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+  const handleDownloadSingle = async (url: string, index: number) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      const eventNameStr = event.eventType === 'poroka' || !event.eventType ? `${event.partner1}-${event.partner2}` : event.eventName;
+      
+      let extension = 'jpg';
+      if (blob.type) {
+        extension = blob.type.split('/')[1] || 'jpg';
+      }
+      
+      a.download = `Kliksy-${eventNameStr}-${index + 1}.${extension}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (e) {
+      console.error("Single download failed:", e);
+      // Fallback
+      window.open(url, '_blank');
+    }
   };
 
   const handleDeleteImage = (photoId: string) => {
@@ -215,7 +232,19 @@ export default function Dashboard() {
     if (!imageToDelete) return;
     
     try {
-      // Images are stored directly in Firestore as base64 string, so we only delete the document.
+      const photoToDelete = photos.find(p => p.id === imageToDelete);
+      if (photoToDelete && photoToDelete.url && photoToDelete.url.includes('firebasestorage')) {
+        // Find storage reference from URL (optimistic try)
+        try {
+          const { ref, deleteObject } = await import('firebase/storage');
+          const { storage } = await import('../firebase');
+          const photoRef = ref(storage, photoToDelete.url);
+          await deleteObject(photoRef);
+        } catch (e) {
+          console.error("Warning: Could not delete from storage, but continuing document deletion", e);
+        }
+      }
+
       await deleteDoc(doc(db, "events", event.id, "photos", imageToDelete));
       
       // Close ImageViewer if it was single image deleted and no others left

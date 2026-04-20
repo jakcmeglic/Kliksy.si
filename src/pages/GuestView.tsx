@@ -199,41 +199,40 @@ export default function GuestView() {
     try {
       for (const file of files) {
         try {
-          // 1. Compress Image (Strictly to fit in Firestore 1MB limit)
           let fileToUpload: File | Blob = file;
-          try {
-            const options = {
-              maxSizeMB: 0.15, // 150KB max for much faster uploads
-              maxWidthOrHeight: 1080,
-              useWebWorker: true,
-            };
-            fileToUpload = await imageCompression(file, options);
-          } catch (compressionError) {
-            console.warn("Image compression failed, trying without WebWorker:", compressionError);
+          
+          // Optionally compress only insanely large files to avoid browser crashes, 
+          // otherwise keep original quality
+          if (file.size > 15 * 1024 * 1024) { // over 15MB
             try {
-              const fallbackOptions = {
-                maxSizeMB: 0.15,
-                maxWidthOrHeight: 1080,
-                useWebWorker: false,
+              const options = {
+                maxSizeMB: 10,
+                maxWidthOrHeight: 4000,
+                useWebWorker: true,
               };
-              fileToUpload = await imageCompression(file, fallbackOptions);
-            } catch (fallbackError) {
-              console.warn("Fallback compression failed:", fallbackError);
-              if (file.size > 700 * 1024) {
-                throw new Error("Slika je prevelika in je ni bilo mogoče stisniti.");
-              }
+              fileToUpload = await imageCompression(file, options);
+            } catch (compressionError) {
+              console.warn("Compression failed, using original file:", compressionError);
             }
           }
 
-          // 2. Convert to Base64
-          const base64String = await fileToBase64(fileToUpload);
+          // Generate unique file name and create storage reference
+          const extension = file.name.split('.').pop() || 'jpg';
+          const fileName = `${Date.now()}-${uuidv4()}.${extension}`;
+          const storageRef = ref(storage, `events/${id}/${fileName}`);
+          
+          // Upload to Firebase Storage
+          await uploadBytes(storageRef, fileToUpload);
+          const downloadUrl = await getDownloadURL(storageRef);
 
-          // 3. Save directly to Firestore (bypassing Storage rules/setup)
+          // Save link directly to Firestore
           await addDoc(collection(db, "events", id, "photos"), {
-            url: base64String,
+            url: downloadUrl,
             eventId: id,
             deviceId: deviceId,
-            createdAt: Timestamp.now()
+            createdAt: Timestamp.now(),
+            likes: 0,
+            likedBy: []
           });
           
           successCount++;
