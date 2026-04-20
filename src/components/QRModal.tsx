@@ -59,16 +59,23 @@ export default function QRModal({ isOpen, onClose, event, eventUrl, initialDesig
 
       // Safari/iOS workaround for blank images: render once and discard to force rasterization of fonts/assets
       try {
-        await htmlToImage.toJpeg(printRef.current, { pixelRatio: 1, backgroundColor: selected.bg });
+        await htmlToImage.toJpeg(printRef.current, { pixelRatio: 1, backgroundColor: selected.bg, width: 400, height: 566 });
       } catch (e) {
         // ignore errors on first pass
       }
 
       // Capture the hidden element using html-to-image
       const imgData = await htmlToImage.toJpeg(printRef.current, {
-        quality: 0.9,
+        quality: 1,
         backgroundColor: selected.bg,
-        pixelRatio: 2
+        width: 400,
+        height: 566,
+        pixelRatio: 2,
+        style: {
+          margin: '0',
+          padding: '0',
+          transform: 'none',
+        }
       });
 
       if (!imgData || imgData === 'data:,') {
@@ -207,10 +214,6 @@ export default function QRModal({ isOpen, onClose, event, eventUrl, initialDesig
                 <a
                   href={generatedPdfUrl.url}
                   download={generatedPdfUrl.filename}
-                  onClick={() => {
-                    // Optional: close modal after a short delay
-                    setTimeout(onClose, 1000);
-                  }}
                   className="px-6 py-2 rounded-xl font-medium bg-green-600 text-white hover:bg-green-700 transition-colors flex items-center gap-2"
                 >
                   <Download className="w-5 h-5" />
@@ -240,11 +243,11 @@ export default function QRModal({ isOpen, onClose, event, eventUrl, initialDesig
         </motion.div>
 
         {/* Hidden high-res container for html-to-image */}
-        <div style={{ position: 'fixed', top: '-10000px', left: '-10000px', zIndex: -9999 }} aria-hidden="true">
+        <div style={{ position: 'fixed', top: 0, left: 0, zIndex: -9999, opacity: 0, pointerEvents: 'none' }} aria-hidden="true">
           <div 
             ref={printRef} 
-            className="w-[400px] h-[566px] flex flex-col items-center justify-center overflow-hidden relative"
-            style={{ boxSizing: 'border-box', backgroundColor: selected.bg }}
+            className="flex flex-col items-center justify-center overflow-hidden relative"
+            style={{ width: '400px', height: '566px', boxSizing: 'border-box', backgroundColor: selected.bg }}
           >
             {selected.render({
               event: {
