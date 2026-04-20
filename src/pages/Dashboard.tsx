@@ -6,8 +6,9 @@ import { Download, Image as ImageIcon, Users, Clock, Settings, ExternalLink, Log
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import { useAuth } from "../components/AuthProvider";
-import { db, handleFirestoreError, OperationType } from "../firebase";
+import { db, storage, handleFirestoreError, OperationType } from "../firebase";
 import { collection, query, where, getDocs, onSnapshot, doc, getDoc, orderBy, updateDoc, arrayUnion, arrayRemove, deleteDoc } from "firebase/firestore";
+import { ref, deleteObject } from 'firebase/storage';
 import QRModal from "../components/QRModal";
 import ImageViewer from "../components/ImageViewer";
 
@@ -206,22 +207,10 @@ export default function Dashboard() {
   };
 
   const handleDeleteImage = async (photoId: string) => {
-    if (!window.confirm("Ste prepričani, da želite trajno izbrisati to sliko?")) return;
+    if (!window.confirm("Trajno izbrišem to sliko?")) return;
     
     try {
-      const photoToDelete = photos.find(p => p.id === photoId);
-      if (photoToDelete && photoToDelete.url) {
-        // Find storage reference from URL (optimistic try)
-        try {
-          const { ref, deleteObject } = await import('firebase/storage');
-          const { storage } = await import('../firebase');
-          const photoRef = ref(storage, photoToDelete.url);
-          await deleteObject(photoRef);
-        } catch (e) {
-          console.error("Warning: Could not delete from storage, but continuing document deletion", e);
-        }
-      }
-
+      // Images are stored directly in Firestore as base64 string, so we only delete the document.
       await deleteDoc(doc(db, "events", event.id, "photos", photoId));
       
       // Close ImageViewer if it was single image deleted and no others left
@@ -508,12 +497,20 @@ export default function Dashboard() {
                     
                     {/* Action buttons (always visible on mobile, hover on desktop) */}
                     <div className="absolute top-2 right-2 flex gap-2 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity z-10 duration-300">
-                      <button onClick={(e) => { e.stopPropagation(); handleDeleteImage(photo.id); }} className="w-9 h-9 md:w-10 md:h-10 bg-white/95 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-red-50 group/delete transition-colors">
+                      <button 
+                        onPointerDown={(e) => { e.stopPropagation(); }}
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDeleteImage(photo.id); }} 
+                        className="w-9 h-9 md:w-10 md:h-10 bg-white/95 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-red-50 group/delete transition-colors"
+                      >
                         <Trash2 className="w-4 h-4 md:w-5 md:h-5 text-red-500 group-hover/delete:text-red-600" />
                       </button>
                     </div>
                     <div className="absolute top-2 left-2 flex gap-2 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity z-10 duration-300">
-                      <button onClick={(e) => { e.stopPropagation(); handleDownloadSingle(photo.url, i); }} className="w-9 h-9 md:w-10 md:h-10 bg-white/95 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-gray-50 transition-colors">
+                      <button 
+                        onPointerDown={(e) => { e.stopPropagation(); }}
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDownloadSingle(photo.url, i); }} 
+                        className="w-9 h-9 md:w-10 md:h-10 bg-white/95 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-gray-50 transition-colors"
+                      >
                         <Download className="w-4 h-4 md:w-5 md:h-5 text-gray-900" />
                       </button>
                     </div>

@@ -147,7 +147,9 @@ export default function ImageViewer({ images, initialIndex, onClose, onToggleLik
             {onDelete && (
               <div className="flex flex-col items-center gap-2 pb-[34px]">
                 <button
+                  onPointerDown={(e) => e.stopPropagation()}
                   onClick={(e) => {
+                    e.preventDefault();
                     e.stopPropagation();
                     onDelete(currentImage.id);
                     if (images.length <= 1) {
