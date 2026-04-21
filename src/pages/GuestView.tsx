@@ -50,6 +50,7 @@ export default function GuestView() {
   const [event, setEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [uploadError, setUploadError] = useState('');
   const [recentPhotos, setRecentPhotos] = useState<any[]>([]);
@@ -193,53 +194,54 @@ export default function GuestView() {
     const files: File[] = Array.from(e.target.files || []);
     if (files.length === 0 || !id) return;
 
+    setUploadProgress({ current: 0, total: files.length });
     setIsUploading(true);
     let successCount = 0;
     
     try {
-      for (const file of files) {
-        try {
-          let fileToUpload: File | Blob = file;
-          console.log("Starting upload for file:", file.name, file.size);
-          
-          if (file.size > 15 * 1024 * 1024) { 
-            console.log("File > 15MB, attempting compression...");
-            try {
-              const options = { maxSizeMB: 10, maxWidthOrHeight: 4000, useWebWorker: true };
-              fileToUpload = await imageCompression(file, options);
-              console.log("Compression successful");
-            } catch (compressionError) {
-              console.warn("Compression failed, using original file:", compressionError);
+      const chunkSize = 4; // Upload 4 photos in parallel
+      for (let i = 0; i < files.length; i += chunkSize) {
+        const chunk = files.slice(i, i + chunkSize);
+        
+        await Promise.all(chunk.map(async (file) => {
+          try {
+            let fileToUpload: File | Blob = file;
+            console.log("Starting upload for file:", file.name, file.size);
+            
+            if (file.size > 15 * 1024 * 1024) { 
+              console.log("File > 15MB, attempting compression...");
+              try {
+                const options = { maxSizeMB: 10, maxWidthOrHeight: 4000, useWebWorker: true };
+                fileToUpload = await imageCompression(file, options);
+                console.log("Compression successful");
+              } catch (compressionError) {
+                console.warn("Compression failed, using original file:", compressionError);
+              }
             }
+
+            const extension = file.name.split('.').pop() || 'jpg';
+            const fileName = `${Date.now()}-${uuidv4()}.${extension}`;
+            const storageRef = ref(storage, `events/${id}/${fileName}`);
+            
+            await uploadBytes(storageRef, fileToUpload);
+            const downloadUrl = await getDownloadURL(storageRef);
+
+            await addDoc(collection(db, "events", id, "photos"), {
+              url: downloadUrl,
+              eventId: id,
+              deviceId: deviceId,
+              createdAt: Timestamp.now(),
+              likes: 0,
+              likedBy: []
+            });
+            
+            successCount++;
+            setUploadProgress(prev => ({ ...prev, current: prev.current + 1 }));
+          } catch (fileError: any) {
+            console.error("Error uploading a file in loop:", fileError);
+            // We consciously don't throw here so one failed file doesn't stop the rest.
           }
-
-          const extension = file.name.split('.').pop() || 'jpg';
-          const fileName = `${Date.now()}-${uuidv4()}.${extension}`;
-          const storageRef = ref(storage, `events/${id}/${fileName}`);
-          
-          console.log("Uploading to Storage:", `events/${id}/${fileName}`);
-          await uploadBytes(storageRef, fileToUpload);
-          
-          console.log("Getting download URL...");
-          const downloadUrl = await getDownloadURL(storageRef);
-          console.log("Download URL obtained:", downloadUrl);
-
-          console.log("Saving to Firestore...");
-          await addDoc(collection(db, "events", id, "photos"), {
-            url: downloadUrl,
-            eventId: id,
-            deviceId: deviceId,
-            createdAt: Timestamp.now(),
-            likes: 0,
-            likedBy: []
-          });
-          
-          console.log("Successfully saved photo doc");
-          successCount++;
-        } catch (fileError: any) {
-          console.error("Error uploading a file in loop:", fileError, fileError?.message, fileError?.code);
-          throw fileError; // Re-throw to catch block below to update UI
-        }
+        }));
       }
 
       setIsUploading(false);
@@ -248,12 +250,17 @@ export default function GuestView() {
         setUploadSuccess(true);
         setUploadError('');
         // Reset success state after 3 seconds
-        setTimeout(() => setUploadSuccess(false), 3000);
+        setTimeout(() => {
+          setUploadSuccess(false);
+          setUploadProgress({ current: 0, total: 0 });
+        }, 3000);
       } else {
         setUploadError("Nobene slike ni bilo mogoče naložiti. Poskusite znova.");
+        setUploadProgress({ current: 0, total: 0 });
       }
     } catch (error: any) {
       setIsUploading(false);
+      setUploadProgress({ current: 0, total: 0 });
       const errorMessage = error.message ? `Napaka: ${error.message}` : "Prišlo je do napake pri nalaganju. Poskusite znova.";
       setUploadError(errorMessage);
       console.error("Upload error:", error);
@@ -329,8 +336,12 @@ export default function GuestView() {
               className="flex flex-col items-center justify-center py-12"
             >
               <div className="w-16 h-16 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin mb-6" />
-              <h3 className="text-xl font-bold text-gray-900">Nalagam spomin...</h3>
-              <p className="text-sm text-gray-500 mt-2">Prosimo, počakaj trenutek.</p>
+              <h3 className="text-xl font-bold text-gray-900">
+                {uploadProgress.total > 1 ? `Nalagam ${uploadProgress.current} od ${uploadProgress.total}...` : 'Nalagam spomin...'}
+              </h3>
+              <p className="text-sm text-gray-500 mt-2">
+                {uploadProgress.total > 1 ? 'Slike se nalagajo hkrati za hitrejši prenos.' : 'Prosimo, počakaj trenutek.'}
+              </p>
             </motion.div>
           ) : uploadSuccess ? (
             <motion.div 
