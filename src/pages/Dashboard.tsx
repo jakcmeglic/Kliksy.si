@@ -195,19 +195,52 @@ export default function Dashboard() {
     const svg = document.getElementById("raw-qr-code-svg");
     if (!svg) return;
     try {
-      const svgData = new XMLSerializer().serializeToString(svg);
-      const blob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
-      const blobUrl = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = blobUrl;
+      let svgData = new XMLSerializer().serializeToString(svg);
       
-      const eventNameStr = event.eventType === 'poroka' || !event.eventType ? `${event.partner1}-${event.partner2}` : event.eventName;
-      link.download = `QR-Koda-${eventNameStr}.svg`;
+      // Force higher dimensions for a crisp, high-quality PNG
+      const size = 1024;
+      if (svgData.includes('width=')) {
+        svgData = svgData.replace(/width="[^"]+"/, `width="${size}"`);
+      } else {
+        svgData = svgData.replace('<svg ', `<svg width="${size}" `);
+      }
       
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(blobUrl);
+      if (svgData.includes('height=')) {
+        svgData = svgData.replace(/height="[^"]+"/, `height="${size}"`);
+      } else {
+        svgData = svgData.replace('<svg ', `<svg height="${size}" `);
+      }
+
+      const canvas = document.createElement("canvas");
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext("2d");
+      
+      const img = new Image();
+      img.onload = () => {
+        if (!ctx) return;
+        // White background
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, size, size);
+        ctx.drawImage(img, 0, 0, size, size);
+        
+        canvas.toBlob((blob) => {
+          if (!blob) return;
+          const blobUrl = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = blobUrl;
+          
+          const eventNameStr = event.eventType === 'poroka' || !event.eventType ? `${event.partner1}-${event.partner2}` : event.eventName;
+          link.download = `QR-Koda-${eventNameStr}.png`;
+          
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(blobUrl);
+        }, "image/png", 1.0);
+      };
+      
+      img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
     } catch (err) {
       console.error("Error downloading raw QR:", err);
     }
