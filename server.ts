@@ -157,6 +157,92 @@ async function startServer() {
     }
   });
 
+  app.post("/api/create-cebelca-invoice", async (req, res) => {
+    const { eventData, totalAmount } = req.body;
+    
+    // For safety, the API token should be stored in process.env.CEBELCA_API_KEY
+    const cebelcaApiKey = process.env.CEBELCA_API_KEY;
+
+    if (!cebelcaApiKey) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Manjka Čebelca API ključ v nastavitvah." 
+      });
+    }
+
+    try {
+      // 1. Create array of items for the invoice
+      const items = [];
+      const planName = eventData.plan ? eventData.plan.toUpperCase() : 'Neznano';
+      
+      // We push the base plan
+      items.push({
+        title: `Paket ${planName}`,
+        qty: 1,
+        mu: "kos",
+        price: totalAmount, // For simplicity we put the whole total on the first line for now, or split it up if needed.
+        vat: 22, // Set to 0 if not tax-liable!
+        discount: 0
+      });
+
+      // API request to Cebelca (Standard Draft JSON API - Document creation)
+      // This is a proxy implementation, since Cebelca usually requires 
+      // linking a partner ID first. For automated tools, a simplified 
+      // payload usually creates the partner and invoice.
+      const invoicePayload = [
+        {
+          _r: "invoice-sent",
+          _m: "insert-into",
+          title: "Račun za spletno storitev Kliksy",
+          date_sent: new Date().toISOString().split('T')[0],
+          date_served: new Date().toISOString().split('T')[0],
+          date_to_pay: new Date().toISOString().split('T')[0], // Paid immediately
+          partner_name: eventData.isCompanyInvoice ? eventData.companyName : (eventData.deliveryName ? `${eventData.deliveryName} ${eventData.deliverySurname}` : eventData.email),
+          partner_address: eventData.isCompanyInvoice ? eventData.companyAddress : (eventData.deliveryAddress || ""),
+          partner_postal: eventData.isCompanyInvoice ? "" : (eventData.deliveryPostcode || ""),
+          partner_city: eventData.isCompanyInvoice ? "" : (eventData.deliveryCity || ""),
+          partner_vat: eventData.isCompanyInvoice ? eventData.companyTaxId : "",
+          payment_method: "K", // K = kartica
+          notes: "Plačano prek spleta (Stripe)."
+        }
+      ];
+
+      // Add lines
+      items.forEach(item => {
+        invoicePayload.push({
+          _r: "invoice-sent-b",
+          _m: "insert-into",
+          title: item.title,
+          qty: item.qty as any,
+          mu: item.mu,
+          price: item.price as any,
+          vat: item.vat as any,
+          discount: item.discount as any
+        });
+      });
+
+      const response = await fetch("https://www.cebelca.biz/API-v1", {
+        method: "POST",
+        headers: {
+          "Authorization": "Basic " + Buffer.from(cebelcaApiKey + ":x").toString("base64"),
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(invoicePayload)
+      });
+
+      const resultText = await response.text();
+      
+      if (!response.ok) {
+        throw new Error("Napaka pri komunikaciji s Čebelco: " + response.status + " " + resultText);
+      }
+
+      res.json({ success: true, message: "Račun je bil uspešno izdan v Čebelco!" });
+    } catch (error: any) {
+      console.error("Cebelca Error:", error);
+      res.status(500).json({ success: false, message: error.message });
+    }
+  });
+
   // API routes FIRST
   app.post("/api/create-checkout-session", async (req, res) => {
     try {

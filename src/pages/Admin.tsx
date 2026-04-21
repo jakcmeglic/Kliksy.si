@@ -113,6 +113,29 @@ export default function Admin() {
   const [editingEvent, setEditingEvent] = useState<EventData | null>(null);
   const [editAmount, setEditAmount] = useState<string>('');
   const [isUpdating, setIsUpdating] = useState(false);
+  
+  const handleCreateInvoice = async (eventData: EventData, totalAmount: number) => {
+    try {
+      setIsUpdating(true);
+      const res = await fetch('/api/create-cebelca-invoice', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ eventData, totalAmount })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert("Račun je bil uspešno izdan!");
+      } else {
+        alert("Napaka pri izdaji računa:\n" + data.message);
+      }
+    } catch (e: any) {
+      alert("Napaka: " + e.message);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   useEffect(() => {
     const auth = sessionStorage.getItem('adminAuth');
@@ -558,6 +581,14 @@ export default function Admin() {
                               <QrCode className="w-4 h-4" />
                               QR Koda
                             </button>
+                            {event.paymentStatus === 'paid' && (
+                              <button
+                                onClick={() => handleCreateInvoice(event, total)}
+                                className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#f5a623] bg-opacity-10 text-[#e08e0b] hover:bg-opacity-20 rounded-lg text-xs font-medium transition-colors"
+                              >
+                                Izdaj račun (Čebelca)
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>
