@@ -199,7 +199,16 @@ export default function Dashboard() {
 
   const handleDownloadSingle = async (url: string, index: number) => {
     try {
-      const response = await fetch(url);
+      let response;
+      if (url.startsWith('data:')) {
+        response = await fetch(url);
+      } else {
+        const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(url)}`;
+        response = await fetch(proxyUrl);
+      }
+      
+      if (!response.ok && !url.startsWith('data:')) throw new Error("Proxy fetch failed");
+
       const blob = await response.blob();
       const blobUrl = window.URL.createObjectURL(blob);
       
@@ -274,7 +283,16 @@ export default function Dashboard() {
       // Fetch all images and add them to the zip
       const promises = photos.map(async (photo, index) => {
         try {
-          const response = await fetch(photo.url);
+          let response;
+          if (photo.url.startsWith('data:')) {
+            response = await fetch(photo.url);
+          } else {
+            const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(photo.url)}`;
+            response = await fetch(proxyUrl);
+          }
+          
+          if (!response.ok && !photo.url.startsWith('data:')) throw new Error("Proxy fetch failed");
+          
           const blob = await response.blob();
           
           // Try to get original extension or default to jpg
