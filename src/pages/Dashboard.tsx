@@ -191,6 +191,28 @@ export default function Dashboard() {
   const baseUrl = window.location.origin;
   const eventUrl = `${baseUrl}/event/${event.id}`;
   
+  const handleDownloadRawQR = () => {
+    const svg = document.getElementById("raw-qr-code-svg");
+    if (!svg) return;
+    try {
+      const svgData = new XMLSerializer().serializeToString(svg);
+      const blob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      
+      const eventNameStr = event.eventType === 'poroka' || !event.eventType ? `${event.partner1}-${event.partner2}` : event.eventName;
+      link.download = `QR-Koda-${eventNameStr}.svg`;
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.error("Error downloading raw QR:", err);
+    }
+  };
+  
   const stats = [
     { label: "Naložene slike", value: photos.length.toString(), icon: ImageIcon },
     { label: "Gostje", value: new Set(photos.map(p => p.deviceId).filter(Boolean)).size.toString() || "0", icon: Users },
@@ -480,8 +502,9 @@ export default function Dashboard() {
                   <h3 className="font-bold tracking-tight text-xl mb-2 text-gray-900">Tvoja QR koda</h3>
                   <p className="text-sm text-gray-500 mb-8">Natisni to kodo in jo postavi na mize.</p>
                   
-                  <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 mb-6">
+                  <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 mb-6 flex justify-center">
                     <QRCodeSVG 
+                      id="raw-qr-code-svg"
                       value={eventUrl} 
                       size={180}
                       bgColor={"#ffffff"}
@@ -493,9 +516,15 @@ export default function Dashboard() {
                   
                   <button 
                     onClick={() => setIsQRModalOpen(true)}
-                    className="w-full py-3 px-4 bg-gray-100 text-gray-900 rounded-xl text-sm font-medium hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
+                    className="w-full py-3 px-4 mb-2 bg-gray-100 text-gray-900 rounded-xl text-sm font-medium hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
                   >
-                    <Download className="w-4 h-4" /> Prenesi QR kodo
+                    <Download className="w-4 h-4" /> Prenesi QR kodo z designom
+                  </button>
+                  <button 
+                    onClick={handleDownloadRawQR}
+                    className="w-full py-3 px-4 bg-white border border-gray-200 text-gray-900 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Download className="w-4 h-4" /> Prenesi samo QR kodo
                   </button>
                 </div>
 
