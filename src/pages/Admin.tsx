@@ -113,8 +113,10 @@ export default function Admin() {
   const [editingEvent, setEditingEvent] = useState<EventData | null>(null);
   const [editAmount, setEditAmount] = useState<string>('');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [invoicePreview, setInvoicePreview] = useState<{event: EventData, total: number} | null>(null);
   
-  const handleCreateInvoice = async (eventData: EventData, totalAmount: number) => {
+  const confirmCreateInvoice = async () => {
+    if (!invoicePreview) return;
     try {
       setIsUpdating(true);
       const res = await fetch('/api/create-cebelca-invoice', {
@@ -122,11 +124,12 @@ export default function Admin() {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ eventData, totalAmount })
+        body: JSON.stringify({ eventData: invoicePreview.event, totalAmount: invoicePreview.total })
       });
       const data = await res.json();
       if (data.success) {
         alert("Račun je bil uspešno izdan!");
+        setInvoicePreview(null);
       } else {
         alert("Napaka pri izdaji računa:\n" + data.message);
       }
@@ -583,7 +586,7 @@ export default function Admin() {
                             </button>
                             {event.paymentStatus === 'paid' && (
                               <button
-                                onClick={() => handleCreateInvoice(event, total)}
+                                onClick={() => setInvoicePreview({ event, total })}
                                 className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#f5a623] bg-opacity-10 text-[#e08e0b] hover:bg-opacity-20 rounded-lg text-xs font-medium transition-colors"
                               >
                                 Izdaj račun (Čebelca)
@@ -677,6 +680,89 @@ export default function Admin() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Invoice Preview Modal */}
+      {invoicePreview && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="p-6 border-b border-gray-100 flex-shrink-0">
+              <h3 className="text-xl font-bold text-gray-900">Predogled Računa (Čebelca)</h3>
+              <p className="text-sm text-gray-500 mt-1">Preglejte podatke preden se račun uradno izda v sistem Čebelca.</p>
+            </div>
+            
+            <div className="p-6 overflow-y-auto flex-1 bg-gray-50/50 space-y-6">
+              {/* Partner Details */}
+              <div className="bg-white border border-gray-200 rounded-xl p-4">
+                <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">Podatki o stranki</h4>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="block text-gray-500 mb-1">Ime / Naziv:</span>
+                    <span className="font-medium text-gray-900">
+                      {invoicePreview.event.isCompanyInvoice 
+                        ? invoicePreview.event.companyName 
+                        : (invoicePreview.event.deliveryName ? `${invoicePreview.event.deliveryName} ${invoicePreview.event.deliverySurname || ''}`.trim() : invoicePreview.event.email)}
+                    </span>
+                  </div>
+                  {invoicePreview.event.isCompanyInvoice && (
+                    <div>
+                      <span className="block text-gray-500 mb-1">Davčna številka:</span>
+                      <span className="font-medium text-gray-900">{invoicePreview.event.companyTaxId}</span>
+                    </div>
+                  )}
+                  <div className="col-span-2">
+                    <span className="block text-gray-500 mb-1">Naslov:</span>
+                    <span className="font-medium text-gray-900">
+                      {invoicePreview.event.isCompanyInvoice 
+                        ? invoicePreview.event.companyAddress 
+                        : (invoicePreview.event.deliveryAddress ? `${invoicePreview.event.deliveryAddress}, ${invoicePreview.event.deliveryPostcode} ${invoicePreview.event.deliveryCity}`: "Ni naslova")}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Invoice Details */}
+              <div className="bg-white border border-gray-200 rounded-xl p-4">
+                <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">Postavke</h4>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center text-sm border-b border-gray-100 pb-2">
+                    <span className="text-gray-900 font-medium">{`Paket ${invoicePreview.event.plan ? invoicePreview.event.plan.toUpperCase() : 'NEZNANO'}`}</span>
+                    <span className="text-gray-900 font-bold">{invoicePreview.total.toFixed(2)} €</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm pt-1">
+                    <span className="text-gray-500">Skupaj za plačilo:</span>
+                    <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#f5a623] to-[#e08e0b]">
+                      {invoicePreview.total.toFixed(2)} €
+                    </span>
+                  </div>
+                </div>
+                <div className="mt-4 pt-4 border-t border-gray-100 text-xs text-gray-500 flex flex-col gap-1">
+                  <span><strong>Način plačila:</strong> Kartica (prek spleta)</span>
+                  <span><strong>Opomba:</strong> Račun je že v celoti plačan.</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 border-t border-gray-100 bg-white flex gap-3 flex-shrink-0">
+              <button
+                type="button"
+                onClick={() => setInvoicePreview(null)}
+                className="flex-1 px-4 py-3 border border-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors"
+                disabled={isUpdating}
+              >
+                Prekliči
+              </button>
+              <button
+                type="button"
+                onClick={confirmCreateInvoice}
+                disabled={isUpdating}
+                className="flex-1 px-4 py-3 bg-gradient-to-r from-[#f5a623] to-[#e08e0b] text-white rounded-xl font-medium shadow hover:shadow-lg transition-all disabled:opacity-50"
+              >
+                {isUpdating ? 'Izdajam...' : 'Potrdi in izdaj račun'}
+              </button>
+            </div>
           </div>
         </div>
       )}
