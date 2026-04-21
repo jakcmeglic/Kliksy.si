@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight, Heart, Trash2 } from 'lucide-react';
 
-interface ImageViewerProps {
-  images: { id: string; url: string; likes?: number; likedBy?: string[] }[];
+  interface ImageViewerProps {
+  images: { id: string; url: string; likes?: number; likedBy?: string[]; type?: string }[];
   initialIndex: number;
   onClose: () => void;
   onToggleLike?: (photoId: string) => void;
@@ -100,17 +100,31 @@ export default function ImageViewer({ images, initialIndex, onClose, onToggleLik
         )}
 
         <div className="relative w-full h-full flex flex-col items-center justify-center p-4 md:p-12" onClick={handleNext}>
-          <motion.img
-            key={currentIndex}
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.2 }}
-            src={currentImage.url}
-            alt="Gallery image"
-            className="max-w-full max-h-full object-contain select-none"
-            referrerPolicy="no-referrer"
-            onClick={(e) => e.stopPropagation()}
-          />
+          {currentImage.type === 'video' ? (
+            <motion.video
+              key={`vid-${currentIndex}`}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.2 }}
+              src={currentImage.url}
+              controls
+              autoPlay
+              className="max-w-full max-h-full object-contain select-none"
+              onClick={(e: React.MouseEvent<HTMLVideoElement>) => e.stopPropagation()}
+            />
+          ) : (
+            <motion.img
+              key={`img-${currentIndex}`}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.2 }}
+              src={currentImage.url}
+              alt="Gallery image"
+              className="max-w-full max-h-full object-contain select-none"
+              referrerPolicy="no-referrer"
+              onClick={(e) => e.stopPropagation()}
+            />
+          )}
           
           {/* Like button and counter at bottom */}
           <div 

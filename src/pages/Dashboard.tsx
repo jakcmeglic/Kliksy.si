@@ -412,6 +412,17 @@ export default function Dashboard() {
               </h2>
             )}
             <p className="text-sm text-gray-500 mt-2">{new Date(event.date).toLocaleDateString('sl-SI')}</p>
+            {event.plan && (
+              <div className="mt-3">
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
+                  event.plan === 'premium' ? 'bg-amber-50 text-amber-800 border-amber-200' : 
+                  event.plan === 'plus' ? 'bg-blue-50 text-blue-800 border-blue-200' :
+                  'bg-gray-100 text-gray-800 border-gray-200'
+                }`}>
+                  Paket: {event.plan.charAt(0).toUpperCase() + event.plan.slice(1)}
+                </span>
+              </div>
+            )}
             
             <button
               onClick={() => navigate('/create')}
@@ -573,7 +584,11 @@ export default function Dashboard() {
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                     {photos.slice(0, 6).map((photo, i) => (
                       <div key={photo.id} className="aspect-square rounded-xl overflow-hidden bg-gray-100 group relative cursor-pointer" onClick={() => setSelectedImageIndex(i)}>
-                        <img src={photo.url} alt="Wedding moment" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" />
+                        {photo.type === 'video' ? (
+                          <video src={photo.url} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" muted playsInline />
+                        ) : (
+                          <img src={photo.url} alt="Wedding moment" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" />
+                        )}
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
                           <button onClick={(e) => { e.stopPropagation(); handleDownloadSingle(photo.url, i); }} className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg transform scale-90 group-hover:scale-100 transition-transform">
                             <Download className="w-5 h-5 text-gray-900" />
@@ -608,7 +623,11 @@ export default function Dashboard() {
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                 {photos.map((photo, i) => (
                   <div key={photo.id} className="aspect-square rounded-xl overflow-hidden bg-gray-100 group relative cursor-pointer" onClick={() => setSelectedImageIndex(i)}>
-                    <img src={photo.url} alt="Wedding moment" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" />
+                    {photo.type === 'video' ? (
+                      <video src={photo.url} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" muted playsInline />
+                    ) : (
+                      <img src={photo.url} alt="Wedding moment" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" />
+                    )}
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors pointer-events-none"></div>
                     
                     {/* Action buttons (always visible on mobile, hover on desktop) */}

@@ -58,7 +58,8 @@ export default function GuestView() {
   const [showGallery, setShowGallery] = useState(false);
   const [allPhotos, setAllPhotos] = useState<any[]>([]);
   const [hasScrolledGallery, setHasScrolledGallery] = useState(false);
-  
+  const [videoCount, setVideoCount] = useState(0);
+
   const [deviceId] = useState(() => {
     let id = localStorage.getItem('guestDeviceId');
     if (!id) {
@@ -104,6 +105,23 @@ export default function GuestView() {
 
     initGuest();
   }, [id]);
+
+  useEffect(() => {
+    if (!id || event?.plan !== 'premium') return;
+
+    const q = query(
+      collection(db, "events", id, "photos"),
+      where("type", "==", "video")
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setVideoCount(snapshot.size);
+    }, (error) => {
+      console.error("Error fetching video count:", error);
+    });
+
+    return () => unsubscribe();
+  }, [id, event?.plan]);
 
   useEffect(() => {
     if (!id) return;
@@ -191,8 +209,24 @@ export default function GuestView() {
   };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files: File[] = Array.from(e.target.files || []);
+    let files: File[] = Array.from(e.target.files || []);
     if (files.length === 0 || !id) return;
+
+    const isPremium = event?.plan === 'premium';
+    const hasSpaceForVideo = videoCount < 100;
+    
+    files = files.filter(file => {
+      const isVideo = file.type.startsWith('video/');
+      if (isVideo && (!isPremium || !hasSpaceForVideo)) {
+         return false; // Skip videos if not allowed
+      }
+      return true;
+    });
+    
+    if (files.length === 0) {
+       setUploadError("Nalaganje videoposnetkov ni omogočeno ali pa je bila dosežena omejitev (100).");
+       return;
+    }
 
     setUploadProgress({ current: 0, total: files.length });
     setIsUploading(true);
@@ -206,9 +240,11 @@ export default function GuestView() {
         await Promise.all(chunk.map(async (file) => {
           try {
             let fileToUpload: File | Blob = file;
-            console.log("Starting upload for file:", file.name, file.size);
+            const isVideo = file.type.startsWith('video/');
+            console.log(`Starting upload for ${isVideo ? 'video' : 'file'}:`, file.name, file.size);
             
-            if (file.size > 15 * 1024 * 1024) { 
+            // Only compress images, skip for videos
+            if (file.size > 15 * 1024 * 1024 && !isVideo) { 
               console.log("File > 15MB, attempting compression...");
               try {
                 const options = { maxSizeMB: 10, maxWidthOrHeight: 4000, useWebWorker: true };
@@ -219,17 +255,18 @@ export default function GuestView() {
               }
             }
 
-            const extension = file.name.split('.').pop() || 'jpg';
+            const extension = file.name.split('.').pop() || (isVideo ? 'mp4' : 'jpg');
             const fileName = `${Date.now()}-${uuidv4()}.${extension}`;
             const storageRef = ref(storage, `events/${id}/${fileName}`);
             
-            await uploadBytes(storageRef, fileToUpload);
+            await uploadBytes(storageRef, fileToUpload, { contentType: file.type });
             const downloadUrl = await getDownloadURL(storageRef);
 
             await addDoc(collection(db, "events", id, "photos"), {
               url: downloadUrl,
               eventId: id,
               deviceId: deviceId,
+              type: isVideo ? 'video' : 'image',
               createdAt: Timestamp.now(),
               likes: 0,
               likedBy: []
@@ -291,12 +328,14 @@ export default function GuestView() {
     );
   }
 
+  const canUploadVideo = event?.plan === 'premium' && videoCount < 100;
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
       {/* Hidden Inputs */}
       <input 
         type="file" 
-        accept="image/*" 
+        accept={canUploadVideo ? "image/*,video/*" : "image/*"}
         capture="environment"
         className="hidden" 
         ref={cameraInputRef}
@@ -304,7 +343,7 @@ export default function GuestView() {
       />
       <input 
         type="file" 
-        accept="image/*" 
+        accept={canUploadVideo ? "image/*,video/*" : "image/*"}
         multiple
         className="hidden" 
         ref={fileInputRef}
@@ -429,7 +468,11 @@ export default function GuestView() {
                   className="aspect-square rounded-xl overflow-hidden bg-gray-100 cursor-pointer relative"
                   onClick={() => setSelectedImageIndex(index)}
                 >
-                  <img src={photo.url} alt="Wedding moment" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                  {photo.type === 'video' ? (
+                    <video src={photo.url} className="w-full h-full object-cover" muted playsInline />
+                  ) : (
+                    <img src={photo.url} alt="Wedding moment" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                  )}
                   
                   {/* Thumb Like Indicator */}
                   {photo.likes > 0 && (
@@ -501,7 +544,11 @@ export default function GuestView() {
             >
               {allPhotos.map((photo) => (
                 <div key={photo.id} className="w-full h-[100dvh] snap-start snap-always relative flex items-center justify-center bg-black">
-                  <img src={photo.url} alt="Gallery item" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                  {photo.type === 'video' ? (
+                    <video src={photo.url} className="w-full h-full object-contain" autoPlay muted loop playsInline />
+                  ) : (
+                    <img src={photo.url} alt="Gallery item" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                  )}
                   <TikTokLikeButton photo={photo} deviceId={deviceId} onToggleLike={handleToggleLike} />
                 </div>
               ))}
