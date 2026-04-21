@@ -293,7 +293,7 @@ export default function CreateEvent() {
         selectedDesignId: deliveryMode === 'home_delivery' ? selectedQrDesign : null,
         ownerId: user.uid,
         createdAt: serverTimestamp(),
-        paymentStatus: 'paid',
+        paymentStatus: 'pending',
         amountPaid: finalPrice,
         discountCode: discountApplied ? discountCode : null
       });
