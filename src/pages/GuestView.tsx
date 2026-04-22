@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Camera, Upload, CheckCircle2, Plus, Heart, Loader2, Download, ArrowLeft, ChevronUp } from "lucide-react";
 import { db, storage, handleFirestoreError, OperationType } from "../firebase";
-import { doc, getDoc, collection, addDoc, serverTimestamp, Timestamp, query, orderBy, limit, onSnapshot, getDocs, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore";
+import { doc, getDoc, collection, addDoc, serverTimestamp, Timestamp, query, orderBy, limit, onSnapshot, getDocs, updateDoc, arrayUnion, arrayRemove, where } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { signInAnonymously, onAuthStateChanged } from "firebase/auth";
 import { auth } from "../firebase";

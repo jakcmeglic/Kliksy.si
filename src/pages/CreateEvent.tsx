@@ -74,6 +74,7 @@ export default function CreateEvent() {
   const [discountCode, setDiscountCode] = useState('');
   const [discountApplied, setDiscountApplied] = useState(false);
   const [discountError, setDiscountError] = useState('');
+  const [activeDiscount, setActiveDiscount] = useState<any>(null);
   const [stripeError, setStripeError] = useState('');
   const [cardName, setCardName] = useState('');
   const [paymentSuccess, setPaymentSuccess] = useState(false);
@@ -158,6 +159,50 @@ export default function CreateEvent() {
     }
   };
 
+  const handleApplyDiscount = async () => {
+    if (!discountCode.trim()) return;
+    setDiscountError('');
+    setIsUpdatingPrice(true);
+    try {
+      const { collection, query, where, getDocs } = await import('firebase/firestore');
+      const q = query(
+        collection(db, 'promoCodes'), 
+        where('code', '==', discountCode.trim().toUpperCase()),
+        where('isActive', '==', true)
+      );
+      const snapshot = await getDocs(q);
+      
+      if (snapshot.empty) {
+        setDiscountError('Neveljavna koda.');
+        setDiscountApplied(false);
+        setActiveDiscount(null);
+        return;
+      }
+
+      const promoData = snapshot.docs[0].data();
+      
+      // Check expiry
+      if (promoData.validUntil) {
+        const expiry = new Date(promoData.validUntil);
+        if (new Date() > expiry) {
+          setDiscountError('Koda je potekla.');
+          setDiscountApplied(false);
+          setActiveDiscount(null);
+          return;
+        }
+      }
+
+      setActiveDiscount(promoData);
+      setDiscountApplied(true);
+      setDiscountError('');
+    } catch (err: any) {
+      console.error("Promo error:", err);
+      setDiscountError('Napaka pri preverjanju kode.');
+    } finally {
+      setIsUpdatingPrice(false);
+    }
+  };
+
   const originalPrice = plans[formData.plan].price;
   
   let upsellPrice = 0;
@@ -180,7 +225,20 @@ export default function CreateEvent() {
   }
 
   let finalPrice = originalPrice + upsellPrice;
-  if (discountApplied) {
+  if (discountApplied && activeDiscount) {
+    const value = activeDiscount.value || 0;
+    const type = activeDiscount.discountType || 'percentage';
+    const appliesTo = activeDiscount.appliesTo || 'all';
+
+    if (appliesTo === 'packages_only') {
+      const discountAmount = type === 'percentage' ? (originalPrice * value / 100) : value;
+      finalPrice = Math.max(0, originalPrice - discountAmount) + upsellPrice;
+    } else {
+      const discountAmount = type === 'percentage' ? (finalPrice * value / 100) : value;
+      finalPrice = Math.max(0, finalPrice - discountAmount);
+    }
+  } else if (discountApplied) {
+    // Legacy support for hardcoded codes if needed, but we'll prefer the Firestore ones
     if (discountCode.toLowerCase() === 'test99') {
       finalPrice = upsellPrice;
     } else if (discountCode.toLowerCase() === 'prvi50') {
@@ -970,11 +1028,11 @@ export default function CreateEvent() {
                         type="text" 
                         value={discountCode}
                         onChange={(e) => {
-                          setDiscountCode(e.target.value);
+                          setDiscountCode(e.target.value.toUpperCase());
                           setDiscountError('');
                         }}
                         disabled={discountApplied}
-                        placeholder="Vnesite kodo"
+                        placeholder="Vnesite koda"
                         className="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-all uppercase"
                       />
                       <button 
@@ -982,25 +1040,24 @@ export default function CreateEvent() {
                         onClick={() => {
                           if (discountApplied) {
                             setDiscountApplied(false);
+                            setActiveDiscount(null);
                             setDiscountCode('');
                           } else {
-                            const code = discountCode.toLowerCase();
-                            if (code === 'test99' || code === 'prvi50') {
-                              setDiscountApplied(true);
-                              setDiscountError('');
-                            } else {
-                              setDiscountError('Neveljavna koda za popust');
-                            }
+                            handleApplyDiscount();
                           }
                         }}
-                        className={`px-6 py-3 rounded-xl font-medium transition-colors whitespace-nowrap w-full sm:w-auto ${discountApplied ? 'bg-red-100 text-red-600 hover:bg-red-200' : 'bg-gray-900 text-white hover:bg-black'}`}
+                        disabled={isUpdatingPrice}
+                        className={`px-6 py-3 rounded-xl font-medium transition-colors whitespace-nowrap w-full sm:w-auto ${discountApplied ? 'bg-red-100 text-red-600 hover:bg-red-200' : 'bg-gray-900 text-white hover:bg-black disabled:opacity-50'}`}
                       >
-                        {discountApplied ? 'Odstrani' : 'Uporabi'}
+                        {isUpdatingPrice ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : (discountApplied ? 'Odstrani' : 'Uporabi')}
                       </button>
                     </div>
                     {discountError && <p className="text-red-500 text-sm mt-2">{discountError}</p>}
-                    {discountApplied && discountCode.toLowerCase() === 'test99' && <p className="text-green-600 text-sm mt-2">Koda uspešno unovčena! (-100% na osnovni paket)</p>}
-                    {discountApplied && discountCode.toLowerCase() === 'prvi50' && <p className="text-green-600 text-sm mt-2">Koda uspešno unovčena! (-50% na celoten znesek)</p>}
+                    {discountApplied && activeDiscount && (
+                      <p className="text-green-600 text-sm mt-2">
+                        Koda {activeDiscount.code} uspešno unovčena! (-{activeDiscount.value}{activeDiscount.discountType === 'percentage' ? '%' : '€'} {activeDiscount.appliesTo === 'packages_only' ? 'na paket' : 'na celoten znesek'})
+                      </p>
+                    )}
                   </div>
 
                   <div className="mb-4 pb-4 border-b border-gray-200">

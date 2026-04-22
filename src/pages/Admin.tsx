@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { collection, getDocs, query, orderBy, doc, updateDoc } from 'firebase/firestore';
+import { motion, AnimatePresence } from 'motion/react';
+import { collection, getDocs, query, orderBy, doc, updateDoc, where } from 'firebase/firestore';
 import { db } from '../firebase';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
@@ -11,13 +12,12 @@ import { QrCode, Package, CreditCard, Users, Calendar, ArrowLeft, LogOut, Downlo
 import QRModal from '../components/QRModal';
 
 class QRErrorBoundary extends React.Component<{children: React.ReactNode, onClose: () => void}, {hasError: boolean, errorText: string}> {
-  constructor(props: {children: React.ReactNode, onClose: () => void}) {
-    super(props);
-    this.state = { hasError: false, errorText: '' };
-  }
+  state = { hasError: false, errorText: '' };
+  
   static getDerivedStateFromError(error: any) {
     return { hasError: true, errorText: error.toString() + "\n" + (error.stack || '') };
   }
+
   render() {
     if (this.state.hasError) {
        return (
@@ -107,6 +107,19 @@ export default function Admin() {
   
   const [events, setEvents] = useState<EventData[]>([]);
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<'stats' | 'orders' | 'promo'>('stats');
+  
+  const [promoCodes, setPromoCodes] = useState<any[]>([]);
+  const [newPromo, setNewPromo] = useState({
+    code: '',
+    discountType: 'percentage', // percentage or fixed
+    value: 0,
+    validUntil: '',
+    appliesTo: 'all', // all or packages_only
+    isActive: true
+  });
+  const [isAddingPromo, setIsAddingPromo] = useState(false);
+  
   const [timeframe, setTimeframe] = useState<'today' | 'yesterday' | 'l7d' | 'l30d' | 'lifetime'>('l30d');
   
   const [selectedEventForQR, setSelectedEventForQR] = useState<EventData | null>(null);
@@ -174,10 +187,68 @@ export default function Admin() {
         ...doc.data()
       })) as EventData[];
       setEvents(data);
+      
+      // Fetch promo codes too
+      const promoSnap = await getDocs(collection(db, 'promoCodes'));
+      setPromoCodes(promoSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     } catch (err) {
-      console.error('Error fetching events:', err);
+      console.error('Error fetching data:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAddPromo = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPromo.code || newPromo.value <= 0) return;
+    
+    setIsUpdating(true);
+    try {
+      const { addDoc, collection } = await import('firebase/firestore');
+      const docRef = await addDoc(collection(db, 'promoCodes'), {
+        ...newPromo,
+        code: newPromo.code.toUpperCase(),
+        createdAt: new Date().toISOString()
+      });
+      setPromoCodes([...promoCodes, { id: docRef.id, ...newPromo, code: newPromo.code.toUpperCase() }]);
+      setNewPromo({
+        code: '',
+        discountType: 'percentage',
+        value: 0,
+        validUntil: '',
+        appliesTo: 'all',
+        isActive: true
+      });
+      setIsAddingPromo(false);
+    } catch (err) {
+      console.error("Error adding promo:", err);
+      alert("Napaka pri dodajanju kode.");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleDeletePromo = async (id: string) => {
+    if (!window.confirm("Ali ste prepričani, da želite izbrisati to kodo?")) return;
+    try {
+      const { deleteDoc, doc } = await import('firebase/firestore');
+      await deleteDoc(doc(db, 'promoCodes', id));
+      setPromoCodes(promoCodes.filter(p => p.id !== id));
+    } catch (err) {
+      console.error("Error deleting promo:", err);
+      alert("Napaka pri brisanju.");
+    }
+  };
+
+  const handleTogglePromo = async (promo: any) => {
+    try {
+      const { updateDoc, doc } = await import('firebase/firestore');
+      await updateDoc(doc(db, 'promoCodes', promo.id), {
+        isActive: !promo.isActive
+      });
+      setPromoCodes(promoCodes.map(p => p.id === promo.id ? { ...p, isActive: !p.isActive } : p));
+    } catch (err) {
+      console.error("Error toggling promo:", err);
     }
   };
 
@@ -396,85 +467,112 @@ export default function Admin() {
       </header>
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-8">
-        {/* Timeframe selector */}
-        <div className="flex flex-wrap gap-2 mb-8">
+        {/* Tabs */}
+        <div className="flex border-b border-gray-200 mb-8 overflow-x-auto">
           {[
-            { id: 'today', label: 'Danes' },
-            { id: 'yesterday', label: 'Včeraj' },
-            { id: 'l7d', label: 'Zadnjih 7 dni' },
-            { id: 'l30d', label: 'Zadnjih 30 dni' },
-            { id: 'lifetime', label: 'Celotno obdobje' }
-          ].map(t => (
+            { id: 'stats', label: 'Statistika', icon: BarChart },
+            { id: 'orders', label: 'Naročila', icon: CreditCard },
+            { id: 'promo', label: 'Promocijske kode', icon: LogOut }, // Using LogOut as placeholder icon for Tag/Promo
+          ].map(tab => (
             <button
-              key={t.id}
-              onClick={() => setTimeframe(t.id as any)}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                timeframe === t.id 
-                  ? 'bg-indigo-600 text-white shadow-md' 
-                  : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`px-6 py-4 flex items-center gap-2 font-medium text-sm border-b-2 transition-colors whitespace-nowrap ${
+                activeTab === tab.id 
+                  ? 'border-indigo-600 text-indigo-600' 
+                  : 'border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-300'
               }`}
             >
-              {t.label}
+              <tab.icon className="w-4 h-4" />
+              {tab.label}
             </button>
           ))}
         </div>
 
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-            <div className="flex items-center gap-3 text-gray-500 mb-2">
-              <CreditCard className="w-5 h-5" />
-              <h3 className="font-medium">Skupni prihodki</h3>
+        {activeTab === 'stats' && (
+          <>
+            {/* Timeframe selector */}
+            <div className="flex flex-wrap gap-2 mb-8">
+              {[
+                { id: 'today', label: 'Danes' },
+                { id: 'yesterday', label: 'Včeraj' },
+                { id: 'l7d', label: 'Zadnjih 7 dni' },
+                { id: 'l30d', label: 'Zadnjih 30 dni' },
+                { id: 'lifetime', label: 'Celotno obdobje' }
+              ].map(t => (
+                <button
+                  key={t.id}
+                  onClick={() => setTimeframe(t.id as any)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                    timeframe === t.id 
+                      ? 'bg-indigo-600 text-white shadow-md' 
+                      : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+                  }`}
+                >
+                  {t.label}
+                </button>
+              ))}
             </div>
-            <p className="text-3xl font-bold text-gray-900">€{stats.totalRevenue.toFixed(2)}</p>
-          </div>
-          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-            <div className="flex items-center gap-3 text-indigo-500 mb-2">
-              <Calendar className="w-5 h-5" />
-              <h3 className="font-medium">Prihodki (Paketi)</h3>
-            </div>
-            <p className="text-3xl font-bold text-indigo-600">€{stats.totalEventsRevenue.toFixed(2)}</p>
-          </div>
-          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-            <div className="flex items-center gap-3 text-emerald-500 mb-2">
-              <Package className="w-5 h-5" />
-              <h3 className="font-medium">Prihodki (Dodatki)</h3>
-            </div>
-            <p className="text-3xl font-bold text-emerald-600">€{stats.totalUpsellsRevenue.toFixed(2)}</p>
-          </div>
-          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-            <div className="flex items-center gap-3 text-gray-500 mb-2">
-              <Users className="w-5 h-5" />
-              <h3 className="font-medium">Plačana naročila</h3>
-            </div>
-            <p className="text-3xl font-bold text-gray-900">{stats.paidOrders} <span className="text-sm text-gray-400 font-normal">/ {stats.totalOrders}</span></p>
-          </div>
-        </div>
 
-        {/* Chart */}
-        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm mb-8">
-          <h3 className="text-lg font-bold text-gray-900 mb-6">Prodaja po dnevih</h3>
-          <div className="h-[400px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={timeframe === 'lifetime' ? chartData : [...chartData].reverse()} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
-                <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 12 }} dy={10} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 12 }} tickFormatter={(value) => `€${value}`} />
-                <Tooltip 
-                  cursor={{ fill: '#f9fafb' }}
-                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                  formatter={(value: number) => [`€${value.toFixed(2)}`, undefined]}
-                />
-                <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px' }} />
-                <Bar dataKey="eventsRevenue" name="Paketi dogodkov" stackId="a" fill="#4f46e5" radius={[0, 0, 4, 4]} />
-                <Bar dataKey="upsellsRevenue" name="Dodatne storitve (Print, Stojala)" stackId="a" fill="#10b981" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+            {/* Stats Overview */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                <div className="flex items-center gap-3 text-gray-500 mb-2">
+                  <CreditCard className="w-5 h-5" />
+                  <h3 className="font-medium">Skupni prihodki</h3>
+                </div>
+                <p className="text-3xl font-bold text-gray-900">€{stats.totalRevenue.toFixed(2)}</p>
+              </div>
+              <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                <div className="flex items-center gap-3 text-indigo-500 mb-2">
+                  <Calendar className="w-5 h-5" />
+                  <h3 className="font-medium">Prihodki (Paketi)</h3>
+                </div>
+                <p className="text-3xl font-bold text-indigo-600">€{stats.totalEventsRevenue.toFixed(2)}</p>
+              </div>
+              <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                <div className="flex items-center gap-3 text-emerald-500 mb-2">
+                  <Package className="w-5 h-5" />
+                  <h3 className="font-medium">Prihodki (Dodatki)</h3>
+                </div>
+                <p className="text-3xl font-bold text-emerald-600">€{stats.totalUpsellsRevenue.toFixed(2)}</p>
+              </div>
+              <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                <div className="flex items-center gap-3 text-gray-500 mb-2">
+                  <Users className="w-5 h-5" />
+                  <h3 className="font-medium">Plačana naročila</h3>
+                </div>
+                <p className="text-3xl font-bold text-gray-900">{stats.paidOrders} <span className="text-sm text-gray-400 font-normal">/ {stats.totalOrders}</span></p>
+              </div>
+            </div>
 
-        {/* Orders Table */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            {/* Chart */}
+            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm mb-8">
+              <h3 className="text-lg font-bold text-gray-900 mb-6">Prodaja po dnevih</h3>
+              <div className="h-[400px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={timeframe === 'lifetime' ? chartData : [...chartData].reverse()} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
+                    <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 12 }} dy={10} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 12 }} tickFormatter={(value) => `€${value}`} />
+                    <Tooltip 
+                      cursor={{ fill: '#f9fafb' }}
+                      contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                      formatter={(value: number) => [`€${value.toFixed(2)}`, undefined]}
+                    />
+                    <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px' }} />
+                    <Bar dataKey="eventsRevenue" name="Paketi dogodkov" stackId="a" fill="#4f46e5" radius={[0, 0, 4, 4]} />
+                    <Bar dataKey="upsellsRevenue" name="Dodatne storitve (Print, Stojala)" stackId="a" fill="#10b981" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </>
+        )}
+
+        {activeTab === 'orders' && (
+          /* Orders Table */
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="p-6 border-b border-gray-100 flex justify-between items-center">
             <h3 className="text-lg font-bold text-gray-900">Vsa naročila</h3>
             {loading && <span className="text-sm text-gray-500">Nalaganje...</span>}
@@ -628,6 +726,159 @@ export default function Admin() {
             </table>
           </div>
         </div>
+      )}
+      {activeTab === 'promo' && (
+          <div className="space-y-8">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="text-xl font-bold text-gray-900">Upravljanje promocijskih kod</h3>
+                <p className="text-gray-500 mt-1">Ustvarite in spremljajte kode za popust.</p>
+              </div>
+              <button 
+                onClick={() => setIsAddingPromo(!isAddingPromo)}
+                className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 transition-colors shadow-sm"
+              >
+                {isAddingPromo ? 'Prekliči' : 'Dodaj novo kodo'}
+              </button>
+            </div>
+
+            {isAddingPromo && (
+              <motion.div 
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm max-w-2xl"
+              >
+                <form onSubmit={handleAddPromo} className="space-y-6">
+                  <div className="grid grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Koda (npr. POPUST20)</label>
+                      <input 
+                        type="text" 
+                        value={newPromo.code}
+                        onChange={e => setNewPromo({...newPromo, code: e.target.value.toUpperCase()})}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:ring-2 focus:ring-indigo-500"
+                        placeholder="KODA123"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Popust</label>
+                      <div className="flex gap-2">
+                        <input 
+                          type="number" 
+                          value={newPromo.value}
+                          onChange={e => setNewPromo({...newPromo, value: parseFloat(e.target.value)})}
+                          className="flex-1 px-4 py-3 rounded-xl border border-gray-200 outline-none focus:ring-2 focus:ring-indigo-500"
+                          placeholder="20"
+                          required
+                        />
+                        <select 
+                          value={newPromo.discountType}
+                          onChange={e => setNewPromo({...newPromo, discountType: e.target.value as any})}
+                          className="w-24 px-2 py-3 rounded-xl border border-gray-200 outline-none focus:ring-2 focus:ring-indigo-500"
+                        >
+                          <option value="percentage">%</option>
+                          <option value="fixed">€</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Velja do (neobvezno)</label>
+                      <input 
+                        type="date" 
+                        value={newPromo.validUntil}
+                        onChange={e => setNewPromo({...newPromo, validUntil: e.target.value})}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Velja za</label>
+                      <select 
+                        value={newPromo.appliesTo}
+                        onChange={e => setNewPromo({...newPromo, appliesTo: e.target.value as any})}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:ring-2 focus:ring-indigo-500"
+                      >
+                        <option value="all">Vse (vključno z dodatki)</option>
+                        <option value="packages_only">Samo pakete</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end pt-4">
+                    <button 
+                      type="submit" 
+                      disabled={isUpdating}
+                      className="px-8 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors shadow-lg disabled:opacity-50"
+                    >
+                      {isUpdating ? 'Shranjujem...' : 'Shrani promocijsko kodo'}
+                    </button>
+                  </div>
+                </form>
+              </motion.div>
+            )}
+
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-gray-50 text-gray-500">
+                    <tr>
+                      <th className="px-6 py-4 font-medium">Koda</th>
+                      <th className="px-6 py-4 font-medium">Popust</th>
+                      <th className="px-6 py-4 font-medium">Velja za</th>
+                      <th className="px-6 py-4 font-medium">Veljavnost</th>
+                      <th className="px-6 py-4 font-medium">Status</th>
+                      <th className="px-6 py-4 font-medium text-right">Akcije</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {promoCodes.map((promo) => (
+                      <tr key={promo.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-6 py-4 font-bold text-gray-900">{promo.code}</td>
+                        <td className="px-6 py-4">
+                          {promo.value}{promo.discountType === 'percentage' ? '%' : '€'}
+                        </td>
+                        <td className="px-6 py-4 text-gray-600">
+                          {promo.appliesTo === 'all' ? 'Vse' : 'Samo pakete'}
+                        </td>
+                        <td className="px-6 py-4 text-gray-500">
+                          {promo.validUntil ? format(new Date(promo.validUntil), 'dd. MM. yyyy') : 'Neomejeno'}
+                        </td>
+                        <td className="px-6 py-4">
+                          <button 
+                            onClick={() => handleTogglePromo(promo)}
+                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                              promo.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                            }`}
+                          >
+                            {promo.isActive ? 'Aktivna' : 'Onemogočena'}
+                          </button>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <button 
+                            onClick={() => handleDeletePromo(promo.id)}
+                            className="text-red-500 hover:text-red-700 font-medium px-2 py-1"
+                          >
+                            Izbriši
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    {promoCodes.length === 0 && (
+                      <tr>
+                        <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                          Ni aktivnih promocijskih kod.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
 
       {/* QR Modal for Admin */}

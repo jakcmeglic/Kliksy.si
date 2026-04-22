@@ -1,6 +1,92 @@
 import express from "express";
 import Stripe from "stripe";
 import path from "path";
+import admin from "firebase-admin";
+import firebaseConfig from "./firebase-applet-config.json";
+
+// Initialize Firebase Admin
+admin.initializeApp({
+  projectId: firebaseConfig.projectId,
+});
+
+const db = admin.firestore();
+
+// Pricing and Discount Helper
+async function calculatePrice(plan: string, discountCode: string | undefined, deliveryMode: string, standsQuantity: number, printedQrQuantity: number) {
+  const plans = {
+    basic: 3900, // in cents
+    plus: 4900,
+    premium: 7900
+  };
+
+  const originalPrice = plans[plan as keyof typeof plans] || 4900;
+  
+  let upsellPrice = 0;
+  if (deliveryMode === 'home_delivery') {
+    if (printedQrQuantity === 5) upsellPrice += 1999;
+    else if (printedQrQuantity === 10) upsellPrice += 2999;
+    else if (printedQrQuantity === 20) upsellPrice += 3999;
+    else if (printedQrQuantity === 30) upsellPrice += 4999;
+    else upsellPrice += 1999;
+
+    if (standsQuantity === 5) upsellPrice += 499;
+    else if (standsQuantity === 10) upsellPrice += 999;
+    else if (standsQuantity === 20) upsellPrice += 1299;
+    else if (standsQuantity === 30) upsellPrice += 1499;
+  } else {
+    if (standsQuantity === 5) upsellPrice += 1999;
+    else if (standsQuantity === 10) upsellPrice += 2499;
+    else if (standsQuantity === 20) upsellPrice += 2999;
+    else if (standsQuantity === 30) upsellPrice += 3499;
+  }
+
+  let finalPrice = originalPrice + upsellPrice;
+
+  if (discountCode) {
+    // Try to find in Firestore
+    const promoSnap = await db.collection('promoCodes')
+      .where('code', '==', discountCode.trim().toUpperCase())
+      .where('isActive', '==', true)
+      .get();
+
+    if (!promoSnap.empty) {
+      const promo = promoSnap.docs[0].data();
+      
+      // Check expiry if set
+      let isExpired = false;
+      if (promo.validUntil) {
+        if (new Date() > new Date(promo.validUntil)) {
+          isExpired = true;
+        }
+      }
+
+      if (!isExpired) {
+        const value = promo.value || 0;
+        const type = promo.discountType || 'percentage';
+        const appliesTo = promo.appliesTo || 'all';
+
+        if (appliesTo === 'packages_only') {
+          const discountAmount = type === 'percentage' ? Math.round(originalPrice * value / 100) : (value * 100);
+          finalPrice = Math.max(0, originalPrice - discountAmount) + upsellPrice;
+        } else {
+          const discountAmount = type === 'percentage' ? Math.round(finalPrice * value / 100) : (value * 100);
+          finalPrice = Math.max(0, finalPrice - discountAmount);
+        }
+        return finalPrice;
+      }
+    }
+
+    // Legacy fallback for hardcoded codes
+    const code = discountCode.trim().toLowerCase();
+    if (code === 'test99') {
+      finalPrice = upsellPrice;
+    } else if (code === 'prvi50') {
+      finalPrice = Math.round(finalPrice * 0.5);
+    }
+  }
+
+  return finalPrice;
+}
 
 // Main server initialization
 async function startServer() {
@@ -193,7 +279,7 @@ async function startServer() {
       });
 
       // API request to Cebelca (Standard Draft JSON API - Document creation)
-      const invoicePayload = [
+      const invoicePayload: any[] = [
         {
           _r: "invoice-sent",
           _m: "insert-into",
@@ -261,40 +347,7 @@ async function startServer() {
     try {
       const { plan, discountCode, deliveryMode, standsQuantity, printedQrQuantity, eventId, successUrl, cancelUrl } = req.body;
       
-      const plans = {
-        basic: 3900, // in cents (39.00 EUR)
-        plus: 4900,
-        premium: 7900
-      };
-
-      let amount = plans[plan as keyof typeof plans] || 4900;
-
-      let upsellAmount = 0;
-      if (deliveryMode === 'home_delivery') {
-        if (printedQrQuantity === 5) upsellAmount += 1999;
-        else if (printedQrQuantity === 10) upsellAmount += 2999;
-        else if (printedQrQuantity === 20) upsellAmount += 3999;
-        else if (printedQrQuantity === 30) upsellAmount += 4999;
-        else upsellAmount += 1999;
-
-        if (standsQuantity === 5) upsellAmount += 499;
-        else if (standsQuantity === 10) upsellAmount += 999;
-        else if (standsQuantity === 20) upsellAmount += 1299;
-        else if (standsQuantity === 30) upsellAmount += 1499;
-      } else {
-        if (standsQuantity === 5) upsellAmount += 1999;
-        else if (standsQuantity === 10) upsellAmount += 2499;
-        else if (standsQuantity === 20) upsellAmount += 2999;
-        else if (standsQuantity === 30) upsellAmount += 3499;
-      }
-
-      if (discountCode?.trim().toLowerCase() === 'test99') {
-        amount = upsellAmount;
-      } else if (discountCode?.trim().toLowerCase() === 'prvi50') {
-        amount = Math.round((amount + upsellAmount) * 0.5);
-      } else {
-        amount += upsellAmount;
-      }
+      const amount = await calculatePrice(plan, discountCode, deliveryMode, standsQuantity, printedQrQuantity);
 
       if (amount === 0) {
         return res.json({ url: successUrl, free: true });
@@ -339,40 +392,7 @@ async function startServer() {
     try {
       const { plan, discountCode, deliveryMode, standsQuantity, printedQrQuantity } = req.body;
       
-      const plans = {
-        basic: 3900, // in cents (39.00 EUR)
-        plus: 4900,
-        premium: 7900
-      };
-
-      let amount = plans[plan as keyof typeof plans] || 4900;
-
-      let upsellAmount = 0;
-      if (deliveryMode === 'home_delivery') {
-        if (printedQrQuantity === 5) upsellAmount += 1999;
-        else if (printedQrQuantity === 10) upsellAmount += 2999;
-        else if (printedQrQuantity === 20) upsellAmount += 3999;
-        else if (printedQrQuantity === 30) upsellAmount += 4999;
-        else upsellAmount += 1999;
-
-        if (standsQuantity === 5) upsellAmount += 499;
-        else if (standsQuantity === 10) upsellAmount += 999;
-        else if (standsQuantity === 20) upsellAmount += 1299;
-        else if (standsQuantity === 30) upsellAmount += 1499;
-      } else {
-        if (standsQuantity === 5) upsellAmount += 1999;
-        else if (standsQuantity === 10) upsellAmount += 2499;
-        else if (standsQuantity === 20) upsellAmount += 2999;
-        else if (standsQuantity === 30) upsellAmount += 3499;
-      }
-
-      if (discountCode?.trim().toLowerCase() === 'test99') {
-        amount = upsellAmount;
-      } else if (discountCode?.trim().toLowerCase() === 'prvi50') {
-        amount = Math.round((amount + upsellAmount) * 0.5);
-      } else {
-        amount += upsellAmount;
-      }
+      const amount = await calculatePrice(plan, discountCode, deliveryMode, standsQuantity, printedQrQuantity);
 
       if (amount === 0) {
         return res.json({ clientSecret: null, free: true });
