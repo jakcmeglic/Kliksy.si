@@ -61,10 +61,20 @@ export default function GuestView() {
   const [videoCount, setVideoCount] = useState(0);
 
   const [deviceId] = useState(() => {
-    let id = localStorage.getItem('guestDeviceId');
+    let id: string | null = null;
+    try {
+      id = localStorage.getItem('guestDeviceId');
+    } catch (e) {
+      console.warn("localStorage ni na voljo (verjetno in-app brskalnik)", e);
+    }
+    
     if (!id) {
       id = uuidv4();
-      localStorage.setItem('guestDeviceId', id);
+      try {
+        localStorage.setItem('guestDeviceId', id);
+      } catch (e) {
+        console.warn("Ni bilo mogoče shraniti v localStorage.", e);
+      }
     }
     return id;
   });
