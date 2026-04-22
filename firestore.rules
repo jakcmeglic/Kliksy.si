@@ -17,6 +17,14 @@ service cloud.firestore {
       allow read, write: if isOwner(userId);
     }
 
+    // PromoCodes Collection
+    match /promoCodes/{promoCodeId} {
+      // Anyone can read promo codes to check validity during checkout
+      allow read: if true;
+      // Only admins should write (we restrict writing from client side)
+      allow write: if false; 
+    }
+
     // Events Collection
     match /events/{eventId} {
       // Anyone can read event details (needed for guests to see the welcome screen)
