@@ -164,60 +164,26 @@ export default function CreateEvent() {
     setDiscountError('');
     setIsUpdatingPrice(true);
     
-    // Check hardcoded legacy codes first before making any network/database calls
     const codeNormalized = discountCode.trim().toLowerCase();
+    
+    // Simulate slight network delay for better UX
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
     if (codeNormalized === 'prvi50') {
       setDiscountApplied(true);
       setActiveDiscount({ code: 'PRVI50', value: 50, discountType: 'percentage', appliesTo: 'all' });
       setDiscountError('');
-      setIsUpdatingPrice(false);
-      return;
     } else if (codeNormalized === 'test99') {
       setDiscountApplied(true);
       setActiveDiscount({ code: 'TEST99', value: 100, discountType: 'percentage', appliesTo: 'packages_only' });
       setDiscountError('');
-      setIsUpdatingPrice(false);
-      return;
+    } else {
+      setDiscountError('Neveljavna koda.');
+      setDiscountApplied(false);
+      setActiveDiscount(null);
     }
-
-    try {
-      const { collection, query, where, getDocs } = await import('firebase/firestore');
-      const q = query(
-        collection(db, 'promoCodes'), 
-        where('code', '==', discountCode.trim().toUpperCase()),
-        where('isActive', '==', true)
-      );
-      const snapshot = await getDocs(q);
-      
-      if (snapshot.empty) {
-        setDiscountError('Neveljavna koda.');
-        setDiscountApplied(false);
-        setActiveDiscount(null);
-        return;
-      }
-
-      const promoData = snapshot.docs[0].data();
-      
-      // Check expiry
-      if (promoData.validUntil) {
-        const expiry = new Date(promoData.validUntil);
-        if (new Date() > expiry) {
-          setDiscountError('Koda je potekla.');
-          setDiscountApplied(false);
-          setActiveDiscount(null);
-          return;
-        }
-      }
-
-      setActiveDiscount(promoData);
-      setDiscountApplied(true);
-      setDiscountError('');
-    } catch (err: any) {
-      console.error("Promo error:", err);
-      setDiscountError('Napaka pri preverjanju kode.');
-    } finally {
-      setIsUpdatingPrice(false);
-    }
+    
+    setIsUpdatingPrice(false);
   };
 
   const originalPrice = plans[formData.plan].price;

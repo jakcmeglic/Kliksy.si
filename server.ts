@@ -1,15 +1,6 @@
 import express from "express";
 import Stripe from "stripe";
 import path from "path";
-import admin from "firebase-admin";
-import firebaseConfig from "./firebase-applet-config.json";
-
-// Initialize Firebase Admin
-admin.initializeApp({
-  projectId: firebaseConfig.projectId,
-});
-
-const db = admin.firestore();
 
 // Pricing and Discount Helper
 async function calculatePrice(plan: string, discountCode: string | undefined, deliveryMode: string, standsQuantity: number, printedQrQuantity: number) {
@@ -44,50 +35,10 @@ async function calculatePrice(plan: string, discountCode: string | undefined, de
 
   if (discountCode) {
     const code = discountCode.trim().toLowerCase();
-    
-    // Legacy fallback for hardcoded codes FIRST before making network requests
     if (code === 'test99') {
       return upsellPrice;
     } else if (code === 'prvi50') {
       return Math.round(finalPrice * 0.5);
-    }
-
-    // Try to find in Firestore
-    try {
-      const promoSnap = await db.collection('promoCodes')
-        .where('code', '==', discountCode.trim().toUpperCase())
-        .where('isActive', '==', true)
-        .get();
-
-      if (!promoSnap.empty) {
-        const promo = promoSnap.docs[0].data();
-        
-        // Check expiry if set
-        let isExpired = false;
-        if (promo.validUntil) {
-          if (new Date() > new Date(promo.validUntil)) {
-            isExpired = true;
-          }
-        }
-
-        if (!isExpired) {
-          const value = promo.value || 0;
-          const type = promo.discountType || 'percentage';
-          const appliesTo = promo.appliesTo || 'all';
-
-          if (appliesTo === 'packages_only') {
-            const discountAmount = type === 'percentage' ? Math.round(originalPrice * value / 100) : (value * 100);
-            finalPrice = Math.max(0, originalPrice - discountAmount) + upsellPrice;
-          } else {
-            const discountAmount = type === 'percentage' ? Math.round(finalPrice * value / 100) : (value * 100);
-            finalPrice = Math.max(0, finalPrice - discountAmount);
-          }
-          return finalPrice;
-        }
-      }
-    } catch (e) {
-      console.error("Firebase Admin Error querying promo codes:", e);
-      // Fall through to original price if Firestore check fails
     }
   }
 
