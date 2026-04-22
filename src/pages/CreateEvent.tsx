@@ -173,6 +173,20 @@ export default function CreateEvent() {
       const snapshot = await getDocs(q);
       
       if (snapshot.empty) {
+        // Fallback for hardcoded legacy codes
+        const codeNormalized = discountCode.trim().toLowerCase();
+        if (codeNormalized === 'prvi50') {
+          setDiscountApplied(true);
+          setActiveDiscount({ code: 'PRVI50', value: 50, discountType: 'percentage', appliesTo: 'all' });
+          setDiscountError('');
+          return;
+        } else if (codeNormalized === 'test99') {
+          setDiscountApplied(true);
+          setActiveDiscount({ code: 'TEST99', value: 100, discountType: 'percentage', appliesTo: 'packages_only' });
+          setDiscountError('');
+          return;
+        }
+
         setDiscountError('Neveljavna koda.');
         setDiscountApplied(false);
         setActiveDiscount(null);
