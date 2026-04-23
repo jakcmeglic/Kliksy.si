@@ -39,6 +39,8 @@ async function calculatePrice(plan: string, discountCode: string | undefined, de
       return upsellPrice;
     } else if (code === 'prvi50') {
       return Math.round(finalPrice * 0.5);
+    } else if (code === 'pomlad30') {
+      return Math.round(finalPrice * 0.7);
     }
   }
 
