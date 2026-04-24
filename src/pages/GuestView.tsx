@@ -545,18 +545,34 @@ export default function GuestView() {
                 }
               }}
               className="flex-1 overflow-y-auto snap-y snap-mandatory h-full hide-scrollbar"
-              onScroll={() => { if (!hasScrolledGallery) setHasScrolledGallery(true); }}
+              onScroll={(e) => {
+                if (!hasScrolledGallery) setHasScrolledGallery(true);
+                const node = e.currentTarget;
+                if (node && node.clientHeight > 0) {
+                  const index = Math.round(node.scrollTop / node.clientHeight);
+                  if (index !== selectedImageIndex && !isNaN(index) && index >= 0 && index < allPhotos.length) {
+                    setSelectedImageIndex(index);
+                  }
+                }
+              }}
             >
-              {allPhotos.map((photo) => (
-                <div key={photo.id} className="w-full h-[100dvh] snap-start snap-always relative flex items-center justify-center bg-black">
-                  {photo.type === 'video' ? (
-                    <video src={photo.url} className="w-full h-full object-contain" autoPlay muted loop playsInline />
-                  ) : (
-                    <img src={photo.url} alt="Gallery item" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
-                  )}
-                  <TikTokLikeButton photo={photo} deviceId={deviceId} onToggleLike={handleToggleLike} />
-                </div>
-              ))}
+              {allPhotos.map((photo, index) => {
+                // Only render the memory-heavy image if it's within 2 items of the current view
+                const isNearViewport = selectedImageIndex !== null && Math.abs(index - selectedImageIndex) <= 2;
+                
+                return (
+                  <div key={photo.id} className="w-full h-[100dvh] snap-start snap-always relative flex items-center justify-center bg-black">
+                    {isNearViewport && (
+                      photo.type === 'video' ? (
+                        <video src={photo.url} className="w-full h-full object-contain" autoPlay muted loop playsInline />
+                      ) : (
+                        <img src={photo.url} alt="Gallery item" className="w-full h-full object-contain" referrerPolicy="no-referrer" loading="lazy" decoding="async" />
+                      )
+                    )}
+                    <TikTokLikeButton photo={photo} deviceId={deviceId} onToggleLike={handleToggleLike} />
+                  </div>
+                );
+              })}
               
               {allPhotos.length === 0 && (
                 <div className="flex items-center justify-center h-full text-white/60">
