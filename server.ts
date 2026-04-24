@@ -13,23 +13,11 @@ async function calculatePrice(plan: string, discountCode: string | undefined, de
   const originalPrice = plans[plan as keyof typeof plans] || 4900;
   
   let upsellPrice = 0;
-  if (deliveryMode === 'home_delivery') {
-    if (printedQrQuantity === 5) upsellPrice += 1999;
-    else if (printedQrQuantity === 10) upsellPrice += 2999;
-    else if (printedQrQuantity === 20) upsellPrice += 3999;
-    else if (printedQrQuantity === 30) upsellPrice += 4999;
-    else upsellPrice += 1999;
-
-    if (standsQuantity === 5) upsellPrice += 499;
-    else if (standsQuantity === 10) upsellPrice += 999;
-    else if (standsQuantity === 20) upsellPrice += 1299;
-    else if (standsQuantity === 30) upsellPrice += 1499;
-  } else {
-    if (standsQuantity === 5) upsellPrice += 1999;
-    else if (standsQuantity === 10) upsellPrice += 2499;
-    else if (standsQuantity === 20) upsellPrice += 2999;
-    else if (standsQuantity === 30) upsellPrice += 3499;
-  }
+  // Always use self_print logic since home_delivery is removed
+  if (standsQuantity === 5) upsellPrice += 1999;
+  else if (standsQuantity === 10) upsellPrice += 2499;
+  else if (standsQuantity === 20) upsellPrice += 2999;
+  else if (standsQuantity === 30) upsellPrice += 3499;
 
   let finalPrice = originalPrice + upsellPrice;
 
@@ -163,13 +151,12 @@ async function startServer() {
         },
       });
 
-      const hasExtras = deliveryMode === 'home_delivery' || standsQuantity > 0;
+      const hasExtras = standsQuantity > 0;
       let extrasHtml = '';
       if (hasExtras) {
         extrasHtml = `
           <h3>Dodatki</h3>
           <ul>
-            ${deliveryMode === 'home_delivery' && printedQrQuantity > 0 ? `<li>Natisnjene QR kode: ${printedQrQuantity} kosov</li>` : ''}
             ${standsQuantity > 0 ? `<li>Podstavki za mizo: ${standsQuantity} kosov</li>` : ''}
           </ul>
         `;
@@ -304,9 +291,9 @@ async function startServer() {
   // API routes FIRST
   app.post("/api/create-checkout-session", async (req, res) => {
     try {
-      const { plan, discountCode, deliveryMode, standsQuantity, printedQrQuantity, eventId, successUrl, cancelUrl } = req.body;
+      const { plan, discountCode, standsQuantity, eventId, successUrl, cancelUrl } = req.body;
       
-      const amount = await calculatePrice(plan, discountCode, deliveryMode, standsQuantity, printedQrQuantity);
+      const amount = await calculatePrice(plan, discountCode, 'self_print', standsQuantity, 0);
 
       if (amount === 0) {
         return res.json({ url: successUrl, free: true });
@@ -327,7 +314,7 @@ async function startServer() {
               currency: 'eur',
               product_data: {
                 name: `Paket ${plan.toUpperCase()}`,
-                description: `Dodatki: ${standsQuantity} stojal${deliveryMode === 'home_delivery' ? `, ${printedQrQuantity} natisnjenih QR kod` : ''}`,
+                description: `Dodatki: ${standsQuantity} stojal`,
               },
               unit_amount: amount,
             },
@@ -349,9 +336,9 @@ async function startServer() {
 
   app.post("/api/create-payment-intent", async (req, res) => {
     try {
-      const { plan, discountCode, deliveryMode, standsQuantity, printedQrQuantity } = req.body;
+      const { plan, discountCode, standsQuantity } = req.body;
       
-      const amount = await calculatePrice(plan, discountCode, deliveryMode, standsQuantity, printedQrQuantity);
+      const amount = await calculatePrice(plan, discountCode, 'self_print', standsQuantity, 0);
 
       if (amount === 0) {
         return res.json({ clientSecret: null, free: true });

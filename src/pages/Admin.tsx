@@ -12,6 +12,7 @@ import { QrCode, Package, CreditCard, Users, Calendar, ArrowLeft, LogOut, Downlo
 import QRModal from '../components/QRModal';
 
 class QRErrorBoundary extends React.Component<{children: React.ReactNode, onClose: () => void}, {hasError: boolean, errorText: string}> {
+  props: any;
   state = { hasError: false, errorText: '' };
   
   static getDerivedStateFromError(error: any) {
@@ -28,13 +29,13 @@ class QRErrorBoundary extends React.Component<{children: React.ReactNode, onClos
                 {this.state.errorText}
               </pre>
               <div className="mt-6">
-                <button className="px-6 py-2 bg-gray-900 text-white font-medium rounded-lg" onClick={this.props.onClose}>Close & Return</button>
+                <button className="px-6 py-2 bg-gray-900 text-white font-medium rounded-lg" onClick={(this.props as any).onClose}>Close & Return</button>
               </div>
            </div>
          </div>
        );
     }
-    return this.props.children;
+    return (this.props as any).children;
   }
 }
 

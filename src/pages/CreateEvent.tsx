@@ -50,19 +50,9 @@ export default function CreateEvent() {
   const [authSuccess, setAuthSuccess] = useState('');
 
   // Upsell states
-  const [deliveryMode, setDeliveryMode] = useState<'self_print' | 'home_delivery'>('self_print');
   const [standsQuantity, setStandsQuantity] = useState<0 | 5 | 10 | 20 | 30>(0);
-  const [printedQrQuantity, setPrintedQrQuantity] = useState<5 | 10 | 20 | 30>(5);
   const [selectedStand, setSelectedStand] = useState<number>(0);
-  const [selectedQrDesign, setSelectedQrDesign] = useState<string>(DESIGNS[0].id);
   const [viewingImage, setViewingImage] = useState<number | null>(null);
-
-  useEffect(() => {
-    const validDesigns = DESIGNS.filter(d => formData.eventType === 'poroka' ? d.category === 'Poročni' : d.category !== 'Poročni');
-    if (validDesigns.length > 0 && !validDesigns.find(d => d.id === selectedQrDesign)) {
-      setSelectedQrDesign(validDesigns[0].id);
-    }
-  }, [formData.eventType, selectedQrDesign]);
 
   const standImages = [
     "https://i.postimg.cc/BQH9hJr5/hf-20260402-042506-9c8ed65f-ea7f-49b0-a82b-514d73de11e0.png",
@@ -193,23 +183,11 @@ export default function CreateEvent() {
   const originalPrice = plans[formData.plan].price;
   
   let upsellPrice = 0;
-  if (deliveryMode === 'home_delivery') {
-    if (printedQrQuantity === 5) upsellPrice += 19.99;
-    else if (printedQrQuantity === 10) upsellPrice += 29.99;
-    else if (printedQrQuantity === 20) upsellPrice += 39.99;
-    else if (printedQrQuantity === 30) upsellPrice += 49.99;
-    else upsellPrice += 19.99;
-
-    if (standsQuantity === 5) upsellPrice += 4.99;
-    else if (standsQuantity === 10) upsellPrice += 9.99;
-    else if (standsQuantity === 20) upsellPrice += 12.99;
-    else if (standsQuantity === 30) upsellPrice += 14.99;
-  } else {
-    if (standsQuantity === 5) upsellPrice += 19.99;
-    else if (standsQuantity === 10) upsellPrice += 24.99;
-    else if (standsQuantity === 20) upsellPrice += 29.99;
-    else if (standsQuantity === 30) upsellPrice += 34.99;
-  }
+  // Always use self_print logic since home_delivery is removed
+  if (standsQuantity === 5) upsellPrice += 19.99;
+  else if (standsQuantity === 10) upsellPrice += 24.99;
+  else if (standsQuantity === 20) upsellPrice += 29.99;
+  else if (standsQuantity === 30) upsellPrice += 34.99;
 
   let finalPrice = originalPrice + upsellPrice;
   if (discountApplied && activeDiscount) {
@@ -249,9 +227,9 @@ export default function CreateEvent() {
             body: JSON.stringify({ 
               plan: formData.plan, 
               discountCode: discountApplied ? discountCode : '',
-              deliveryMode,
+              deliveryMode: 'self_print',
               standsQuantity,
-              printedQrQuantity
+              printedQrQuantity: 0
             })
           });
           
@@ -294,7 +272,7 @@ export default function CreateEvent() {
         isSubscribed = false;
       };
     }
-  }, [step, finalPrice, formData.plan, discountApplied, discountCode, deliveryMode, standsQuantity, printedQrQuantity]);
+  }, [step, finalPrice, formData.plan, discountApplied, discountCode, standsQuantity]);
 
   const handleCheckoutFree = async () => {
     if (!user || user.isAnonymous) {
@@ -303,17 +281,17 @@ export default function CreateEvent() {
     }
     
     if (
-      (deliveryMode === 'home_delivery' || standsQuantity > 0) &&
+      standsQuantity > 0 &&
       (!formData.deliveryName || !formData.deliverySurname || !formData.deliveryAddress || !formData.deliveryPostcode || !formData.deliveryCity)
     ) {
-      setStripeError('Za dostavo fizičnih izdelkov morate izpolniti vse podatke o prejemniku in naslovu za dostavo!');
+      setStripeError('Za dostavo podstavkov morate izpolniti vse podatke o prejemniku in naslovu za dostavo!');
       return;
     }
     
     setIsProcessing(true);
     setStripeError('');
     
-    const requiresDelivery = deliveryMode === 'home_delivery' || standsQuantity > 0;
+    const requiresDelivery = standsQuantity > 0;
     
     try {
       const docRef = await addDoc(collection(db, "events"), {
@@ -324,9 +302,9 @@ export default function CreateEvent() {
         date: formData.date,
         email: user.email || '',
         plan: formData.plan,
-        deliveryMode,
+        deliveryMode: 'self_print',
         standsQuantity,
-        printedQrQuantity: deliveryMode === 'home_delivery' ? printedQrQuantity : 0,
+        printedQrQuantity: 0,
         selectedStand: standsQuantity > 0 ? standImages[selectedStand] : null,
         isCompanyInvoice: formData.isCompanyInvoice,
         companyName: formData.isCompanyInvoice ? formData.companyName : null,
@@ -337,7 +315,7 @@ export default function CreateEvent() {
         deliveryAddress: requiresDelivery ? formData.deliveryAddress : null,
         deliveryCity: requiresDelivery ? formData.deliveryCity : null,
         deliveryPostcode: requiresDelivery ? formData.deliveryPostcode : null,
-        selectedDesignId: deliveryMode === 'home_delivery' ? selectedQrDesign : null,
+        selectedDesignId: null,
         ownerId: user.uid,
         createdAt: serverTimestamp(),
         paymentStatus: 'pending',
@@ -769,108 +747,6 @@ export default function CreateEvent() {
                 <div className="space-y-4 mb-8">
                   <h3 className="text-xl font-bold mb-4">Dodatne storitve</h3>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div 
-                      className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${
-                        deliveryMode === 'self_print' ? 'border-indigo-600 bg-indigo-50/50' : 'border-gray-200 hover:border-gray-300 bg-white'
-                      }`}
-                      onClick={() => setDeliveryMode('self_print')}
-                    >
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                          deliveryMode === 'self_print' ? 'border-indigo-600' : 'border-gray-300'
-                        }`}>
-                          {deliveryMode === 'self_print' && <div className="w-2.5 h-2.5 bg-indigo-600 rounded-full" />}
-                        </div>
-                        <h4 className="font-bold">Sprintal bom sam</h4>
-                      </div>
-                      <p className="text-sm text-gray-500 pl-8">Brezplačno. QR kodo boste prejeli v PDF formatu za lastno tiskanje.</p>
-                    </div>
-
-                    <div 
-                      className={`p-4 rounded-2xl border-2 transition-all ${
-                        deliveryMode === 'home_delivery' ? 'border-indigo-600 bg-indigo-50/50' : 'border-gray-200 hover:border-gray-300 bg-white'
-                      }`}
-                    >
-                      <div 
-                        className="flex items-center justify-between mb-2 cursor-pointer"
-                        onClick={() => setDeliveryMode('home_delivery')}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                            deliveryMode === 'home_delivery' ? 'border-indigo-600' : 'border-gray-300'
-                          }`}>
-                            {deliveryMode === 'home_delivery' && <div className="w-2.5 h-2.5 bg-indigo-600 rounded-full" />}
-                          </div>
-                          <h4 className="font-bold">All in one dostava na dom</h4>
-                        </div>
-                        <span className="font-bold">
-                          +{printedQrQuantity === 5 ? '19.99' : printedQrQuantity === 10 ? '29.99' : printedQrQuantity === 20 ? '39.99' : '49.99'}€
-                        </span>
-                      </div>
-                      <p className="text-sm text-gray-500 pl-8 mb-4 cursor-pointer" onClick={() => setDeliveryMode('home_delivery')}>Vključuje printanje QR kod na premium trd papir in dostavo na dom.</p>
-                      
-                      <AnimatePresence>
-                        {deliveryMode === 'home_delivery' && (
-                          <motion.div 
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            className="pl-8 overflow-hidden"
-                          >
-                            <div className="pt-2 border-t border-indigo-100/50">
-                              <p className="text-sm font-medium mb-2 text-gray-700">Število natisnjenih QR kod:</p>
-                              <div className="grid grid-cols-4 gap-2 mb-4">
-                                {[5, 10, 20, 30].map((qty) => (
-                                  <button
-                                    key={qty}
-                                    onClick={() => setPrintedQrQuantity(qty as any)}
-                                    className={`py-2 px-1 rounded-lg text-sm font-medium border transition-colors ${
-                                      printedQrQuantity === qty ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                                    }`}
-                                  >
-                                    {qty}
-                                  </button>
-                                ))}
-                              </div>
-                              
-                              <div className="pt-4 border-t border-indigo-100/50">
-                                <p className="text-sm font-medium mb-3 text-gray-700">Dizajn QR lističev (papir):</p>
-                                <div className="flex overflow-x-auto gap-4 pb-4 snap-x">
-                                  {DESIGNS.filter(d => formData.eventType === 'poroka' ? d.category === 'Poročni' : d.category !== 'Poročni').map((design) => (
-                                    <button
-                                      key={design.id}
-                                      onClick={() => setSelectedQrDesign(design.id)}
-                                      className={`flex-none w-32 relative aspect-[1/1.414] rounded-lg overflow-hidden border-2 transition-all flex flex-col items-center justify-center p-2 snap-center cursor-pointer bg-white ${
-                                        selectedQrDesign === design.id 
-                                          ? 'border-indigo-600 ring-2 ring-indigo-600/20 shadow-lg' 
-                                          : 'border-gray-200 hover:border-gray-300'
-                                      }`}
-                                      style={{ backgroundColor: design.bg }}
-                                    >
-                                      <div className="absolute inset-0 pointer-events-none transform scale-[0.3] origin-top-left flex items-center justify-center" style={{ width: '333%', height: '333%' }}>
-                                        {design.render({
-                                          event: formData,
-                                          eventUrl: 'https://kliksy.si/demo',
-                                          QRCodeComponent: QRCodeSVG,
-                                          qrSize: 60,
-                                          isPrint: false
-                                        })}
-                                      </div>
-                                      <div className="absolute bottom-0 left-0 right-0 bg-black/80 text-white text-[10px] py-1 font-medium z-20 text-center">
-                                        {design.name}
-                                      </div>
-                                    </button>
-                                  ))}
-                                </div>
-                              </div>
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  </div>
-
                   <div className="mt-8 p-6 bg-gray-50 rounded-2xl border border-gray-200">
                     <h4 className="font-bold mb-2">Podstavki za mizo (opcijsko)</h4>
                     <p className="text-sm text-gray-600 mb-4">Izberite količino podstavkov za vaše QR kode.</p>
@@ -918,9 +794,7 @@ export default function CreateEvent() {
                         Brez
                       </button>
                       {[5, 10, 20, 30].map((qty) => {
-                        const price = deliveryMode === 'home_delivery' 
-                          ? (qty === 5 ? 4.99 : qty === 10 ? 9.99 : qty === 20 ? 12.99 : 14.99)
-                          : (qty === 5 ? 19.99 : qty === 10 ? 24.99 : qty === 20 ? 29.99 : 34.99);
+                        const price = (qty === 5 ? 19.99 : qty === 10 ? 24.99 : qty === 20 ? 29.99 : 34.99);
                         
                         return (
                           <button
@@ -939,7 +813,7 @@ export default function CreateEvent() {
                   </div>
 
                   <AnimatePresence>
-                    {(deliveryMode === 'home_delivery' || standsQuantity > 0) && (
+                    {(standsQuantity > 0) && (
                       <motion.div
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: 'auto', opacity: 1 }}
@@ -1138,9 +1012,7 @@ export default function CreateEvent() {
                           <StripePaymentForm 
                             user={user}
                             formData={formData}
-                            deliveryMode={deliveryMode}
                             standsQuantity={standsQuantity}
-                            printedQrQuantity={printedQrQuantity}
                             standImages={standImages}
                             selectedStand={selectedStand}
                             onError={setStripeError}
@@ -1149,7 +1021,6 @@ export default function CreateEvent() {
                             discountCode={discountCode}
                             stripePaymentIntentId={stripePaymentIntentId}
                             isUpdatingPrice={isUpdatingPrice}
-                            selectedQrDesign={selectedQrDesign}
                           />
                         </Elements>
                       ) : stripeError ? (
@@ -1213,9 +1084,7 @@ export default function CreateEvent() {
 function StripePaymentForm({ 
   user, 
   formData, 
-  deliveryMode, 
   standsQuantity, 
-  printedQrQuantity, 
   standImages, 
   selectedStand, 
   onError,
@@ -1223,8 +1092,7 @@ function StripePaymentForm({
   discountApplied,
   discountCode,
   stripePaymentIntentId,
-  isUpdatingPrice,
-  selectedQrDesign
+  isUpdatingPrice
 }: any) {
   const stripe = useStripe();
   const elements = useElements();
@@ -1235,17 +1103,17 @@ function StripePaymentForm({
     if (!stripe || !elements || !user) return;
 
     if (
-      (deliveryMode === 'home_delivery' || standsQuantity > 0) &&
+      standsQuantity > 0 &&
       (!formData.deliveryName || !formData.deliverySurname || !formData.deliveryAddress || !formData.deliveryPostcode || !formData.deliveryCity)
     ) {
-      onError('Za dostavo fizičnih izdelkov morate izpolniti vse podatke o prejemniku in naslovu za dostavo!');
+      onError('Za dostavo podstavkov morate izpolniti vse podatke o prejemniku in naslovu za dostavo!');
       return;
     }
 
     setIsProcessing(true);
     onError('');
 
-    const requiresDelivery = deliveryMode === 'home_delivery' || standsQuantity > 0;
+    const requiresDelivery = standsQuantity > 0;
 
     try {
       // Create document first
@@ -1257,9 +1125,9 @@ function StripePaymentForm({
         date: formData.date,
         email: user.email || '',
         plan: formData.plan,
-        deliveryMode,
+        deliveryMode: 'self_print',
         standsQuantity,
-        printedQrQuantity: deliveryMode === 'home_delivery' ? printedQrQuantity : 0,
+        printedQrQuantity: 0,
         selectedStand: standsQuantity > 0 ? standImages[selectedStand] : null,
         isCompanyInvoice: formData.isCompanyInvoice,
         companyName: formData.isCompanyInvoice ? formData.companyName : null,
@@ -1270,7 +1138,7 @@ function StripePaymentForm({
         deliveryAddress: requiresDelivery ? formData.deliveryAddress : null,
         deliveryCity: requiresDelivery ? formData.deliveryCity : null,
         deliveryPostcode: requiresDelivery ? formData.deliveryPostcode : null,
-        selectedDesignId: deliveryMode === 'home_delivery' ? selectedQrDesign : null,
+        selectedDesignId: null,
         ownerId: user.uid,
         createdAt: serverTimestamp(),
         paymentStatus: 'pending',
