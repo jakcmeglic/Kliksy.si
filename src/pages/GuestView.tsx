@@ -558,7 +558,7 @@ export default function GuestView() {
             >
               {allPhotos.map((photo, index) => {
                 // Only render the memory-heavy image if it's within 2 items of the current view
-                const isNearViewport = selectedImageIndex !== null && Math.abs(index - selectedImageIndex) <= 2;
+                const isNearViewport = selectedImageIndex !== null && Math.abs(index - selectedImageIndex) <= 5;
                 
                 return (
                   <div key={photo.id} className="w-full h-[100dvh] snap-start snap-always relative flex items-center justify-center bg-black">
@@ -566,7 +566,7 @@ export default function GuestView() {
                       photo.type === 'video' ? (
                         <video src={photo.url} className="w-full h-full object-contain" autoPlay muted loop playsInline />
                       ) : (
-                        <img src={photo.url} alt="Gallery item" className="w-full h-full object-contain" referrerPolicy="no-referrer" loading="lazy" decoding="async" />
+                        <img src={photo.url} alt="Gallery item" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
                       )
                     )}
                     <TikTokLikeButton photo={photo} deviceId={deviceId} onToggleLike={handleToggleLike} />
