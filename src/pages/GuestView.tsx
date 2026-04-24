@@ -12,8 +12,6 @@ import imageCompression from "browser-image-compression";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 
-import ImageViewer from "../components/ImageViewer";
-
 function TikTokLikeButton({ photo, deviceId, onToggleLike }: any) {
   const isLikedInData = photo.likedBy?.includes(deviceId);
   const [optimisticLiked, setOptimisticLiked] = useState<boolean | undefined>(undefined);
@@ -55,7 +53,6 @@ export default function GuestView() {
   const [uploadError, setUploadError] = useState('');
   const [recentPhotos, setRecentPhotos] = useState<any[]>([]);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
-  const [showGallery, setShowGallery] = useState(false);
   const [allPhotos, setAllPhotos] = useState<any[]>([]);
   const [hasScrolledGallery, setHasScrolledGallery] = useState(false);
   const [videoCount, setVideoCount] = useState(0);
@@ -156,11 +153,11 @@ export default function GuestView() {
   }, [id]);
 
   useEffect(() => {
-    if (showGallery) setHasScrolledGallery(false);
-  }, [showGallery]);
+    if (selectedImageIndex !== null) setHasScrolledGallery(false);
+  }, [selectedImageIndex]);
 
   useEffect(() => {
-    if (!id || !showGallery) return;
+    if (!id || selectedImageIndex === null) return;
 
     const q = query(
       collection(db, "events", id, "photos"),
@@ -178,7 +175,7 @@ export default function GuestView() {
     });
 
     return () => unsubscribe();
-  }, [id, showGallery]);
+  }, [id, selectedImageIndex]);
 
   const handleToggleLike = async (photoId: string) => {
     if (!id || !deviceId) return;
@@ -464,7 +461,7 @@ export default function GuestView() {
                 <span className="text-xs font-medium bg-indigo-50 px-2 py-1 rounded-full text-indigo-600">V živo</span>
               </div>
               {recentPhotos.length > 0 && (
-                <button onClick={() => setShowGallery(true)} className="text-sm font-bold text-indigo-600 hover:text-indigo-700">
+                <button onClick={() => setSelectedImageIndex(0)} className="text-sm font-bold text-indigo-600 hover:text-indigo-700">
                   Poglej vse
                 </button>
               )}
@@ -503,20 +500,9 @@ export default function GuestView() {
         )}
       </main>
 
-      {/* Fullscreen Image Modal */}
-      {selectedImageIndex !== null && (
-        <ImageViewer
-          images={recentPhotos}
-          initialIndex={selectedImageIndex}
-          onClose={() => setSelectedImageIndex(null)}
-          onToggleLike={handleToggleLike}
-          currentUserId={deviceId}
-        />
-      )}
-
       {/* TikTok Gallery Overlay */}
       <AnimatePresence>
-        {showGallery && (
+        {selectedImageIndex !== null && (
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -536,7 +522,7 @@ export default function GuestView() {
             {/* Top Bar Navigation */}
             <div className="absolute top-0 inset-x-0 p-4 pt-safe flex items-center justify-between z-50 bg-gradient-to-b from-black/60 to-transparent pointer-events-none">
               <button 
-                onClick={() => setShowGallery(false)}
+                onClick={() => setSelectedImageIndex(null)}
                 className="w-12 h-12 flex items-center justify-center bg-black/40 backdrop-blur-md rounded-full text-white pointer-events-auto active:scale-95 transition-transform border border-white/10"
               >
                 <ArrowLeft className="w-6 h-6" />
@@ -549,6 +535,15 @@ export default function GuestView() {
 
             {/* Scrollable Area */}
             <div 
+              ref={(node) => {
+                if (node && selectedImageIndex !== null && !node.dataset.scrolled && allPhotos.length > 0) {
+                  const element = node.children[selectedImageIndex] as HTMLElement;
+                  if (element) {
+                    node.scrollTop = element.offsetTop;
+                    node.dataset.scrolled = 'true';
+                  }
+                }
+              }}
               className="flex-1 overflow-y-auto snap-y snap-mandatory h-full hide-scrollbar"
               onScroll={() => { if (!hasScrolledGallery) setHasScrolledGallery(true); }}
             >
