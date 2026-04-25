@@ -362,69 +362,91 @@ export default function GuestView() {
         </p>
       </header>
 
-      {/* Background Upload Toast */}
-      <AnimatePresence>
-        {isUploading && (
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 50 }}
-            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-gray-900 text-white rounded-full px-6 py-3 flex items-center gap-4 shadow-2xl w-[90%] max-w-sm"
-          >
-            <Loader2 className="w-5 h-5 animate-spin text-indigo-400" />
-            <div className="flex-1 flex flex-col">
-              <span className="text-sm font-bold">
-                {uploadProgress.total > 1 ? `Nalagam ${uploadProgress.current} od ${uploadProgress.total}...` : 'Nalagam spomin...'}
-              </span>
-            </div>
-          </motion.div>
-        )}
-        
-        {uploadSuccess && !isUploading && (
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 50 }}
-            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-green-200 text-green-900 rounded-full px-6 py-3 flex items-center gap-3 shadow-2xl w-[90%] max-w-sm"
-          >
-            <CheckCircle2 className="w-5 h-5 text-green-700" />
-            <span className="text-sm font-bold">Spomini so shranjeni!</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* Main Actions */}
-      <main className="flex-1 px-6 py-8 flex flex-col items-center justify-start max-w-md mx-auto w-full">
-        <div className="w-full space-y-4">
-          <button 
-            onClick={() => cameraInputRef.current?.click()}
-            className="w-full bg-gray-900 text-white p-6 rounded-3xl flex flex-col items-center justify-center gap-4 hover:bg-black transition-all active:scale-95 shadow-xl shadow-gray-900/10"
-          >
-            <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center">
-              <Camera className="w-8 h-8 text-white" />
-            </div>
-            <span className="text-xl font-bold">Slikaj zdaj</span>
-          </button>
+      <main className="flex-1 px-6 py-8 flex flex-col items-center justify-center max-w-md mx-auto w-full">
+        <AnimatePresence mode="wait">
+          {isUploading ? (
+            <motion.div 
+              key="uploading"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="flex flex-col items-center justify-center py-12"
+            >
+              <div className="w-16 h-16 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin mb-6" />
+              <h3 className="text-xl font-bold text-gray-900">
+                {uploadProgress.total > 1 ? `Nalagam ${uploadProgress.current} od ${uploadProgress.total}...` : 'Nalagam spomin...'}
+              </h3>
+              <p className="text-sm text-gray-500 mt-2">
+                {uploadProgress.total > 1 ? 'Slike se nalagajo posamično, da preprečimo preobremenitev povezave.' : 'Prosimo, počakaj trenutek.'}
+              </p>
+            </motion.div>
+          ) : uploadSuccess ? (
+            <motion.div 
+              key="success"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="flex flex-col items-center justify-center py-12 text-center"
+            >
+              <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mb-6">
+                <CheckCircle2 className="w-10 h-10 text-green-500" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Uspešno naloženo!</h3>
+              <p className="text-gray-600 mb-8">Tvoja slika je dodana v galerijo.</p>
+              
+              <button 
+                onClick={() => setUploadSuccess(false)}
+                className="flex items-center gap-2 bg-gray-900 text-white px-8 py-4 rounded-full font-medium hover:bg-black transition-colors"
+              >
+                <Plus className="w-5 h-5" /> Dodaj še eno
+              </button>
+            </motion.div>
+          ) : (
+            <motion.div 
+              key="actions"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="w-full space-y-4"
+            >
+              <button 
+                onClick={() => cameraInputRef.current?.click()}
+                className="w-full bg-gray-900 text-white p-6 rounded-3xl flex flex-col items-center justify-center gap-4 hover:bg-black transition-all active:scale-95 shadow-xl shadow-gray-900/10"
+              >
+                <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center">
+                  <Camera className="w-8 h-8 text-white" />
+                </div>
+                <span className="text-xl font-bold">Slikaj zdaj</span>
+              </button>
 
-          <button 
-            onClick={() => fileInputRef.current?.click()}
-            className="w-full bg-white text-gray-900 p-6 rounded-3xl flex flex-col items-center justify-center gap-4 hover:bg-gray-50 transition-all active:scale-95 border-2 border-gray-100"
-          >
-            <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center">
-              <Upload className="w-8 h-8 text-gray-900" />
-            </div>
-            <span className="text-xl font-bold">Naloži iz galerije</span>
-          </button>
+              <button 
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full bg-white text-gray-900 p-6 rounded-3xl flex flex-col items-center justify-center gap-4 hover:bg-gray-50 transition-all active:scale-95 border-2 border-gray-100"
+              >
+                <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center">
+                  <Upload className="w-8 h-8 text-gray-900" />
+                </div>
+                <span className="text-xl font-bold">Naloži iz galerije</span>
+              </button>
 
-          {uploadError && (
-            <div className="mt-4 p-4 bg-red-50 text-red-600 rounded-xl border border-red-100 text-sm text-center">
-              {uploadError}
-            </div>
+              {uploadError && (
+                <div className="mt-4 p-4 bg-red-50 text-red-600 rounded-xl border border-red-100 text-sm text-center">
+                  {uploadError}
+                </div>
+              )}
+            </motion.div>
           )}
-        </div>
+        </AnimatePresence>
 
         {/* Live Feed Preview */}
-        <div className="w-full mt-12">
+        {!isUploading && !uploadSuccess && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="w-full mt-12"
+          >
             <div className="flex items-center justify-between mb-4 px-2">
               <div className="flex items-center gap-2">
                 <h3 className="font-bold text-lg text-gray-900">Zadnji spomini</h3>
@@ -466,7 +488,8 @@ export default function GuestView() {
                 </div>
               )}
             </div>
-        </div>
+          </motion.div>
+        )}
       </main>
 
       {/* TikTok Gallery Overlay */}
