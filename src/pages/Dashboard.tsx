@@ -102,16 +102,12 @@ export default function Dashboard() {
               }
             }
             setEvent(selectedEvent);
-            setLoading(false); // Stop loading immediately instead of waiting for photos
-          } else {
-            setLoading(false);
           }
-        } else {
-          setLoading(false);
         }
       } catch (error) {
-        setLoading(false);
         handleFirestoreError(error, OperationType.GET, "events");
+      } finally {
+        setLoading(false);
       }
     };
 
