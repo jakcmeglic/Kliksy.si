@@ -102,12 +102,14 @@ export default function Dashboard() {
               }
             }
             setEvent(selectedEvent);
+          } else {
+            setLoading(false);
           }
+        } else {
+          setLoading(false);
         }
       } catch (error) {
         handleFirestoreError(error, OperationType.GET, "events");
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -130,7 +132,6 @@ export default function Dashboard() {
       setPhotos(newPhotos);
       setLoading(false);
     }, (error) => {
-      setLoading(false);
       handleFirestoreError(error, OperationType.LIST, `events/${event.id}/photos`);
     });
 
