@@ -82,35 +82,36 @@ export default function GuestView() {
   useEffect(() => {
     if (!id) return;
 
-    const initGuest = async () => {
+    const initEvent = async () => {
       try {
-        await new Promise<void>((resolve) => {
-          const unsubscribe = onAuthStateChanged(auth, async (user) => {
-            unsubscribe();
-            if (!user) {
-              try {
-                await signInAnonymously(auth);
-              } catch (e) {
-                console.warn("Anonymous auth failed or is disabled. Please enable Anonymous Authentication in Firebase Console.", e);
-              }
-            }
-            resolve();
-          });
-        });
-
         const docRef = doc(db, "events", id);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           setEvent({ id: docSnap.id, ...docSnap.data() });
         }
       } catch (error) {
-        console.error("Error initializing guest view:", error);
+        console.error("Error fetching event:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    initGuest();
+    initEvent();
+
+    // Do auth in background
+    const initAuth = async () => {
+      const unsubscribe = onAuthStateChanged(auth, async (user) => {
+        unsubscribe();
+        if (!user) {
+          try {
+            await signInAnonymously(auth);
+          } catch (e) {
+            console.warn("Anonymous auth failed or disabled.", e);
+          }
+        }
+      });
+    };
+    initAuth();
   }, [id]);
 
   useEffect(() => {
@@ -481,9 +482,9 @@ export default function GuestView() {
                   onClick={() => setSelectedImageIndex(index)}
                 >
                   {photo.type === 'video' ? (
-                    <video src={photo.url} className="w-full h-full object-cover" muted playsInline />
+                    <video src={photo.url} className="w-full h-full object-cover" muted playsInline preload="metadata" />
                   ) : (
-                    <img src={photo.url} alt="Wedding moment" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                    <img src={photo.url} alt="Wedding moment" className="w-full h-full object-cover" referrerPolicy="no-referrer" loading="lazy" />
                   )}
                   
                   {/* Thumb Like Indicator */}
@@ -555,9 +556,18 @@ export default function GuestView() {
               {allPhotos.map((photo) => (
                 <div key={photo.id} className="w-full h-[100dvh] snap-start snap-always relative flex items-center justify-center bg-black">
                   {photo.type === 'video' ? (
-                    <video src={photo.url} className="w-full h-full object-contain" autoPlay muted loop playsInline />
+                    <video 
+                      src={photo.url} 
+                      className="w-full h-full object-contain" 
+                      autoPlay={false} 
+                      preload="metadata"
+                      controls
+                      muted 
+                      loop 
+                      playsInline 
+                    />
                   ) : (
-                    <img src={photo.url} alt="Gallery item" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                    <img src={photo.url} alt="Gallery item" className="w-full h-full object-contain" referrerPolicy="no-referrer" loading="lazy" />
                   )}
                   <TikTokLikeButton photo={photo} deviceId={deviceId} onToggleLike={handleToggleLike} />
                 </div>
