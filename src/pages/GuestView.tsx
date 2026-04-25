@@ -245,40 +245,36 @@ export default function GuestView() {
     let successCount = 0;
     
     try {
-      const chunkSize = 10; // Upload 10 photos in parallel for faster speed
-      for (let i = 0; i < files.length; i += chunkSize) {
-        const chunk = files.slice(i, i + chunkSize);
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
         
-        await Promise.all(chunk.map(async (file) => {
-          try {
-            let fileToUpload: File | Blob = file;
-            const isVideo = file.type.startsWith('video/');
-            console.log(`Starting upload for ${isVideo ? 'video' : 'file'}:`, file.name, file.size);
-            
-            const extension = file.name.split('.').pop() || (isVideo ? 'mp4' : 'jpg');
-            const fileName = `${Date.now()}-${uuidv4()}.${extension}`;
-            const storageRef = ref(storage, `events/${id}/${fileName}`);
-            
-            await uploadBytes(storageRef, fileToUpload, { contentType: file.type });
-            const downloadUrl = await getDownloadURL(storageRef);
+        try {
+          const isVideo = file.type.startsWith('video/');
+          console.log(`Starting upload for ${isVideo ? 'video' : 'file'}:`, file.name, file.size);
+          
+          const extension = file.name.split('.').pop() || (isVideo ? 'mp4' : 'jpg');
+          const fileName = `${Date.now()}-${uuidv4()}.${extension}`;
+          const storageRef = ref(storage, `events/${id}/${fileName}`);
+          
+          await uploadBytes(storageRef, file, { contentType: file.type });
+          const downloadUrl = await getDownloadURL(storageRef);
 
-            await addDoc(collection(db, "events", id, "photos"), {
-              url: downloadUrl,
-              eventId: id,
-              deviceId: deviceId,
-              type: isVideo ? 'video' : 'image',
-              createdAt: Timestamp.now(),
-              likes: 0,
-              likedBy: []
-            });
-            
-            successCount++;
-            setUploadProgress(prev => ({ ...prev, current: prev.current + 1 }));
-          } catch (fileError: any) {
-            console.error("Error uploading a file in loop:", fileError);
-            // We consciously don't throw here so one failed file doesn't stop the rest.
-          }
-        }));
+          await addDoc(collection(db, "events", id, "photos"), {
+            url: downloadUrl,
+            eventId: id,
+            deviceId: deviceId,
+            type: isVideo ? 'video' : 'image',
+            createdAt: Timestamp.now(),
+            likes: 0,
+            likedBy: []
+          });
+          
+          successCount++;
+          setUploadProgress(prev => ({ ...prev, current: prev.current + 1 }));
+        } catch (fileError: any) {
+          console.error("Error uploading a file in loop:", fileError);
+          // We consciously don't throw here so one failed file doesn't stop the rest.
+        }
       }
 
       setIsUploading(false);
@@ -379,7 +375,7 @@ export default function GuestView() {
                 {uploadProgress.total > 1 ? `Nalagam ${uploadProgress.current} od ${uploadProgress.total}...` : 'Nalagam spomin...'}
               </h3>
               <p className="text-sm text-gray-500 mt-2">
-                {uploadProgress.total > 1 ? 'Slike se nalagajo hkrati za hitrejši prenos.' : 'Prosimo, počakaj trenutek.'}
+                {uploadProgress.total > 1 ? 'Slike se nalagajo posamično, da preprečimo preobremenitev povezave.' : 'Prosimo, počakaj trenutek.'}
               </p>
             </motion.div>
           ) : uploadSuccess ? (
