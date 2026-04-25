@@ -8,7 +8,6 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { signInAnonymously, onAuthStateChanged } from "firebase/auth";
 import { auth } from "../firebase";
 import { v4 as uuidv4 } from "uuid";
-import imageCompression from "browser-image-compression";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 
@@ -246,7 +245,7 @@ export default function GuestView() {
     let successCount = 0;
     
     try {
-      const chunkSize = 4; // Upload 4 photos in parallel
+      const chunkSize = 10; // Upload 10 photos in parallel for faster speed
       for (let i = 0; i < files.length; i += chunkSize) {
         const chunk = files.slice(i, i + chunkSize);
         
@@ -256,18 +255,6 @@ export default function GuestView() {
             const isVideo = file.type.startsWith('video/');
             console.log(`Starting upload for ${isVideo ? 'video' : 'file'}:`, file.name, file.size);
             
-            // Only compress images, skip for videos
-            if (file.size > 15 * 1024 * 1024 && !isVideo) { 
-              console.log("File > 15MB, attempting compression...");
-              try {
-                const options = { maxSizeMB: 10, maxWidthOrHeight: 4000, useWebWorker: true };
-                fileToUpload = await imageCompression(file, options);
-                console.log("Compression successful");
-              } catch (compressionError) {
-                console.warn("Compression failed, using original file:", compressionError);
-              }
-            }
-
             const extension = file.name.split('.').pop() || (isVideo ? 'mp4' : 'jpg');
             const fileName = `${Date.now()}-${uuidv4()}.${extension}`;
             const storageRef = ref(storage, `events/${id}/${fileName}`);
