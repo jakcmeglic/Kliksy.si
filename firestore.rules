@@ -1,56 +1,8 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Helper functions
-    function isAuthenticated() {
-      return request.auth != null;
-    }
-    
-    function isOwner(userId) {
-      return isAuthenticated() && request.auth.uid == userId;
-    }
-
-    // Users Collection
-    match /users/{userId} {
-      // Users can only read and write their own profile data
-      allow read, write: if isOwner(userId);
-    }
-
-    // PromoCodes Collection
-    match /promoCodes/{promoCodeId} {
-      // Anyone can read promo codes to check validity during checkout
-      allow read: if true;
-      // Only admins should write (we restrict writing from client side)
-      allow write: if false; 
-    }
-
-    // Events Collection
-    match /events/{eventId} {
-      // Anyone can read event details (needed for guests to see the welcome screen)
-      allow read: if true;
-      
-      // Only authenticated users can create an event, and they must set themselves as the owner
-      allow create: if isAuthenticated() && request.resource.data.ownerId == request.auth.uid;
-      
-      // Only the owner can update or delete their event
-      allow update, delete: if isOwner(resource.data.ownerId);
-
-      // Photos Subcollection (inside an event)
-      match /photos/{photoId} {
-        // Anyone can view the photos for an event
-        allow read: if true;
-        
-        // Anyone (including anonymous guests) can upload a photo
-        allow create: if true;
-        
-        // Allow event owner to update any field, and others to update ONLY likes and likedBy
-        allow update: if (isAuthenticated() && get(/databases/$(database)/documents/events/$(eventId)).data.ownerId == request.auth.uid) || 
-                         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes', 'likedBy']);
-        
-        // Only the event owner can delete photos
-        allow delete: if isAuthenticated() && get(/databases/$(database)/documents/events/$(eventId)).data.ownerId == request.auth.uid;
-      }
+    match /{document=**} {
+      allow read, write: if true;
     }
   }
 }

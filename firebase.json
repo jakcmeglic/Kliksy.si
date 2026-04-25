@@ -1,4 +1,8 @@
 {
+  "firestore": {
+    "database": "nova",
+    "rules": "firestore.rules"
+  },
   "hosting": {
     "public": "dist",
     "ignore": [
