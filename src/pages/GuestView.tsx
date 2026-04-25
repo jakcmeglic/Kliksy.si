@@ -152,12 +152,17 @@ export default function GuestView() {
     return () => unsubscribe();
   }, [id]);
 
+  const [hasOpenedModal, setHasOpenedModal] = useState(false);
+
   useEffect(() => {
-    if (selectedImageIndex !== null) setHasScrolledGallery(false);
+    if (selectedImageIndex !== null) {
+      setHasScrolledGallery(false);
+      setHasOpenedModal(true);
+    }
   }, [selectedImageIndex]);
 
   useEffect(() => {
-    if (!id || selectedImageIndex === null) return;
+    if (!id || !hasOpenedModal) return;
 
     const q = query(
       collection(db, "events", id, "photos"),
@@ -175,7 +180,7 @@ export default function GuestView() {
     });
 
     return () => unsubscribe();
-  }, [id, selectedImageIndex]);
+  }, [id, hasOpenedModal]);
 
   const handleToggleLike = async (photoId: string) => {
     if (!id || !deviceId) return;
