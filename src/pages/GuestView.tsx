@@ -8,6 +8,7 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { signInAnonymously, onAuthStateChanged } from "firebase/auth";
 import { auth } from "../firebase";
 import { v4 as uuidv4 } from "uuid";
+import imageCompression from "browser-image-compression";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 
@@ -245,35 +246,52 @@ export default function GuestView() {
     let successCount = 0;
     
     try {
-      await Promise.all(Array.from(files).map(async (file) => {
-        try {
-          const isVideo = file.type.startsWith('video/');
-          console.log(`Starting upload for ${isVideo ? 'video' : 'file'}:`, file.name, file.size);
-          
-          const extension = file.name.split('.').pop() || (isVideo ? 'mp4' : 'jpg');
-          const fileName = `${Date.now()}-${uuidv4()}.${extension}`;
-          const storageRef = ref(storage, `events/${id}/${fileName}`);
-          
-          await uploadBytes(storageRef, file, { contentType: file.type });
-          const downloadUrl = await getDownloadURL(storageRef);
+      const chunkSize = 3;
+      for (let i = 0; i < files.length; i += chunkSize) {
+        const chunk = Array.from(files).slice(i, i + chunkSize);
+        
+        await Promise.all(chunk.map(async (file) => {
+          try {
+            let fileToUpload: File | Blob = file;
+            const isVideo = file.type.startsWith('video/');
+            console.log(`Starting upload for ${isVideo ? 'video' : 'file'}:`, file.name, file.size);
+            
+            if (!isVideo) {
+              console.log("Attempting compression...");
+              try {
+                const options = { maxSizeMB: 5, maxWidthOrHeight: 4000, useWebWorker: true };
+                fileToUpload = await imageCompression(file, options);
+                console.log("Compression successful. Size:", fileToUpload.size);
+              } catch (compressionError) {
+                console.warn("Compression failed, using original file:", compressionError);
+              }
+            }
 
-          await addDoc(collection(db, "events", id, "photos"), {
-            url: downloadUrl,
-            eventId: id,
-            deviceId: deviceId,
-            type: isVideo ? 'video' : 'image',
-            createdAt: Timestamp.now(),
-            likes: 0,
-            likedBy: []
-          });
-          
-          successCount++;
-          setUploadProgress(prev => ({ ...prev, current: prev.current + 1 }));
-        } catch (fileError: any) {
-          console.error("Error uploading a file in loop:", fileError);
-          // We consciously don't throw here so one failed file doesn't stop the rest.
-        }
-      }));
+            const extension = file.name.split('.').pop() || (isVideo ? 'mp4' : 'jpg');
+            const fileName = `${Date.now()}-${uuidv4()}.${extension}`;
+            const storageRef = ref(storage, `events/${id}/${fileName}`);
+            
+            await uploadBytes(storageRef, fileToUpload, { contentType: file.type });
+            const downloadUrl = await getDownloadURL(storageRef);
+
+            await addDoc(collection(db, "events", id, "photos"), {
+              url: downloadUrl,
+              eventId: id,
+              deviceId: deviceId,
+              type: isVideo ? 'video' : 'image',
+              createdAt: Timestamp.now(),
+              likes: 0,
+              likedBy: []
+            });
+            
+            successCount++;
+            setUploadProgress(prev => ({ ...prev, current: prev.current + 1 }));
+          } catch (fileError: any) {
+            console.error("Error uploading a file in loop:", fileError);
+            // We consciously don't throw here so one failed file doesn't stop the rest.
+          }
+        }));
+      }
 
       setIsUploading(false);
       
