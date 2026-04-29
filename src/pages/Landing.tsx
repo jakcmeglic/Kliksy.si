@@ -236,7 +236,7 @@ export default function Landing() {
               </Link>
               <div className="flex items-center justify-center md:justify-start gap-2 text-[13px] md:text-[14px] font-semibold text-green-600">
                 <Check className="w-4 h-4 text-white stroke-[3] bg-green-500 rounded-full p-0.5 shrink-0" />
-                <span>Varno. Zasebno. Samo za vaju in vajine goste.</span>
+                <span>Varno. Zasebno. Samo za vas in vaše goste.</span>
               </div>
             </div>
           </div>
