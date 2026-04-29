@@ -199,32 +199,35 @@ export default function Landing() {
               S Kliksy zberite vse fotografije in videe gostov na enem mestu, z eno samo QR kodo.
             </p>
 
-            {/* Feature Badges Grid */}
-            <div className="flex flex-col sm:grid sm:grid-cols-4 gap-4 sm:gap-4 lg:gap-6 mb-12 items-center md:items-start">
-              <div className="flex flex-row items-center sm:flex-col justify-start gap-4 sm:gap-3 text-left sm:text-center w-[220px] sm:w-auto">
-                <div className="w-10 h-10 sm:w-14 sm:h-14 shrink-0 rounded-2xl sm:rounded-full bg-white sm:bg-indigo-50 border-2 border-indigo-100 flex items-center justify-center shadow-sm text-[#5B45FF]">
-                  <Smile className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2]" />
-                </div>
-                <span className="text-[15px] sm:text-[13px] font-semibold text-gray-700 leading-tight">Enostavno<span className="hidden sm:inline"><br /></span> za goste</span>
-              </div>
-              <div className="flex flex-row items-center sm:flex-col justify-start gap-4 sm:gap-3 text-left sm:text-center w-[220px] sm:w-auto">
-                <div className="w-10 h-10 sm:w-14 sm:h-14 shrink-0 rounded-2xl sm:rounded-full bg-white sm:bg-indigo-50 border-2 border-indigo-100 flex items-center justify-center shadow-sm text-[#5B45FF]">
-                  <LayoutGrid className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2]" />
-                </div>
-                <span className="text-[15px] sm:text-[13px] font-semibold text-gray-700 leading-tight">Vse na enem<span className="hidden sm:inline"><br /></span> mestu</span>
-              </div>
-              <div className="flex flex-row items-center sm:flex-col justify-start gap-4 sm:gap-3 text-left sm:text-center w-[220px] sm:w-auto">
-                <div className="w-10 h-10 sm:w-14 sm:h-14 shrink-0 rounded-2xl sm:rounded-full bg-white sm:bg-indigo-50 border-2 border-indigo-100 flex items-center justify-center shadow-sm text-[#5B45FF]">
-                  <Smartphone className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2]" />
-                </div>
-                <span className="text-[15px] sm:text-[13px] font-semibold text-gray-700 leading-tight">Brez aplikacij<span className="hidden sm:inline"><br /></span> in prijav</span>
-              </div>
-              <div className="flex flex-row items-center sm:flex-col justify-start gap-4 sm:gap-3 text-left sm:text-center w-[220px] sm:w-auto">
-                <div className="w-10 h-10 sm:w-14 sm:h-14 shrink-0 rounded-2xl sm:rounded-full bg-white sm:bg-indigo-50 border-2 border-indigo-100 flex items-center justify-center shadow-sm text-[#5B45FF]">
-                  <Download className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2]" />
-                </div>
-                <span className="text-[15px] sm:text-[13px] font-semibold text-gray-700 leading-tight">Prenos vseh<span className="hidden sm:inline"><br /></span> v 1 klik</span>
-              </div>
+            {/* Photo Collage */}
+            <div className="relative w-[110%] -ml-[5%] sm:ml-0 sm:w-full max-w-[420px] h-[280px] sm:h-[350px] mb-12 mt-6 mx-auto md:mx-0 shrink-0">
+              {/* Top-left: Dancing (1) */}
+              <img 
+                src="https://i.postimg.cc/7hvnkh7X/hf-20260424-062805-2a04f02c-aa0e-4117-8b31-73864659076b.webp" 
+                className="absolute left-0 top-[2%] w-[55%] aspect-[4/3] object-cover rounded shadow-md border-4 sm:border-[6px] border-white transform -rotate-6 z-10 hover:scale-105 hover:z-50 transition-all duration-300" 
+                alt="Zabava" 
+              />
+              
+              {/* Top-right: QR on table (2) */}
+              <img 
+                src="https://i.postimg.cc/J0bc48cg/hf-20260424-062820-195d1677-9456-4936-a48d-ba136c48a79a.webp" 
+                className="absolute right-0 top-[8%] w-[52%] aspect-[4/3] object-cover rounded shadow-lg border-4 sm:border-[6px] border-white transform rotate-6 z-20 hover:scale-105 hover:z-50 transition-all duration-300" 
+                alt="QR koda na mizi" 
+              />
+              
+              {/* Bottom-right: Photobooth (4) */}
+              <img 
+                src="https://i.postimg.cc/ZnrFKmFX/hf-20260429-125252-5fda138d-9fbe-41ec-bb70-16fb08cf8414.webp" 
+                className="absolute right-[5%] bottom-[5%] w-[58%] aspect-[4/3] object-cover rounded shadow-xl border-4 sm:border-[6px] border-white transform -rotate-3 z-30 hover:scale-105 hover:z-50 transition-all duration-300" 
+                alt="Photobooth rekviziti" 
+              />
+              
+              {/* Bottom-left: Flyer (3) */}
+              <img 
+                src="https://i.postimg.cc/prDYXvY6/hf-20260424-062820-a905e0f9-16e9-4c55-be91-4cde92a15ea0.webp" 
+                className="absolute left-[5%] bottom-0 w-[45%] aspect-[3/4] object-cover rounded shadow-2xl border-4 sm:border-[6px] border-white transform rotate-[-8deg] z-40 hover:scale-105 hover:z-50 transition-all duration-300" 
+                alt="Kliksy letak" 
+              />
             </div>
 
             <div className="flex flex-col items-center md:items-start gap-4">
