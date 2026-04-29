@@ -162,12 +162,12 @@ export default function Landing() {
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-8 px-6 relative overflow-hidden">
+      <section className="pt-[110px] md:pt-[140px] pb-8 px-6 relative overflow-hidden">
         <div className="max-w-[1280px] mx-auto flex flex-col md:flex-row items-center gap-12 md:gap-8">
           
           {/* Left / Text Side */}
-          <div className="w-full md:w-[55%] lg:w-1/2 mt-8 md:mt-12 px-2 md:px-0 text-center md:text-left">
-            <div className="flex flex-col sm:flex-row items-center sm:inline-flex justify-center sm:justify-start gap-2 mb-8 mx-auto md:mx-0">
+          <div className="w-full md:w-[55%] lg:w-1/2 px-2 md:px-0 text-center md:text-left">
+            <div className="flex flex-col sm:flex-row items-center sm:inline-flex justify-center sm:justify-start gap-2 mb-3 mx-auto md:mx-0">
               <div className="bg-[#F3F1FF] text-[#5B45FF] px-4 py-1.5 rounded-full text-[11px] font-bold tracking-wider uppercase inline-block">
                 -30% S KODO POMLAD30
               </div>
@@ -195,7 +195,6 @@ export default function Landing() {
               </span>
             </h1>
             
-            <p className="text-[1.5rem] md:text-[1.75rem] font-extrabold text-gray-900 mb-4 tracking-tight">Vse slike gostov na enem mestu.</p>
             <p className="text-lg md:text-xl text-gray-500 mb-10 max-w-lg mx-auto md:mx-0 leading-relaxed font-medium">
               S Kliksy zberite vse fotografije in videe gostov na enem mestu, z eno samo QR kodo.
             </p>
