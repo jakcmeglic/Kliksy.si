@@ -15,52 +15,52 @@ const REVIEWS = [
   { 
     name: "Tina & Luka", date: "April 2026", 
     text: "Noro dobra ideja! Dobila sva toliko spontanih fotografij, ki jih drugače ne bi nikoli videla. Gosti so navdušeni nad kako enostavno je bilo.",
-    initials: "TL"
+    initials: "TL", gender: "couple"
+  },
+  {
+    name: "Marko", date: "Marec 2026",
+    text: "Za moj 30. rojstni dan smo uporabili Kliksy. Noro, koliko zabavnih slik sem dobil naslednji dan. Prijatelji so takoj začeli nalagati slike!",
+    initials: "M", gender: "male"
+  },
+  {
+    name: "Ekipa podjetja", date: "December 2025",
+    text: "Končno smo dokumentirali našo božično zabavo na enem mestu. Kot tehniki močno pohvalimo preprostost. Scan and shoot. Nobenega kreiranja računov.",
+    initials: "IT", gender: "couple"
   },
   { 
     name: "Maja & David", date: "Avgust 2025", 
     text: "Vse slike zbrane na enem mestu, brez stresa in prošenj pošiljanja. Toplo priporočava vsakemu paru!",
-    initials: "MD"
+    initials: "MD", gender: "couple"
+  },
+  {
+    name: "Špela", date: "Junij 2025",
+    text: "Odlična zadeva! QR kode sem dala na mize in zjutraj me je pričakala popolna galerija vseh trenutkov iz mojega praznovanja diplome, ki sem jih zamudila.",
+    initials: "Š", gender: "female"
   },
   { 
     name: "Nina & Rok", date: "September 2025", 
     text: "Najboljši dodatek najini poroki! Vsak gost je dodal vsaj nekaj slik. Spomini, ki jih ne bi nikoli dobili drugače.",
-    initials: "NR"
+    initials: "NR", gender: "couple"
+  },
+  {
+    name: "Tomaž", date: "November 2025",
+    text: "Letni teambuilding na enem mestu posnet s strani vseh sodelavcev. Končno nam ni treba prositi, da podelijo slike po različnih skupinah in platformah.",
+    initials: "T", gender: "male"
   },
   {
     name: "Ana & Peter", date: "Avgust 2025",
     text: "Zelo priročno! Super je bilo opazovati dogodek skozi oči naših prijateljev. Toplo priporočam.",
-    initials: "AP"
+    initials: "AP", gender: "couple"
   },
   {
     name: "Sara & Matej", date: "September 2025",
     text: "Enostavno za starejše goste! Moja babica je brez težav naložila svoje fotografije. Kakovost slik je takšna, kot mora biti.",
-    initials: "SM"
-  },
-  {
-    name: "Eva & Žiga", date: "April 2026",
-    text: "Iskala sva nekaj brez kompliciranja z aplikacijami in Kliksy je bil popoln. Prihranil nama je ogromno časa pri zbiranju.",
-    initials: "EŽ"
-  },
-  {
-    name: "Klara & Jure", date: "Avgust 2025",
-    text: "Vsi so naju spraševali, kje sva našla to aplikacijo! Tako hitro in enostavno, z veseljem priporočava.",
-    initials: "KJ"
-  },
-  {
-    name: "Urška & Nejc", date: "September 2025",
-    text: "Najboljša investicija za poroko. Na koncu dogodka sva se ulegla v posteljo in že imela pregled nad celotnim dogajanjem.",
-    initials: "UN"
+    initials: "SM", gender: "couple"
   },
   {
     name: "Tjaša & Miha", date: "April 2026",
     text: "Fotograf bo rabil en mesec za slike, mi pa smo imeli preko 500 norih in spontanih slik že isti večer!",
-    initials: "TM"
-  },
-  {
-    name: "Nika & Alen", date: "Avgust 2025",
-    text: "Aplikacija deluje tekoče in brez težav. Galerija v živo na projektorju pa je bila največji hit večera!",
-    initials: "NA"
+    initials: "TM", gender: "couple"
   }
 ];
 
@@ -252,8 +252,8 @@ export default function Landing() {
                 {/* Floating Notification */}
                 <div className="absolute -top-4 right-4 sm:-right-8 lg:-right-4 z-20 bg-white px-5 py-3 rounded-[24px] shadow-xl flex items-center gap-3 border border-gray-100">
                   <div className="flex -space-x-3">
-                     <div className="w-10 h-10 rounded-full bg-gray-200 border-2 border-white overflow-hidden shadow-sm"><img src="https://i.pravatar.cc/100?img=1" alt="Guest" /></div>
-                     <div className="w-10 h-10 rounded-full bg-gray-200 border-2 border-white overflow-hidden shadow-sm"><img src="https://i.pravatar.cc/100?img=2" alt="Guest" /></div>
+                     <div className="w-10 h-10 rounded-full bg-pink-100 border-2 border-white overflow-hidden shadow-sm flex items-center justify-center text-[20px]">👩</div>
+                     <div className="w-10 h-10 rounded-full bg-blue-100 border-2 border-white overflow-hidden shadow-sm flex items-center justify-center text-[20px]">👨</div>
                   </div>
                   <div>
                     <p className="text-[14px] font-extrabold flex items-center gap-1.5 text-gray-900">Veselje na poroki <Heart className="w-4 h-4 text-red-500 fill-red-500"/></p>
@@ -281,9 +281,9 @@ export default function Landing() {
           
           <div className="flex flex-row items-center gap-4 sm:gap-5 w-full md:w-auto mt-2 md:mt-0 justify-start">
             <div className="flex -space-x-3 shrink-0">
-              <img src="https://i.pravatar.cc/100?img=11" className="w-12 h-12 rounded-full border-2 border-white object-cover shadow-sm" alt="Uporabnik" />
-              <img src="https://i.pravatar.cc/100?img=12" className="w-12 h-12 rounded-full border-2 border-white object-cover shadow-sm" alt="Uporabnik" />
-              <img src="https://i.pravatar.cc/100?img=13" className="w-12 h-12 rounded-full border-2 border-white object-cover shadow-sm" alt="Uporabnik" />
+              <div className="w-12 h-12 rounded-full bg-pink-100 border-2 border-white shadow-sm flex items-center justify-center text-[24px]">👩</div>
+              <div className="w-12 h-12 rounded-full bg-purple-100 border-2 border-white shadow-sm flex items-center justify-center text-[24px]">👨</div>
+              <div className="w-12 h-12 rounded-full bg-blue-100 border-2 border-white shadow-sm flex items-center justify-center text-[24px]">👱‍♂️</div>
             </div>
             <div className="text-left">
               <p className="text-xl sm:text-2xl font-extrabold text-[#5B45FF]">200+</p>
@@ -557,8 +557,8 @@ export default function Landing() {
                   {review.text}
                 </p>
                 <div className="flex items-center gap-4 mt-auto">
-                   <div className="w-12 h-12 rounded-full border border-gray-100 shadow-sm flex items-center justify-center">
-                     <img src={`https://i.pravatar.cc/150?u=${review.name.replace(/\s+/g,'')}`} className="w-full h-full rounded-full object-cover" alt={review.name} />
+                   <div className={`w-12 h-12 rounded-full shadow-sm flex items-center justify-center border-2 border-white ${review.gender === 'male' ? 'bg-blue-100' : review.gender === 'female' ? 'bg-pink-100' : 'bg-purple-100'}`}>
+                     <span className="text-[24px] leading-none pb-0.5">{review.gender === 'male' ? '👨' : review.gender === 'female' ? '👩' : '👫'}</span>
                    </div>
                    <div>
                      <p className="font-extrabold text-gray-900 text-[15px]">{review.name}</p>
