@@ -231,7 +231,7 @@ export default function Landing() {
             </div>
 
             <div className="flex flex-col items-center md:items-start gap-4">
-              <Link to="/create" className="inline-flex items-center justify-center gap-3 bg-[#5B45FF] text-white px-8 py-4 rounded-full text-[17px] font-bold hover:bg-[#4E3BE0] transition-all shadow-xl shadow-[#5B45FF]/30 hover:shadow-2xl hover:scale-[1.02] active:scale-95 text-center w-[90%] mx-auto md:mx-0 sm:w-auto">
+              <Link to="/create" onClick={() => { if (typeof window !== 'undefined' && window.fbq) { window.fbq('track', 'AddToCart'); } }} className="inline-flex items-center justify-center gap-3 bg-[#5B45FF] text-white px-8 py-4 rounded-full text-[17px] font-bold hover:bg-[#4E3BE0] transition-all shadow-xl shadow-[#5B45FF]/30 hover:shadow-2xl hover:scale-[1.02] active:scale-95 text-center w-[90%] mx-auto md:mx-0 sm:w-auto">
                 Ustvari svojo galerijo zdaj <ArrowRight className="w-5 h-5" />
               </Link>
               <div className="flex items-center justify-center md:justify-start gap-2 text-[13px] md:text-[14px] font-semibold text-green-600">
@@ -740,7 +740,7 @@ export default function Landing() {
             <p className="text-[15px] sm:text-[17px] text-gray-400 mb-8 sm:mb-10 max-w-lg mx-auto font-medium leading-relaxed relative z-10">
               Ustvari svojo galerijo in ne izgubi niti ene fotografije s svojega posebnega dne.
             </p>
-            <Link to="/create" className="inline-flex w-full sm:w-auto items-center justify-center gap-2 bg-[#5B45FF] text-white px-8 py-4 rounded-full text-[15px] sm:text-[17px] font-bold hover:bg-[#4E3BE0] transition-all hover:scale-105 active:scale-95 shadow-xl shadow-[#5B45FF]/30 relative z-10 mb-12">
+            <Link to="/create" onClick={() => { if (typeof window !== 'undefined' && window.fbq) { window.fbq('track', 'AddToCart'); } }} className="inline-flex w-full sm:w-auto items-center justify-center gap-2 bg-[#5B45FF] text-white px-8 py-4 rounded-full text-[15px] sm:text-[17px] font-bold hover:bg-[#4E3BE0] transition-all hover:scale-105 active:scale-95 shadow-xl shadow-[#5B45FF]/30 relative z-10 mb-12">
               Ustvari svojo galerijo zdaj <ArrowRight className="w-5 h-5" />
             </Link>
           

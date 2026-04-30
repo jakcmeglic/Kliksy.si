@@ -48,6 +48,9 @@ export default function Dashboard() {
             if (eventSnap.exists()) {
               const eventData = eventSnap.data();
               if (eventData.paymentStatus !== 'paid') {
+                if (typeof window !== 'undefined' && window.fbq) {
+                  window.fbq('track', 'Purchase', { currency: 'EUR', value: eventData.amountPaid || 0 });
+                }
                 await updateDoc(eventDocRef, { paymentStatus: 'paid' });
                 
                 // Trigger order summary email

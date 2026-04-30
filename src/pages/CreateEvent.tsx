@@ -92,11 +92,17 @@ export default function CreateEvent() {
 
   const handleNext = async () => {
     if (step === 1) {
+      if (typeof window !== 'undefined' && window.fbq) {
+        window.fbq('track', 'AddToCart');
+      }
       setStep(2);
       return;
     }
 
     if (step === 2) {
+      if (typeof window !== 'undefined' && window.fbq) {
+        window.fbq('track', 'InitiateCheckout');
+      }
       if (user && !user.isAnonymous) {
         setStep(4);
       } else {
@@ -107,6 +113,9 @@ export default function CreateEvent() {
 
     if (step === 3) {
       if (user && !user.isAnonymous) {
+        if (typeof window !== 'undefined' && window.fbq) {
+          window.fbq('track', 'InitiateCheckout');
+        }
         setStep(4);
       }
       return;
