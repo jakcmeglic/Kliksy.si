@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, ArrowRight, Check, CreditCard, Calendar, Users, LogIn, Mail, Loader2, ChevronDown, ChevronUp, Maximize2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, CreditCard, Calendar, Users, LogIn, Mail, Loader2, ChevronDown, ChevronUp, Maximize2, ShieldCheck, Lock, Star, ChevronLeft, ChevronRight, Shield } from "lucide-react";
 import { useAuth } from "../components/AuthProvider";
 import { db, handleFirestoreError, OperationType, signUpWithEmail, signInWithEmail } from "../firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
@@ -13,6 +13,24 @@ import { QRCodeSVG } from 'qrcode.react';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
 
+const TESTIMONIALS = [
+  { 
+    text: "Najboljša odločitev za poroko! Dobili smo toliko spontanih trenutkov, ki jih fotograf sploh ni ujel.", 
+    names: "Ana & Luka", 
+    subtitle: "Poročena 2026"
+  },
+  { 
+    text: "Gosti so bili navdušeni, mi pa smo imeli vse slike zbrane na enem mestu! Priporočava vsem.", 
+    names: "Maja & Tadej", 
+    subtitle: "Poročena 2026"
+  },
+  { 
+    text: "Enostavno za uporabo in popolna preglednost. Najlepši spomini ostanejo vedno z vami.", 
+    names: "Nika & Jure", 
+    subtitle: "Poročena 2026"
+  }
+];
+
 type Plan = 'basic' | 'plus' | 'premium';
 
 export default function CreateEvent() {
@@ -22,6 +40,7 @@ export default function CreateEvent() {
   
   const { user, signIn, signOut } = useAuth();
   const [step, setStep] = useState(1);
+  const [currentTestimonialIndex, setCurrentTestimonialIndex] = useState(0);
   const [formData, setFormData] = useState({
     eventType: '',
     eventName: '',
@@ -687,7 +706,10 @@ export default function CreateEvent() {
                   <ArrowLeft className="w-4 h-4" /> Nazaj
                 </button>
 
-                <div className="mb-8">
+                <div className="mb-8 relative">
+                  <div className="inline-block bg-[#F3F1FF] text-[#5B45FF] px-4 py-1.5 rounded-full text-[12px] font-bold tracking-wider uppercase mb-3 border border-[#5B45FF]/10 shadow-sm">
+                    -30% Samo še danes!
+                  </div>
                   <h2 className="text-3xl font-bold mb-2">Izbira paketa in plačilo</h2>
                   <p className="text-gray-600">Izberite paket in zaključite nakup.</p>
                 </div>
@@ -725,7 +747,14 @@ export default function CreateEvent() {
                           </div>
                         </div>
                         <div className="flex items-center gap-4">
-                          <div className="text-2xl font-bold">{plans[planKey].price}€</div>
+                          <div className="flex flex-col items-end">
+                            <div className="flex items-baseline gap-2">
+                              <span className="text-2xl font-bold">{plans[planKey].price}€</span>
+                              <span className="text-sm font-bold text-gray-400 line-through">
+                                {planKey === 'basic' ? '55€' : planKey === 'plus' ? '69€' : '109€'}
+                              </span>
+                            </div>
+                          </div>
                           {expandedPlan === planKey ? <ChevronUp className="w-5 h-5 text-gray-400" /> : <ChevronDown className="w-5 h-5 text-gray-400" />}
                         </div>
                       </div>
@@ -753,8 +782,114 @@ export default function CreateEvent() {
                   ))}
                 </div>
 
+                {/* Trust Badges */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  {/* Badge 1 */}
+                  <div className="bg-purple-50/50 rounded-2xl p-4 flex items-center gap-4 border border-purple-100/50 shadow-sm">
+                    <div className="flex -space-x-3 shrink-0">
+                      <div className="w-10 h-10 rounded-full bg-pink-100 border-2 border-white shadow-sm flex items-center justify-center text-[18px]">👩</div>
+                      <div className="w-10 h-10 rounded-full bg-blue-100 border-2 border-white shadow-sm flex items-center justify-center text-[18px]">👨</div>
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-900 text-[13px] leading-tight">200+ parov</p>
+                      <p className="text-[11px] text-gray-500 font-medium leading-tight mt-0.5">je že ustvarilo svoje<br/>galerije 💜</p>
+                    </div>
+                  </div>
+
+                  {/* Badge 2 */}
+                  <div className="bg-white rounded-2xl p-4 flex items-center gap-4 border border-gray-100 shadow-sm">
+                    <div className="w-10 h-10 rounded-full bg-indigo-50 border border-indigo-100/50 flex items-center justify-center shrink-0">
+                      <ShieldCheck className="w-5 h-5 text-indigo-500" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-900 text-[13px] leading-tight">30-dnevna<br/>garancija</p>
+                      <p className="text-[11px] text-gray-500 font-medium leading-tight mt-0.5">Brez vprašanj,<br/>vračilo kupnine</p>
+                    </div>
+                  </div>
+
+                  {/* Badge 3 */}
+                  <div className="bg-white rounded-2xl p-4 flex items-center gap-4 border border-gray-100 shadow-sm">
+                    <div className="w-10 h-10 rounded-full bg-indigo-50 border border-indigo-100/50 flex items-center justify-center shrink-0">
+                      <Lock className="w-5 h-5 text-indigo-500" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-900 text-[13px] leading-tight">100% varno<br/>plačilo</p>
+                      <p className="text-[11px] text-gray-500 font-medium leading-tight mt-0.5">S Stripe<br/>zaščito</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Testimonial Slider */}
+                <div className="bg-white border border-gray-100 rounded-2xl p-6 md:p-8 shadow-sm text-center relative mb-12">
+                   <p className="font-bold text-gray-900 mb-4 text-[15px]">Kaj pravijo naši uporabniki? 💜</p>
+                   
+                   <div className="flex justify-center gap-1 mb-6">
+                     {[1,2,3,4,5].map(star => <Star key={star} className="w-4 h-4 text-[#5B45FF] fill-[#5B45FF]" />)}
+                   </div>
+
+                   <div className="relative px-6 md:px-12">
+                     <button 
+                       onClick={(e) => {
+                         e.preventDefault();
+                         setCurrentTestimonialIndex(prev => prev === 0 ? TESTIMONIALS.length - 1 : prev - 1);
+                       }}
+                       className="absolute left-0 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-gray-900 transition-colors"
+                     >
+                       <ChevronLeft className="w-5 h-5" />
+                     </button>
+
+                     <AnimatePresence mode="wait">
+                       <motion.div
+                         key={currentTestimonialIndex}
+                         initial={{ opacity: 0, x: 20 }}
+                         animate={{ opacity: 1, x: 0 }}
+                         exit={{ opacity: 0, x: -20 }}
+                         transition={{ duration: 0.2 }}
+                         className="flex flex-col items-center"
+                       >
+                         <p className="text-gray-600 font-medium italic mb-6 min-h-[60px] text-[15px] max-w-lg mx-auto">
+                           "{TESTIMONIALS[currentTestimonialIndex].text}"
+                         </p>
+
+                         <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full flex items-center justify-center border-2 border-white shadow-sm bg-blue-100 shrink-0">
+                              <span className="text-[18px]">👫</span>
+                            </div>
+                            <div className="text-left">
+                              <p className="text-[13px] font-bold text-gray-900">{TESTIMONIALS[currentTestimonialIndex].names}</p>
+                              <p className="text-[12px] text-gray-500 font-medium">{TESTIMONIALS[currentTestimonialIndex].subtitle}</p>
+                            </div>
+                         </div>
+                       </motion.div>
+                     </AnimatePresence>
+
+                     <button 
+                       onClick={(e) => {
+                         e.preventDefault();
+                         setCurrentTestimonialIndex(prev => prev === TESTIMONIALS.length - 1 ? 0 : prev + 1);
+                       }}
+                       className="absolute right-0 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-gray-900 transition-colors"
+                     >
+                       <ChevronRight className="w-5 h-5" />
+                     </button>
+                   </div>
+
+                   <div className="flex justify-center gap-1.5 mt-8">
+                     {TESTIMONIALS.map((_, idx) => (
+                       <button 
+                         key={idx}
+                         onClick={(e) => {
+                           e.preventDefault();
+                           setCurrentTestimonialIndex(idx);
+                         }}
+                         className={`h-1.5 rounded-full transition-all ${idx === currentTestimonialIndex ? 'bg-[#5B45FF] w-4' : 'bg-gray-200 w-1.5'}`}
+                       />
+                     ))}
+                   </div>
+                </div>
+
                 <div className="space-y-4 mb-8">
-                  <h3 className="text-xl font-bold mb-4">Dodatne storitve</h3>
+                  <h3 className="text-xl font-bold mb-4">Morda potrebujete še to?</h3>
                   
                   <div className="mt-8 p-6 bg-gray-50 rounded-2xl border border-gray-200">
                     <h4 className="font-bold mb-2">Podstavki za mizo (opcijsko)</h4>
@@ -904,7 +1039,7 @@ export default function CreateEvent() {
                           setDiscountError('');
                         }}
                         disabled={discountApplied}
-                        placeholder="Vnesite koda"
+                        placeholder="Vnesite kodo"
                         className="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-all uppercase"
                       />
                       <button 
@@ -1193,10 +1328,35 @@ function StripePaymentForm({
           }} />
         </div>
       </div>
+
+      <div className="flex items-center justify-between gap-2 py-4 px-2 mt-2 border-b border-gray-100 flex-wrap sm:flex-nowrap">
+        <div className="flex items-center gap-2 w-[48%] sm:w-auto">
+          <Lock className="w-6 h-6 text-gray-400 shrink-0" />
+          <div className="text-left">
+            <p className="text-[11px] font-bold text-gray-900 leading-none">SSL</p>
+            <p className="text-[11px] text-gray-500 font-medium leading-tight">zaščita</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 w-[48%] sm:w-auto">
+          <ShieldCheck className="w-6 h-6 text-indigo-500 shrink-0" />
+          <div className="text-left">
+            <p className="text-[11px] font-bold text-gray-900 leading-none">Stripe</p>
+            <p className="text-[11px] text-gray-500 font-medium leading-tight">varno plačilo</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0 justify-center sm:justify-start">
+          <Shield className="w-6 h-6 text-gray-400 shrink-0" />
+          <div className="text-left">
+            <p className="text-[11px] font-bold text-gray-900 leading-none">PCI DSS</p>
+            <p className="text-[11px] text-gray-500 font-medium leading-tight">certificirano</p>
+          </div>
+        </div>
+      </div>
+
       <button 
         type="submit"
         disabled={isProcessing || !stripe || !elements || isUpdatingPrice}
-        className="w-full bg-gray-900 text-white py-4 rounded-xl font-medium hover:bg-black transition-colors flex items-center justify-center gap-2 mt-8 disabled:opacity-70"
+        className="w-full bg-gray-900 text-white py-4 rounded-xl font-medium hover:bg-black transition-colors flex items-center justify-center gap-2 mt-6 disabled:opacity-70 shadow-lg"
       >
         {isProcessing || isUpdatingPrice ? (
           <span className="flex items-center gap-2">
@@ -1205,10 +1365,20 @@ function StripePaymentForm({
           </span>
         ) : (
           <span className="flex items-center gap-2">
-            Plačaj in ustvari dogodek <Check className="w-5 h-5" />
+            Potrdi in ustvari galerijo <Check className="w-5 h-5" />
           </span>
         )}
       </button>
+
+      <div className="mt-4 bg-[#F8F7FF] rounded-xl p-4 flex items-start gap-4">
+        <div className="bg-white rounded-full p-2 shadow-sm shrink-0">
+          <ShieldCheck className="w-6 h-6 text-[#5B45FF]" />
+        </div>
+        <div className="pt-0.5">
+          <p className="font-bold text-[#5B45FF] text-[13px] leading-tight mb-0.5">30-dnevna garancija vračila denarja</p>
+          <p className="text-[12px] text-gray-500 font-medium leading-tight">Če z izdelkom niste 100% zadovoljni, vam vrnemo denar – brez vprašanj.</p>
+        </div>
+      </div>
     </form>
   );
 }

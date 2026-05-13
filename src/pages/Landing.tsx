@@ -167,12 +167,7 @@ export default function Landing() {
           
           {/* Left / Text Side */}
           <div className="w-full md:w-[55%] lg:w-1/2 px-2 md:px-0 text-center md:text-left">
-            <div className="flex flex-col sm:flex-row items-center sm:inline-flex justify-center sm:justify-start gap-2 mb-3 mx-auto md:mx-0">
-              <div className="bg-[#F3F1FF] text-[#5B45FF] px-4 py-1.5 rounded-full text-[11px] font-bold tracking-wider uppercase inline-block">
-                -30% S KODO POMLAD30
-              </div>
-              <span className="text-gray-600 font-medium text-[13px]">Samo za kratek čas!</span>
-            </div>
+
             
             <h1 className="text-[2.5rem] sm:text-[3.5rem] md:text-[4.5rem] lg:text-[4.5rem] font-extrabold tracking-tight text-gray-900 mb-4 leading-[1.05] break-words min-h-[160px] md:min-h-0 flex flex-col justify-start md:block">
               <span className="block">Ne izgubi slik</span>
@@ -593,18 +588,7 @@ export default function Landing() {
             <h2 className="text-[36px] md:text-[44px] font-extrabold mb-4 text-gray-900 tracking-tight">Preprosti paketi</h2>
             <p className="text-[15px] md:text-[16px] text-gray-500 font-medium mb-6">Izberite paket, ki najbolj ustreza vašemu dogodku.</p>
             
-            <div className="lg:hidden inline-block bg-purple-100 text-[#5B45FF] font-bold px-4 py-1.5 rounded-full text-[12px] uppercase shadow-sm">
-              -30% s kodo POMLAD30
-            </div>
-            
-            {/* Arrow annotation for sale */}
-            <div className="hidden lg:flex absolute right-4 top-0 translate-y-8 flex-col items-center text-[#5B45FF] w-48">
-               <span className="font-bold tracking-tight text-[13px] mb-2 uppercase text-center">-30% s kodo<br/>POMLAD30</span>
-               <svg viewBox="0 0 100 100" className="w-12 h-12 opacity-80" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                 <path d="M 20 20 Q 80 20 80 80" />
-                 <path d="M 60 80 L 80 80 L 80 60" />
-               </svg>
-            </div>
+
           </div>
           
           <div className="grid md:grid-cols-3 gap-6 lg:gap-8 max-w-5xl mx-auto items-stretch">
