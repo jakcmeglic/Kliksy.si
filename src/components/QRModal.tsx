@@ -259,7 +259,7 @@ export default function QRModal({ isOpen, onClose, event, eventUrl, initialDesig
               },
               eventUrl,
               QRCodeComponent: QRCodeSVG, 
-              qrSize: 180,
+              qrSize: 140,
               isPrint: true
             })}
           </div>

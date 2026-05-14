@@ -340,17 +340,17 @@ export const DESIGNS = [
           <svg className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
             <path d="M0,0 Q50,20 100,0 L100,100 Q50,80 0,100 Z" fill="#c2410c" />
           </svg>
-          <div className="w-full flex flex-col items-center mt-8 z-10">
+          <div className={`w-full flex flex-col items-center ${isPrint ? 'mt-4' : 'mt-8'} z-10`}>
             <h1 className={`font-serif text-orange-900 font-bold ${isPrint ? 'text-5xl' : 'text-2xl'}`}>{title}</h1>
             <p className={`font-sans text-orange-700 tracking-wider uppercase ${isPrint ? 'text-lg mt-4' : 'text-[10px] mt-2'}`}>{date}</p>
           </div>
-          <div className="flex flex-col items-center z-10 bg-white/60 p-6 rounded-3xl backdrop-blur-sm border border-orange-200/50 shadow-xl">
-            <p className={`font-serif text-orange-800 italic mb-6 ${isPrint ? 'text-2xl px-4' : 'text-xs px-2'}`}>Ustvarimo spomine skupaj.<br/>Poskeniraj za deljenje slik.</p>
+          <div className={`flex flex-col items-center z-10 bg-white/60 ${isPrint ? 'p-4' : 'p-6'} rounded-3xl backdrop-blur-sm border border-orange-200/50 shadow-xl`}>
+            <p className={`font-serif text-orange-800 italic ${isPrint ? 'mb-4 text-2xl px-4' : 'mb-6 text-xs px-2'}`}>Ustvarimo spomine skupaj.<br/>Poskeniraj za deljenje slik.</p>
             <div className={`p-2 bg-white rounded-xl`}>
               <QRCodeComponent value={eventUrl} size={qrSize * 1.1} bgColor="#ffffff" fgColor="#9a3412" level="Q" includeMargin={false} />
             </div>
           </div>
-          <div className="mb-8 z-10">
+          <div className={`${isPrint ? 'mb-4' : 'mb-8'} z-10`}>
             <span className={`inline-block w-12 h-1 bg-orange-300 rounded-full`}></span>
           </div>
         </div>
