@@ -59,7 +59,7 @@ export default function QRModal({ isOpen, onClose, event, eventUrl, initialDesig
 
       // Safari/iOS workaround for blank images: render once and discard to force rasterization of fonts/assets
       try {
-        await htmlToImage.toJpeg(printRef.current, { pixelRatio: 1, backgroundColor: selected.bg, width: 400, height: 566 });
+        await htmlToImage.toJpeg(printRef.current, { pixelRatio: 1, backgroundColor: selected.bg, width: 600, height: 848 });
       } catch (e) {
         // ignore errors on first pass
       }
@@ -68,8 +68,8 @@ export default function QRModal({ isOpen, onClose, event, eventUrl, initialDesig
       const imgData = await htmlToImage.toJpeg(printRef.current, {
         quality: 1,
         backgroundColor: selected.bg,
-        width: 400,
-        height: 566,
+        width: 600,
+        height: 848,
         pixelRatio: 2,
         style: {
           margin: '0',
@@ -247,7 +247,7 @@ export default function QRModal({ isOpen, onClose, event, eventUrl, initialDesig
           <div 
             ref={printRef} 
             className="flex flex-col items-center justify-center overflow-hidden relative"
-            style={{ width: '400px', height: '566px', boxSizing: 'border-box', backgroundColor: selected.bg }}
+            style={{ width: '600px', height: '848px', boxSizing: 'border-box', backgroundColor: selected.bg }}
           >
             {selected.render({
               event: {
@@ -259,7 +259,7 @@ export default function QRModal({ isOpen, onClose, event, eventUrl, initialDesig
               },
               eventUrl,
               QRCodeComponent: QRCodeSVG, 
-              qrSize: 140,
+              qrSize: 180,
               isPrint: true
             })}
           </div>
