@@ -1331,22 +1331,22 @@ function StripePaymentForm({
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-2 py-4 px-2 mt-2 border-b border-gray-100 flex-wrap sm:flex-nowrap">
-        <div className="flex items-center gap-2 w-[48%] sm:w-auto">
+      <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 py-4 mt-2 border-b border-gray-100">
+        <div className="flex items-center justify-center gap-2">
           <Lock className="w-6 h-6 text-gray-400 shrink-0" />
           <div className="text-left">
             <p className="text-[11px] font-bold text-gray-900 leading-none">SSL</p>
             <p className="text-[11px] text-gray-500 font-medium leading-tight">zaščita</p>
           </div>
         </div>
-        <div className="flex items-center gap-2 w-[48%] sm:w-auto">
+        <div className="flex items-center justify-center gap-2">
           <ShieldCheck className="w-6 h-6 text-indigo-500 shrink-0" />
           <div className="text-left">
             <p className="text-[11px] font-bold text-gray-900 leading-none">Stripe</p>
             <p className="text-[11px] text-gray-500 font-medium leading-tight">varno plačilo</p>
           </div>
         </div>
-        <div className="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0 justify-center sm:justify-start">
+        <div className="flex items-center justify-center gap-2">
           <Shield className="w-6 h-6 text-gray-400 shrink-0" />
           <div className="text-left">
             <p className="text-[11px] font-bold text-gray-900 leading-none">PCI DSS</p>
