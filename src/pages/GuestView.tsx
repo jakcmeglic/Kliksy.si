@@ -76,6 +76,8 @@ export default function GuestView() {
     return id;
   });
 
+  const [uploadingPreviews, setUploadingPreviews] = useState<any[]>([]);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
@@ -251,78 +253,95 @@ export default function GuestView() {
     }
 
     setUploadProgress({ current: 0, total: files.length });
-    setIsUploading(true);
+    
+    // Generate previews
+    const newPreviews = files.map(file => ({
+      id: `local-${uuidv4()}`,
+      url: URL.createObjectURL(file), // Generate local URL
+      type: file.type.startsWith('video/') ? 'video' : 'image',
+      file: file,
+      likes: 0,
+      isUploading: true
+    }));
+    
+    setUploadingPreviews(prev => [...newPreviews, ...prev]);
     let successCount = 0;
     
-    try {
-      const chunkSize = 3;
-      for (let i = 0; i < files.length; i += chunkSize) {
-        const chunk = Array.from(files).slice(i, i + chunkSize);
-        
-        await Promise.all(chunk.map(async (file) => {
-          try {
-            let fileToUpload: File | Blob = file;
-            const isVideo = file.type.startsWith('video/');
-            console.log(`Starting upload for ${isVideo ? 'video' : 'file'}:`, file.name, file.size);
-            
-            if (!isVideo) {
-              console.log("Attempting compression...");
-              try {
-                const options = { maxSizeMB: 5, maxWidthOrHeight: 4000, useWebWorker: true };
-                fileToUpload = await imageCompression(file, options);
-                console.log("Compression successful. Size:", fileToUpload.size);
-              } catch (compressionError) {
-                console.warn("Compression failed, using original file:", compressionError);
+    const uploadTask = async () => {
+      try {
+        const chunkSize = 3;
+        for (let i = 0; i < files.length; i += chunkSize) {
+          const chunk = Array.from(files).slice(i, i + chunkSize);
+          const chunkPreviews = newPreviews.slice(i, i + chunkSize);
+          
+          await Promise.all(chunk.map(async (file, index) => {
+            const preview = chunkPreviews[index];
+            try {
+              let fileToUpload: File | Blob = file;
+              const isVideo = file.type.startsWith('video/');
+              
+              if (!isVideo) {
+                try {
+                  const options = { maxSizeMB: 5, maxWidthOrHeight: 4000, useWebWorker: true };
+                  fileToUpload = await imageCompression(file, options);
+                } catch (compressionError) {
+                  // Fall back to original file if compression fails
+                }
               }
+
+              const extension = file.name.split('.').pop() || (isVideo ? 'mp4' : 'jpg');
+              const fileName = `${Date.now()}-${uuidv4()}.${extension}`;
+              const storageRef = ref(storage, `events/${id}/${fileName}`);
+              
+              await uploadBytes(storageRef, fileToUpload, { contentType: file.type });
+              const downloadUrl = await getDownloadURL(storageRef);
+
+              await addDoc(collection(db, "events", id, "photos"), {
+                url: downloadUrl,
+                eventId: id,
+                deviceId: deviceId,
+                type: isVideo ? 'video' : 'image',
+                createdAt: Timestamp.now(),
+                likes: 0,
+                likedBy: []
+              });
+              
+              successCount++;
+              setUploadProgress(prev => ({ ...prev, current: prev.current + 1 }));
+            } catch (fileError: any) {
+              console.error("Error uploading a file in loop:", fileError);
+            } finally {
+              // Remove preview whether error or success to clean up blob URL
+              setUploadingPreviews(prev => prev.filter(p => p.id !== preview.id));
+              URL.revokeObjectURL(preview.url);
             }
+          }));
+        }
 
-            const extension = file.name.split('.').pop() || (isVideo ? 'mp4' : 'jpg');
-            const fileName = `${Date.now()}-${uuidv4()}.${extension}`;
-            const storageRef = ref(storage, `events/${id}/${fileName}`);
-            
-            await uploadBytes(storageRef, fileToUpload, { contentType: file.type });
-            const downloadUrl = await getDownloadURL(storageRef);
-
-            await addDoc(collection(db, "events", id, "photos"), {
-              url: downloadUrl,
-              eventId: id,
-              deviceId: deviceId,
-              type: isVideo ? 'video' : 'image',
-              createdAt: Timestamp.now(),
-              likes: 0,
-              likedBy: []
-            });
-            
-            successCount++;
-            setUploadProgress(prev => ({ ...prev, current: prev.current + 1 }));
-          } catch (fileError: any) {
-            console.error("Error uploading a file in loop:", fileError);
-            // We consciously don't throw here so one failed file doesn't stop the rest.
-          }
-        }));
-      }
-
-      setIsUploading(false);
-      
-      if (successCount > 0) {
-        setUploadSuccess(true);
-        setUploadError('');
-        // Reset success state after 3 seconds
-        setTimeout(() => {
-          setUploadSuccess(false);
+        if (successCount > 0) {
+          setUploadSuccess(true);
+          setUploadError('');
+          setTimeout(() => {
+            setUploadSuccess(false);
+            setUploadProgress({ current: 0, total: 0 });
+          }, 3000);
+        } else {
+          setUploadError("Nobene slike ni bilo mogoče naložiti. Poskusite znova.");
           setUploadProgress({ current: 0, total: 0 });
-        }, 3000);
-      } else {
-        setUploadError("Nobene slike ni bilo mogoče naložiti. Poskusite znova.");
+        }
+      } catch (error: any) {
         setUploadProgress({ current: 0, total: 0 });
+        const errorMessage = error.message ? `Napaka: ${error.message}` : "Prišlo je do napake pri nalaganju. Poskusite znova.";
+        setUploadError(errorMessage);
+        console.error("Upload error:", error);
+        // Clear all remaining previews
+        newPreviews.forEach(p => URL.revokeObjectURL(p.url));
+        setUploadingPreviews(prev => prev.filter(p => !newPreviews.find(np => np.id === p.id)));
       }
-    } catch (error: any) {
-      setIsUploading(false);
-      setUploadProgress({ current: 0, total: 0 });
-      const errorMessage = error.message ? `Napaka: ${error.message}` : "Prišlo je do napake pri nalaganju. Poskusite znova.";
-      setUploadError(errorMessage);
-      console.error("Upload error:", error);
-    }
+    };
+
+    // Run upload without awaiting
+    uploadTask();
     
     // Reset inputs
     if (fileInputRef.current) fileInputRef.current.value = '';
@@ -387,51 +406,36 @@ export default function GuestView() {
       {/* Main Actions */}
       <main className="flex-1 px-6 py-8 flex flex-col items-center justify-center max-w-md mx-auto w-full">
         <AnimatePresence mode="wait">
-          {isUploading ? (
-            <motion.div 
-              key="uploading"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="flex flex-col items-center justify-center py-12"
-            >
-              <div className="w-16 h-16 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin mb-6" />
-              <h3 className="text-xl font-bold text-gray-900">
-                {uploadProgress.total > 1 ? `Nalagam ${uploadProgress.current} od ${uploadProgress.total}...` : 'Nalagam spomin...'}
-              </h3>
-              <p className="text-sm text-gray-500 mt-2">
-                {uploadProgress.total > 1 ? 'Slike se nalagajo posamično, da preprečimo preobremenitev povezave.' : 'Prosimo, počakaj trenutek.'}
-              </p>
-            </motion.div>
-          ) : uploadSuccess ? (
-            <motion.div 
-              key="success"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="flex flex-col items-center justify-center py-12 text-center"
-            >
-              <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mb-6">
-                <CheckCircle2 className="w-10 h-10 text-green-500" />
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Uspešno naloženo!</h3>
-              <p className="text-gray-600 mb-8">Tvoja slika je dodana v galerijo.</p>
-              
-              <button 
-                onClick={() => setUploadSuccess(false)}
-                className="flex items-center gap-2 bg-gray-900 text-white px-8 py-4 rounded-full font-medium hover:bg-black transition-colors"
-              >
-                <Plus className="w-5 h-5" /> Dodaj še eno
-              </button>
-            </motion.div>
-          ) : (
             <motion.div 
               key="actions"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="w-full space-y-4"
+              className="w-full space-y-4 relative"
             >
+              {/* Progress Toast */}
+              {uploadProgress.total > 0 && (
+                <motion.div 
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="absolute -top-12 left-0 right-0 bg-indigo-50 text-indigo-700 px-4 py-2 rounded-xl text-sm font-medium flex items-center justify-center gap-2 shadow-sm border border-indigo-100"
+                >
+                   <Loader2 className="w-4 h-4 animate-spin" />
+                   Nalagam ({uploadProgress.current}/{uploadProgress.total})...
+                </motion.div>
+              )}
+              {uploadSuccess && (
+                <motion.div 
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute -top-12 left-0 right-0 bg-green-50 text-green-700 px-4 py-2 rounded-xl text-sm font-medium flex items-center justify-center gap-2 shadow-sm border border-green-100"
+                >
+                   <CheckCircle2 className="w-4 h-4" />
+                   Uspešno naloženo!
+                </motion.div>
+              )}
+
               <button 
                 onClick={() => cameraInputRef.current?.click()}
                 className="w-full bg-gray-900 text-white p-6 rounded-3xl flex flex-col items-center justify-center gap-4 hover:bg-black transition-all active:scale-95 shadow-xl shadow-gray-900/10"
@@ -458,11 +462,9 @@ export default function GuestView() {
                 </div>
               )}
             </motion.div>
-          )}
         </AnimatePresence>
 
         {/* Live Feed Preview */}
-        {!isUploading && !uploadSuccess && (
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -474,20 +476,26 @@ export default function GuestView() {
                 <h3 className="font-bold text-lg text-gray-900">Zadnji spomini</h3>
                 <span className="text-xs font-medium bg-indigo-50 px-2 py-1 rounded-full text-indigo-600">V živo</span>
               </div>
-              {recentPhotos.length > 0 && (
+              {(uploadingPreviews.length > 0 || recentPhotos.length > 0) && (
                 <button onClick={() => setSelectedImageIndex(0)} className="text-sm font-bold text-indigo-600 hover:text-indigo-700">
                   Poglej vse
                 </button>
               )}
             </div>
             <div className="grid grid-cols-3 gap-2">
-              {recentPhotos.map((photo, index) => (
+              {[...uploadingPreviews, ...recentPhotos].slice(0, 6).map((photo, index) => (
                 <motion.div 
                   key={photo.id}
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   className="aspect-square rounded-xl overflow-hidden bg-gray-100 cursor-pointer relative"
-                  onClick={() => setSelectedImageIndex(index)}
+                  onClick={() => {
+                    if (!photo.isUploading) {
+                      // Adjust index since uploading previews might not be in allPhotos
+                      const actualIndex = allPhotos.findIndex(p => p.id === photo.id);
+                      setSelectedImageIndex(actualIndex >= 0 ? actualIndex : 0);
+                    }
+                  }}
                 >
                   {photo.type === 'video' ? (
                     <video src={photo.url} className="w-full h-full object-cover" muted playsInline preload="metadata" />
@@ -495,8 +503,14 @@ export default function GuestView() {
                     <img src={photo.url} alt="Wedding moment" className="w-full h-full object-cover" referrerPolicy="no-referrer" loading="lazy" />
                   )}
                   
+                  {photo.isUploading && (
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                      <Loader2 className="w-6 h-6 text-white animate-spin" />
+                    </div>
+                  )}
+
                   {/* Thumb Like Indicator */}
-                  {photo.likes > 0 && (
+                  {!photo.isUploading && photo.likes > 0 && (
                     <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-black/50 backdrop-blur-md px-2 py-1 rounded-full pointer-events-none">
                       <Heart className="w-3 h-3 text-red-500 fill-red-500" />
                       <span className="text-white text-xs font-bold">{photo.likes}</span>
@@ -504,14 +518,13 @@ export default function GuestView() {
                   )}
                 </motion.div>
               ))}
-              {recentPhotos.length === 0 && (
+              {uploadingPreviews.length === 0 && recentPhotos.length === 0 && (
                 <div className="col-span-3 py-8 text-center text-sm text-gray-500">
                   Bodi prvi, ki naloži fotografijo!
                 </div>
               )}
             </div>
           </motion.div>
-        )}
       </main>
 
       {/* TikTok Gallery Overlay */}
