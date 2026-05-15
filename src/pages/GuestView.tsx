@@ -76,8 +76,6 @@ export default function GuestView() {
     return id;
   });
 
-  const [uploadingPreviews, setUploadingPreviews] = useState<any[]>([]);
-
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
@@ -253,18 +251,6 @@ export default function GuestView() {
     }
 
     setUploadProgress({ current: 0, total: files.length });
-    
-    // Generate previews
-    const newPreviews = files.map(file => ({
-      id: `local-${uuidv4()}`,
-      url: URL.createObjectURL(file), // Generate local URL
-      type: file.type.startsWith('video/') ? 'video' : 'image',
-      file: file,
-      likes: 0,
-      isUploading: true
-    }));
-    
-    setUploadingPreviews(prev => [...newPreviews, ...prev]);
     let successCount = 0;
     
     const uploadTask = async () => {
@@ -272,10 +258,8 @@ export default function GuestView() {
         const chunkSize = 3;
         for (let i = 0; i < files.length; i += chunkSize) {
           const chunk = Array.from(files).slice(i, i + chunkSize);
-          const chunkPreviews = newPreviews.slice(i, i + chunkSize);
           
-          await Promise.all(chunk.map(async (file, index) => {
-            const preview = chunkPreviews[index];
+          await Promise.all(chunk.map(async (file) => {
             try {
               let fileToUpload: File | Blob = file;
               const isVideo = file.type.startsWith('video/');
@@ -310,10 +294,6 @@ export default function GuestView() {
               setUploadProgress(prev => ({ ...prev, current: prev.current + 1 }));
             } catch (fileError: any) {
               console.error("Error uploading a file in loop:", fileError);
-            } finally {
-              // Remove preview whether error or success to clean up blob URL
-              setUploadingPreviews(prev => prev.filter(p => p.id !== preview.id));
-              URL.revokeObjectURL(preview.url);
             }
           }));
         }
@@ -334,9 +314,6 @@ export default function GuestView() {
         const errorMessage = error.message ? `Napaka: ${error.message}` : "Prišlo je do napake pri nalaganju. Poskusite znova.";
         setUploadError(errorMessage);
         console.error("Upload error:", error);
-        // Clear all remaining previews
-        newPreviews.forEach(p => URL.revokeObjectURL(p.url));
-        setUploadingPreviews(prev => prev.filter(p => !newPreviews.find(np => np.id === p.id)));
       }
     };
 
@@ -416,23 +393,27 @@ export default function GuestView() {
               {/* Progress Toast */}
               {uploadProgress.total > 0 && (
                 <motion.div 
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="absolute -top-12 left-0 right-0 bg-indigo-50 text-indigo-700 px-4 py-2 rounded-xl text-sm font-medium flex items-center justify-center gap-2 shadow-sm border border-indigo-100"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="flex justify-center"
                 >
-                   <Loader2 className="w-4 h-4 animate-spin" />
-                   Nalagam ({uploadProgress.current}/{uploadProgress.total})...
+                  <div className="bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-full text-xs font-medium flex items-center justify-center gap-1.5 shadow-sm border border-indigo-100">
+                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                     Nalagam ({uploadProgress.current}/{uploadProgress.total})...
+                  </div>
                 </motion.div>
               )}
               {uploadSuccess && (
                 <motion.div 
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                  className="absolute -top-12 left-0 right-0 bg-green-50 text-green-700 px-4 py-2 rounded-xl text-sm font-medium flex items-center justify-center gap-2 shadow-sm border border-green-100"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="flex justify-center"
                 >
-                   <CheckCircle2 className="w-4 h-4" />
-                   Uspešno naloženo!
+                  <div className="bg-green-50 text-green-700 px-3 py-1.5 rounded-full text-xs font-medium flex items-center justify-center gap-1.5 shadow-sm border border-green-100">
+                     <CheckCircle2 className="w-3.5 h-3.5" />
+                     Uspešno naloženo!
+                  </div>
                 </motion.div>
               )}
 
@@ -476,25 +457,22 @@ export default function GuestView() {
                 <h3 className="font-bold text-lg text-gray-900">Zadnji spomini</h3>
                 <span className="text-xs font-medium bg-indigo-50 px-2 py-1 rounded-full text-indigo-600">V živo</span>
               </div>
-              {(uploadingPreviews.length > 0 || recentPhotos.length > 0) && (
+              {(recentPhotos.length > 0) && (
                 <button onClick={() => setSelectedImageIndex(0)} className="text-sm font-bold text-indigo-600 hover:text-indigo-700">
                   Poglej vse
                 </button>
               )}
             </div>
             <div className="grid grid-cols-3 gap-2">
-              {[...uploadingPreviews, ...recentPhotos].slice(0, 6).map((photo, index) => (
+              {recentPhotos.slice(0, 6).map((photo, index) => (
                 <motion.div 
                   key={photo.id}
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   className="aspect-square rounded-xl overflow-hidden bg-gray-100 cursor-pointer relative"
                   onClick={() => {
-                    if (!photo.isUploading) {
-                      // Adjust index since uploading previews might not be in allPhotos
-                      const actualIndex = allPhotos.findIndex(p => p.id === photo.id);
-                      setSelectedImageIndex(actualIndex >= 0 ? actualIndex : 0);
-                    }
+                    const actualIndex = allPhotos.findIndex(p => p.id === photo.id);
+                    setSelectedImageIndex(actualIndex >= 0 ? actualIndex : 0);
                   }}
                 >
                   {photo.type === 'video' ? (
@@ -502,15 +480,9 @@ export default function GuestView() {
                   ) : (
                     <img src={photo.url} alt="Wedding moment" className="w-full h-full object-cover" referrerPolicy="no-referrer" loading="lazy" />
                   )}
-                  
-                  {photo.isUploading && (
-                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                      <Loader2 className="w-6 h-6 text-white animate-spin" />
-                    </div>
-                  )}
 
                   {/* Thumb Like Indicator */}
-                  {!photo.isUploading && photo.likes > 0 && (
+                  {photo.likes > 0 && (
                     <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-black/50 backdrop-blur-md px-2 py-1 rounded-full pointer-events-none">
                       <Heart className="w-3 h-3 text-red-500 fill-red-500" />
                       <span className="text-white text-xs font-bold">{photo.likes}</span>
@@ -518,7 +490,7 @@ export default function GuestView() {
                   )}
                 </motion.div>
               ))}
-              {uploadingPreviews.length === 0 && recentPhotos.length === 0 && (
+              {recentPhotos.length === 0 && (
                 <div className="col-span-3 py-8 text-center text-sm text-gray-500">
                   Bodi prvi, ki naloži fotografijo!
                 </div>
