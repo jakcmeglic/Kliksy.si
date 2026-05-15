@@ -108,7 +108,7 @@ export default function Admin() {
   
   const [events, setEvents] = useState<EventData[]>([]);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'stats' | 'orders' | 'promo'>('stats');
+  const [activeTab, setActiveTab] = useState<'stats' | 'orders' | 'promo' | 'abandoned' | 'expired'>('stats');
   
   const [promoCodes, setPromoCodes] = useState<any[]>([]);
   const [newPromo, setNewPromo] = useState({
@@ -297,6 +297,11 @@ export default function Admin() {
       }
     });
   }, [events, timeframe]);
+
+  const expiredEvents = useMemo(() => {
+    const today = format(new Date(), 'yyyy-MM-dd');
+    return events.filter(e => e.paymentStatus === 'paid' && !!e.date && e.date < today);
+  }, [events]);
 
   const stats = useMemo(() => {
     let totalEventsRevenue = 0;
@@ -494,6 +499,7 @@ export default function Admin() {
           {[
             { id: 'stats', label: 'Statistika', icon: BarChart },
             { id: 'orders', label: 'Naročila', icon: CreditCard },
+            { id: 'expired', label: 'Potekli dogodki', icon: Calendar },
             { id: 'abandoned', label: 'Zapuščene košarice', icon: Users },
             { id: 'promo', label: 'Promocijske kode', icon: LogOut }, // Using LogOut as placeholder icon for Tag/Promo
           ].map(tab => (
@@ -811,6 +817,67 @@ export default function Admin() {
                   <tr>
                     <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
                       Ni zapuščenih košaric.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'expired' && (
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+            <div>
+              <h3 className="text-lg font-bold text-gray-900">Potekli dogodki ({expiredEvents.length})</h3>
+              <p className="text-sm text-gray-500 mt-1">Dogodki, ki so že potekli. Tukaj lahko enostavno pošljete anketo o zadovoljstvu.</p>
+            </div>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-gray-50 text-gray-500">
+                <tr>
+                  <th className="px-6 py-4 font-medium">Dogodek</th>
+                  <th className="px-6 py-4 font-medium">Datum</th>
+                  <th className="px-6 py-4 font-medium">Email</th>
+                  <th className="px-6 py-4 font-medium">Plan</th>
+                  <th className="px-6 py-4 font-medium text-right">Akcija</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {expiredEvents.map((evt) => (
+                  <tr key={evt.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="font-medium text-gray-900">{evt.eventName}</div>
+                    </td>
+                    <td className="px-6 py-4 text-gray-500">
+                      {evt.date ? format(new Date(evt.date), 'dd. MM. yyyy') : 'Neznano'}
+                    </td>
+                    <td className="px-6 py-4 text-gray-600">
+                      {evt.email || 'Ni emaila'}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="text-xs font-medium text-indigo-700 bg-indigo-50 px-2 py-1 rounded inline-block uppercase">
+                        {evt.plan}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      {evt.email && (
+                        <a 
+                          href={`mailto:${evt.email}?subject=Kako ste bili zadovoljni s Kliksy na vašem dogodku ${evt.eventName}?&body=Pozdravljeni,\n\nUpamo, da ste na vašem dogodku uživali in ustvarili veliko lepih spominov!\n\nProsimo, vzemite si minuto in nam odgovorite, kako ste bili zadovoljni z našo aplikacijo. Vsaka povratna informacija nam veliko pomeni.\n\nLep pozdrav,\nEkipa Kliksy`}
+                          className="inline-flex items-center justify-center px-3 py-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-lg text-xs font-medium transition-colors"
+                        >
+                          Pošlji Anketo
+                        </a>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+                {expiredEvents.length === 0 && !loading && (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                      Ni poteklih dogodkov.
                     </td>
                   </tr>
                 )}
