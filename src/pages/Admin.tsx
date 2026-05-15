@@ -123,6 +123,9 @@ export default function Admin() {
   
   const [timeframe, setTimeframe] = useState<'today' | 'yesterday' | 'l7d' | 'l30d' | 'lifetime'>('l30d');
   
+  const [users, setUsers] = useState<any[]>([]); // To store users for abandoned carts
+  const [abandonedCarts, setAbandonedCarts] = useState<any[]>([]);
+  
   const [selectedEventForQR, setSelectedEventForQR] = useState<EventData | null>(null);
   const [editingEvent, setEditingEvent] = useState<EventData | null>(null);
   const [editAmount, setEditAmount] = useState<string>('');
@@ -189,6 +192,11 @@ export default function Admin() {
       })) as EventData[];
       setEvents(data);
       
+      // Fetch users
+      const usersSnap = await getDocs(query(collection(db, 'users'), orderBy('createdAt', 'desc')));
+      const usersData = usersSnap.docs.map(doc => ({ uid: doc.id, ...doc.data() }));
+      setUsers(usersData);
+      
       // Fetch promo codes too
       const promoSnap = await getDocs(collection(db, 'promoCodes'));
       setPromoCodes(promoSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
@@ -252,6 +260,19 @@ export default function Admin() {
       console.error("Error toggling promo:", err);
     }
   };
+
+  useEffect(() => {
+    // Calculate abandoned carts (users who have no events with paymentStatus === 'paid')
+    const calculatedAbandoned = users.filter(u => {
+      const userPaidEvents = events.filter(e => e.ownerId === u.uid && e.paymentStatus === 'paid');
+      return userPaidEvents.length === 0;
+    }).map(u => {
+      // Find if they have any pending orders
+      const userPendingEvents = events.filter(e => e.ownerId === u.uid && e.paymentStatus !== 'paid');
+      return { ...u, pendingEvents: userPendingEvents };
+    });
+    setAbandonedCarts(calculatedAbandoned);
+  }, [users, events]);
 
   const filteredEvents = useMemo(() => {
     const now = new Date();
@@ -473,6 +494,7 @@ export default function Admin() {
           {[
             { id: 'stats', label: 'Statistika', icon: BarChart },
             { id: 'orders', label: 'Naročila', icon: CreditCard },
+            { id: 'abandoned', label: 'Zapuščene košarice', icon: Users },
             { id: 'promo', label: 'Promocijske kode', icon: LogOut }, // Using LogOut as placeholder icon for Tag/Promo
           ].map(tab => (
             <button
@@ -728,6 +750,76 @@ export default function Admin() {
           </div>
         </div>
       )}
+      
+      {activeTab === 'abandoned' && (
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+            <div>
+              <h3 className="text-lg font-bold text-gray-900">Zapuščene košarice ({abandonedCarts.length})</h3>
+              <p className="text-sm text-gray-500 mt-1">Uporabniki, ki so si ustvarili račun, vendar še niso plačali za noben dogodek.</p>
+            </div>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-gray-50 text-gray-500">
+                <tr>
+                  <th className="px-6 py-4 font-medium">Uporabnik</th>
+                  <th className="px-6 py-4 font-medium">Email</th>
+                  <th className="px-6 py-4 font-medium">Registracija</th>
+                  <th className="px-6 py-4 font-medium">Neplačani dogodki</th>
+                  <th className="px-6 py-4 font-medium text-right">Akcija</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {abandonedCarts.map((user) => (
+                  <tr key={user.uid} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="font-medium text-gray-900">{user.displayName || 'Brez imena'}</div>
+                    </td>
+                    <td className="px-6 py-4 text-gray-600">
+                      {user.email || 'Ni emaila'}
+                    </td>
+                    <td className="px-6 py-4 text-gray-500">
+                      {user.createdAt ? format(user.createdAt.toDate(), 'dd. MM. yyyy HH:mm') : 'Neznano'}
+                    </td>
+                    <td className="px-6 py-4 text-gray-500">
+                      {user.pendingEvents && user.pendingEvents.length > 0 ? (
+                        <div className="flex flex-col gap-1">
+                          {user.pendingEvents.map((evt: any) => (
+                            <span key={evt.id} className="text-xs font-medium text-amber-700 bg-amber-50 px-2 py-1 rounded inline-block">
+                              {evt.eventName} ({evt.plan})
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-gray-400 italic">Ni ustvarjenih dogodkov</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      {user.email && (
+                        <a 
+                          href={`mailto:${user.email}?subject=Izgleda da ste pozabili zaključiti naročilo na Kliksy.si&body=Pozdravljeni,\n\nOpazili smo, da ste si ustvarili račun na Kliksy.si, vendar še niste zaključili naročila.\n\nČe potrebujete pomoč pri nečem, nam prosim odpišite.\n\nLep pozdrav,\nEkipa Kliksy`}
+                          className="inline-flex items-center justify-center px-3 py-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-lg text-xs font-medium transition-colors"
+                        >
+                          Pošlji Email
+                        </a>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+                {abandonedCarts.length === 0 && !loading && (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                      Ni zapuščenih košaric.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
       {activeTab === 'promo' && (
           <div className="space-y-8">
             <div className="flex justify-between items-center">
