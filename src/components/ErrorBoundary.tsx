@@ -23,21 +23,31 @@ export class ErrorBoundary extends Component<Props, State> {
     console.error('Uncaught error:', error, errorInfo);
   }
 
+  private handleClearAndReload = () => {
+    try {
+      localStorage.clear();
+      sessionStorage.clear();
+    } catch (e) {
+      console.warn("Could not clear storage");
+    }
+    window.location.reload();
+  };
+
   public render() {
     if (this.state.hasError) {
       return (
         <div className="min-h-screen flex items-center justify-center bg-red-50 p-6">
           <div className="bg-white p-8 rounded-2xl shadow-xl max-w-lg w-full">
             <h1 className="text-2xl font-bold text-red-600 mb-4">Nekaj je šlo narobe</h1>
-            <p className="text-gray-700 mb-4">Prišlo je do nepričakovane napake.</p>
+            <p className="text-gray-700 mb-4">Prišlo je do nepričakovane napake. Morda so krive stare shranjene nastavitve v brskalniku.</p>
             <pre className="bg-gray-100 p-4 rounded-lg text-sm text-red-800 overflow-auto max-h-64">
               {this.state.error?.message}
             </pre>
             <button
               className="mt-6 w-full bg-red-600 text-white py-3 rounded-xl font-medium hover:bg-red-700"
-              onClick={() => window.location.reload()}
+              onClick={this.handleClearAndReload}
             >
-              Osveži stran
+              Počisti predpomnilnik in osveži
             </button>
           </div>
         </div>

@@ -98,20 +98,29 @@ export default function GuestView() {
 
     initEvent();
 
-    // Do auth in background
-    const initAuth = async () => {
-      const unsubscribe = onAuthStateChanged(auth, async (user) => {
-        unsubscribe();
-        if (!user) {
-          try {
-            await signInAnonymously(auth);
-          } catch (e) {
-            console.warn("Anonymous auth failed or disabled.", e);
-          }
+    // Do auth in background: one-shot listener
+    let isFired = false;
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      isFired = true;
+      if (unsubscribe) unsubscribe(); // Usually works for asynchronous
+      
+      if (!user) {
+        try {
+          await signInAnonymously(auth);
+        } catch (e) {
+          console.warn("Anonymous auth failed or disabled.", e);
         }
-      });
+      }
+    });
+
+    // If it fired synchronously, unsubscribe will now be defined, we can call it.
+    if (isFired && unsubscribe) {
+      unsubscribe();
+    }
+
+    return () => {
+      if (unsubscribe) unsubscribe();
     };
-    initAuth();
   }, [id]);
 
   useEffect(() => {
