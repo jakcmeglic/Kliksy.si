@@ -783,38 +783,40 @@ export default function CreateEvent() {
                 </div>
 
                 {/* Trust Badges */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                  {/* Badge 1 */}
-                  <div className="bg-purple-50/50 rounded-2xl p-4 flex items-center gap-4 border border-purple-100/50 shadow-sm">
-                    <div className="flex -space-x-3 shrink-0">
-                      <div className="w-10 h-10 rounded-full bg-pink-100 border-2 border-white shadow-sm flex items-center justify-center text-[18px]">👩</div>
-                      <div className="w-10 h-10 rounded-full bg-blue-100 border-2 border-white shadow-sm flex items-center justify-center text-[18px]">👨</div>
+                <div className="flex flex-col gap-4 mb-8">
+                  {/* Badge 1 - Social Proof */}
+                  <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl p-5 flex flex-col items-center text-center border border-purple-100/50 shadow-sm">
+                    <div className="flex -space-x-3 shrink-0 mb-3">
+                      <div className="w-12 h-12 rounded-full bg-pink-100 border-2 border-white shadow-sm flex items-center justify-center text-[20px] z-10">📸</div>
+                      <div className="w-12 h-12 rounded-full bg-indigo-100 border-2 border-white shadow-sm flex items-center justify-center text-[20px] z-0">🎉</div>
                     </div>
                     <div>
-                      <p className="font-bold text-gray-900 text-[13px] leading-tight">200+ parov</p>
-                      <p className="text-[11px] text-gray-500 font-medium leading-tight mt-0.5">je že ustvarilo svoje<br/>galerije 💜</p>
+                      <p className="font-bold text-[#5B45FF] text-[16px] leading-tight uppercase tracking-wide">200+ dogodkov</p>
+                      <p className="text-[14px] text-gray-600 font-medium mt-1">je bilo že ustvarjenih letos 💜</p>
                     </div>
                   </div>
 
-                  {/* Badge 2 */}
-                  <div className="bg-white rounded-2xl p-4 flex items-center gap-4 border border-gray-100 shadow-sm">
-                    <div className="w-10 h-10 rounded-full bg-indigo-50 border border-indigo-100/50 flex items-center justify-center shrink-0">
-                      <ShieldCheck className="w-5 h-5 text-indigo-500" />
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* Badge 2 */}
+                    <div className="bg-white rounded-2xl p-4 flex flex-col items-center text-center border border-gray-100 shadow-sm">
+                      <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center shrink-0 mb-3">
+                        <ShieldCheck className="w-5 h-5 text-indigo-500" />
+                      </div>
+                      <div>
+                        <p className="font-bold text-gray-900 text-[13px] leading-tight mb-1">30-dnevna<br/>garancija</p>
+                        <p className="text-[11px] text-gray-500 font-medium leading-tight">Brez vprašanj,<br/>vračilo kupnine</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-bold text-gray-900 text-[13px] leading-tight">30-dnevna<br/>garancija</p>
-                      <p className="text-[11px] text-gray-500 font-medium leading-tight mt-0.5">Brez vprašanj,<br/>vračilo kupnine</p>
-                    </div>
-                  </div>
 
-                  {/* Badge 3 */}
-                  <div className="bg-white rounded-2xl p-4 flex items-center gap-4 border border-gray-100 shadow-sm">
-                    <div className="w-10 h-10 rounded-full bg-indigo-50 border border-indigo-100/50 flex items-center justify-center shrink-0">
-                      <Lock className="w-5 h-5 text-indigo-500" />
-                    </div>
-                    <div>
-                      <p className="font-bold text-gray-900 text-[13px] leading-tight">100% varno<br/>plačilo</p>
-                      <p className="text-[11px] text-gray-500 font-medium leading-tight mt-0.5">S Stripe<br/>zaščito</p>
+                    {/* Badge 3 */}
+                    <div className="bg-white rounded-2xl p-4 flex flex-col items-center text-center border border-gray-100 shadow-sm">
+                      <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center shrink-0 mb-3">
+                        <Lock className="w-5 h-5 text-indigo-500" />
+                      </div>
+                      <div>
+                        <p className="font-bold text-gray-900 text-[13px] leading-tight mb-1">100% varno<br/>plačilo</p>
+                        <p className="text-[11px] text-gray-500 font-medium leading-tight">Zavarovano z<br/>Stripe zaščito</p>
+                      </div>
                     </div>
                   </div>
                 </div>
