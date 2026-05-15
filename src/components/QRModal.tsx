@@ -82,23 +82,33 @@ export default function QRModal({ isOpen, onClose, event, eventUrl, initialDesig
         throw new Error("Slika je prazna (napaka pri izrisu)");
       }
       
-      // Create A4 PDF
+      // Create A4 PDF (210 x 297 mm)
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
         format: 'a4'
       });
 
-      // A4 dimensions: 210 x 297 mm
-      // 4 cards per page, so each card is 105 x 148.5 mm (A6 format)
-      const cardW = 105;
-      const cardH = 148.5;
+      // Original card logic filled the whole page and caused printer cropping.
+      // We add margins and gaps to ensure safe printing.
+      const cardW = 92;
+      const cardH = 130;
+      
+      const gapX = 10;
+      const gapY = 12;
+      
+      // Calculate starting offsets to center the 2x2 grid
+      const startX = (210 - (cardW * 2 + gapX)) / 2; // ~8mm margin
+      const startY = (297 - (cardH * 2 + gapY)) / 2; // ~12.5mm margin
 
-      // Add image 4 times (top-left, top-right, bottom-left, bottom-right)
-      pdf.addImage(imgData, 'JPEG', 0, 0, cardW, cardH);
-      pdf.addImage(imgData, 'JPEG', 105, 0, cardW, cardH);
-      pdf.addImage(imgData, 'JPEG', 0, 148.5, cardW, cardH);
-      pdf.addImage(imgData, 'JPEG', 105, 148.5, cardW, cardH);
+      // Top-left
+      pdf.addImage(imgData, 'JPEG', startX, startY, cardW, cardH);
+      // Top-right
+      pdf.addImage(imgData, 'JPEG', startX + cardW + gapX, startY, cardW, cardH);
+      // Bottom-left
+      pdf.addImage(imgData, 'JPEG', startX, startY + cardH + gapY, cardW, cardH);
+      // Bottom-right
+      pdf.addImage(imgData, 'JPEG', startX + cardW + gapX, startY + cardH + gapY, cardW, cardH);
 
       const eventNameStr = event.eventType === 'poroka' ? `${event.partner1 || 'Dogodek'}-${event.partner2 || ''}` : (event.eventName || 'Dogodek');
       const filename = `QR-Listici-${eventNameStr.replace(/\s+/g, '-')}.pdf`;
@@ -243,11 +253,11 @@ export default function QRModal({ isOpen, onClose, event, eventUrl, initialDesig
         </motion.div>
 
         {/* Hidden high-res container for html-to-image */}
-        <div style={{ position: 'fixed', top: 0, left: 0, zIndex: -9999, opacity: 0, pointerEvents: 'none' }} aria-hidden="true">
+        <div style={{ position: 'absolute', top: '-9999px', left: '-9999px', width: '600px', height: '848px', zIndex: -9999 }} aria-hidden="true">
           <div 
             ref={printRef} 
-            className="flex flex-col items-center justify-center overflow-hidden relative"
-            style={{ width: '600px', height: '848px', boxSizing: 'border-box', backgroundColor: selected.bg }}
+            className="flex flex-col items-center justify-center relative"
+            style={{ width: '600px', height: '848px', minWidth: '600px', minHeight: '848px', boxSizing: 'border-box', backgroundColor: selected.bg }}
           >
             {selected.render({
               event: {

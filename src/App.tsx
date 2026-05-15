@@ -6,6 +6,9 @@ import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Admin from './pages/Admin';
 import EmailTest from './pages/EmailTest';
+import Terms from './pages/Terms';
+import Privacy from './pages/Privacy';
+import Cookies from './pages/Cookies';
 import { AuthProvider } from './components/AuthProvider';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
@@ -22,6 +25,9 @@ export default function App() {
             <Route path="/admin" element={<Admin />} />
             <Route path="/login" element={<Login />} />
             <Route path="/email-test" element={<EmailTest />} />
+            <Route path="/pogoji-uporabe" element={<Terms />} />
+            <Route path="/zasebnost" element={<Privacy />} />
+            <Route path="/piskotki" element={<Cookies />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>

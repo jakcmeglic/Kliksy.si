@@ -760,9 +760,9 @@ export default function Landing() {
             <div className="md:col-span-2 lg:col-span-2">
               <h4 className="font-extrabold text-gray-900 mb-6 text-[15px]">Pravno</h4>
               <ul className="space-y-4 text-gray-500 font-medium text-[15px]">
-                <li><a href="#" className="hover:text-gray-900 transition-colors">Pogoji uporabe</a></li>
-                <li><a href="#" className="hover:text-gray-900 transition-colors">Zasebnost</a></li>
-                <li><a href="#" className="hover:text-gray-900 transition-colors">Piškotki</a></li>
+                <li><Link to="/pogoji-uporabe" className="hover:text-gray-900 transition-colors">Pogoji uporabe</Link></li>
+                <li><Link to="/zasebnost" className="hover:text-gray-900 transition-colors">Zasebnost</Link></li>
+                <li><Link to="/piskotki" className="hover:text-gray-900 transition-colors">Piškotki</Link></li>
               </ul>
             </div>
             <div className="md:col-span-3 lg:col-span-4">
