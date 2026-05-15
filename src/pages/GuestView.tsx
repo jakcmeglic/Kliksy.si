@@ -49,6 +49,19 @@ export default function GuestView() {
   const [loading, setLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
+  const isUploadingRef = useRef(false);
+  
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isUploadingRef.current) {
+        e.preventDefault();
+        e.returnValue = 'Slike se še vedno nalagajo. Ali res želite zapreti aplikacijo?';
+        return e.returnValue;
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [uploadError, setUploadError] = useState('');
   const [recentPhotos, setRecentPhotos] = useState<any[]>([]);
@@ -82,9 +95,17 @@ export default function GuestView() {
   useEffect(() => {
     if (!id) return;
 
+    let timeoutId: any;
+
     const initEvent = async () => {
       try {
         const docRef = doc(db, "events", id);
+        
+        // Timeout to stop endless loading spinner
+        timeoutId = setTimeout(() => {
+          setLoading(false);
+        }, 5000);
+
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           setEvent({ id: docSnap.id, ...docSnap.data() });
@@ -92,6 +113,7 @@ export default function GuestView() {
       } catch (error) {
         console.error("Error fetching event:", error);
       } finally {
+        clearTimeout(timeoutId);
         setLoading(false);
       }
     };
@@ -251,6 +273,7 @@ export default function GuestView() {
     }
 
     setUploadProgress({ current: 0, total: files.length });
+    isUploadingRef.current = true;
     let successCount = 0;
     
     const uploadTask = async () => {
@@ -314,6 +337,8 @@ export default function GuestView() {
         const errorMessage = error.message ? `Napaka: ${error.message}` : "Prišlo je do napake pri nalaganju. Poskusite znova.";
         setUploadError(errorMessage);
         console.error("Upload error:", error);
+      } finally {
+        isUploadingRef.current = false;
       }
     };
 
