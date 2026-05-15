@@ -184,16 +184,25 @@ export default function Admin() {
   const fetchEvents = async () => {
     setLoading(true);
     try {
-      const q = query(collection(db, 'events'), orderBy('createdAt', 'desc'));
+      // Fetch all events without orderBy to ensure we don't miss ones without createdAt
+      const q = query(collection(db, 'events'));
       const snapshot = await getDocs(q);
       const data = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       })) as EventData[];
+      
+      // Sort locally: newest first, items without createdAt go to the bottom
+      data.sort((a, b) => {
+        const timeA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+        const timeB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+        return timeB - timeA;
+      });
+      
       setEvents(data);
       
       // Fetch users
-      const usersSnap = await getDocs(query(collection(db, 'users'), orderBy('createdAt', 'desc')));
+      const usersSnap = await getDocs(query(collection(db, 'users')));
       const usersData = usersSnap.docs.map(doc => ({ uid: doc.id, ...doc.data() }));
       setUsers(usersData);
       
@@ -282,10 +291,12 @@ export default function Admin() {
     const l30d = subDays(today, 30);
 
     return events.filter(event => {
-      if (!event.createdAt) return false;
-      if (event.paymentStatus !== 'paid') return false;
-      
-      const eventDate = event.createdAt.toDate();
+      // Allow events without createdAt to show up, default to 'today' for comparison
+      // If we completely hide them, they disappear from the dashboard
+      let eventDate = today;
+      if (event.createdAt?.toDate) {
+        eventDate = event.createdAt.toDate();
+      }
       
       switch (timeframe) {
         case 'today': return isSameDay(eventDate, today);
