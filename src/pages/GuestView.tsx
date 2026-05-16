@@ -256,9 +256,11 @@ export default function GuestView() {
     let files: File[] = Array.from(e.target.files || []);
     if (files.length === 0 || !id) return;
 
+    setUploadError('');
+
     const isDemo = event?.paymentStatus !== 'paid';
     if (isDemo) {
-      const allowedRemaining = Math.max(0, 5 - allPhotos.length);
+      const allowedRemaining = Math.max(0, 5 - recentPhotos.length);
       if (allowedRemaining === 0) {
         setUploadError("To je demo dogodek. Dosežena je omejitev 5 slik.");
         return;

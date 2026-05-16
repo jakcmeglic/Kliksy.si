@@ -803,7 +803,7 @@ export default function CreateEvent() {
                   </ul>
                 </div>
                 <button
-                  onClick={() => navigate(`/dashboard`)}
+                  onClick={() => navigate(`/dashboard?eventId=${demoEventId}`)}
                   className="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-indigo-700 transition-colors shadow-md shadow-indigo-200"
                 >
                   Odpri moj dogodek
