@@ -166,32 +166,51 @@ export default function Admin() {
   }, []);
 
   const exportCsv = (type: 'buyers' | 'no_purchase' | 'past_events') => {
-    let filteredUsers: any[] = [];
+    let filteredData: { email: string, name: string, eventName?: string }[] = [];
     const today = format(new Date(), 'yyyy-MM-dd');
-    
-    // Group events by Owner
-    const userEvents: Record<string, EventData[]> = {};
-    events.forEach(e => {
-      if (!userEvents[e.ownerId]) userEvents[e.ownerId] = [];
-      userEvents[e.ownerId].push(e);
-    });
+
+    // Množica vseh kupcev, da jih izločimo iz "no_purchase"
+    const paidEmails = new Set(
+      events.filter(e => e.paymentStatus === 'paid' && e.email).map(e => e.email.toLowerCase().trim())
+    );
 
     if (type === 'buyers') {
-      filteredUsers = users.filter(u => userEvents[u.uid]?.some(e => e.paymentStatus === 'paid'));
+      const paidEvents = events.filter(e => e.paymentStatus === 'paid' && e.email);
+      const uniqueBuyers = new Map();
+      paidEvents.forEach(e => {
+        const email = e.email.toLowerCase().trim();
+        if (!uniqueBuyers.has(email)) {
+          uniqueBuyers.set(email, { email: e.email, name: e.partner1 ? `${e.partner1} ${e.partner2 || ''}` : '', eventName: e.eventName });
+        }
+      });
+      filteredData = Array.from(uniqueBuyers.values());
     } else if (type === 'no_purchase') {
-      filteredUsers = users.filter(u => !userEvents[u.uid]?.some(e => e.paymentStatus === 'paid'));
+      // Uporabniki, ki se niso nikoli pojavili v plačanih dogodkih 
+      users.forEach(u => {
+        if (u.email && !paidEmails.has(u.email.toLowerCase().trim())) {
+          filteredData.push({ email: u.email, name: u.displayName || '' });
+        }
+      });
     } else if (type === 'past_events') {
-      filteredUsers = users.filter(u => userEvents[u.uid]?.some(e => e.paymentStatus === 'paid' && !!e.date && e.date < today));
+      const pastEvents = events.filter(e => e.paymentStatus === 'paid' && !!e.date && e.date < today && e.email);
+      const uniquePast = new Map();
+      pastEvents.forEach(e => {
+        const email = e.email.toLowerCase().trim();
+        if (!uniquePast.has(email)) {
+          uniquePast.set(email, { email: e.email, name: e.partner1 ? `${e.partner1} ${e.partner2 || ''}` : '', eventName: e.eventName });
+        }
+      });
+      filteredData = Array.from(uniquePast.values());
     }
 
-    if (filteredUsers.length === 0) {
+    if (filteredData.length === 0) {
       alert('Ni uporabnikov v tej kategoriji.');
       return;
     }
 
     const csvContent = "data:text/csv;charset=utf-8," 
-      + "Email,Ime,ID Uporabnika\n" 
-      + filteredUsers.map(u => `${u.email || ''},${u.displayName || ''},${u.uid || ''}`).join("\n");
+      + "Email,Ime,Dogodek\n" 
+      + filteredData.map(u => `"${u.email || ''}","${u.name || ''}","${u.eventName || ''}"`).join("\n");
       
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
