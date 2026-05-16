@@ -128,7 +128,7 @@ async function startServer() {
       if (resendApiKey) {
         const { Resend } = await import('resend');
         const resend = new Resend(resendApiKey);
-        await resend.emails.send({
+        const { data, error } = await resend.emails.send({
           from: "Kliksy Podpora <info@kliksy.si>",
           replyTo: "info@kliksy.si",
           to: email,
@@ -146,6 +146,9 @@ async function startServer() {
             </div>
           `,
         });
+        if (error) {
+          console.error("Resend API Error:", error);
+        }
       } else {
         const nodemailer = await import("nodemailer");
         const transporter = nodemailer.createTransport({
@@ -212,7 +215,7 @@ async function startServer() {
       if (resendApiKey) {
         const { Resend } = await import('resend');
         const resend = new Resend(resendApiKey);
-        await resend.emails.send({
+        const { data, error } = await resend.emails.send({
           from: "Kliksy Podpora <info@kliksy.si>",
           replyTo: "info@kliksy.si",
           to: email,
@@ -228,6 +231,9 @@ async function startServer() {
             </div>
           `,
         });
+        if (error) {
+          console.error("Resend API Error:", error);
+        }
       } else {
         const nodemailer = await import("nodemailer");
         const transporter = nodemailer.createTransport({
@@ -299,7 +305,7 @@ async function startServer() {
       if (resendApiKey) {
         const { Resend } = await import('resend');
         const resend = new Resend(resendApiKey);
-        await resend.emails.send({
+        const { data, error } = await resend.emails.send({
           from: "Kliksy Podpora <info@kliksy.si>",
           replyTo: "info@kliksy.si",
           to: email,
@@ -324,6 +330,9 @@ async function startServer() {
             </div>
           `,
         });
+        if (error) {
+          console.error("Resend API Error:", error);
+        }
       } else {
         const nodemailer = await import("nodemailer");
         const transporter = nodemailer.createTransport({
