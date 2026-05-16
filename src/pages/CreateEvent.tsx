@@ -216,6 +216,10 @@ export default function CreateEvent() {
   };
 
   const handleBack = () => {
+    if (existingEventId && step === 4) {
+      navigate(`/dashboard?eventId=${existingEventId}`);
+      return;
+    }
     if (step === 4 && (!user || user.isAnonymous)) {
       setStep(3);
     } else if (step === 4 && user && !user.isAnonymous) {

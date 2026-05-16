@@ -418,11 +418,12 @@ export default function Dashboard() {
             {event.plan && (
               <div className="mt-3">
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
+                  event.paymentStatus !== 'paid' ? 'bg-indigo-50 text-indigo-800 border-indigo-200' :
                   event.plan === 'premium' ? 'bg-amber-50 text-amber-800 border-amber-200' : 
                   event.plan === 'plus' ? 'bg-blue-50 text-blue-800 border-blue-200' :
                   'bg-gray-100 text-gray-800 border-gray-200'
                 }`}>
-                  Paket: {event.plan.charAt(0).toUpperCase() + event.plan.slice(1)}
+                  Paket: {event.paymentStatus !== 'paid' ? 'Demo' : event.plan.charAt(0).toUpperCase() + event.plan.slice(1)}
                 </span>
               </div>
             )}
@@ -500,7 +501,13 @@ export default function Dashboard() {
                   {activeTab === 'gallery' && 'Vse fotografije'}
                   {activeTab === 'settings' && 'Nastavitve'}
                 </h1>
-                <p className="text-gray-500">Upravljaj svoje poročne spomine.</p>
+                <p className="text-gray-500">
+                  {event.eventType === 'poroka' || !event.eventType ? 'Upravljaj svoje poročne spomine.' : 
+                   event.eventType === 'rojstni_dan' ? 'Upravljaj svoje rojstnodnevne spomine.' : 
+                   event.eventType === 'poslovni_dogodek' ? 'Upravljaj spomine s poslovnega dogodka.' : 
+                   event.eventType === 'teambuilding' ? 'Upravljaj spomine s teambuildinga.' : 
+                   'Upravljaj spomine dogodka.'}
+                </p>
               </div>
             </div>
             
