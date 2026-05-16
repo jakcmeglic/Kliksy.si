@@ -470,6 +470,21 @@ export default function Dashboard() {
       <main className="flex-1 p-6 md:p-12 overflow-y-auto">
         <div className="max-w-5xl mx-auto">
           
+          {event.paymentStatus !== 'paid' && (
+            <div className="mb-8 bg-indigo-50 border border-indigo-100 rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-sm">
+              <div>
+                <h3 className="text-lg font-bold text-indigo-900 mb-2">Demo paket (omejeno na 5 slik)</h3>
+                <p className="text-indigo-700">Trenutno preizkušate demo paket. Da bodo gostje lahko naložili več slik in dostopali do vseh funkcij, odklenite vaš dogodek.</p>
+              </div>
+              <button 
+                onClick={() => navigate(`/create?eventId=${event.id}`)}
+                className="shrink-0 bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-indigo-700 transition md:ml-auto shadow-md shadow-indigo-200"
+              >
+                Odkleni moj dogodek
+              </button>
+            </div>
+          )}
+
           {/* Header Actions */}
           <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-12">
             <div className="flex items-center gap-4">

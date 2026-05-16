@@ -4,7 +4,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Check, CreditCard, Calendar, Users, LogIn, Mail, Loader2, ChevronDown, ChevronUp, Maximize2, ShieldCheck, Lock, Star, ChevronLeft, ChevronRight, Shield } from "lucide-react";
 import { useAuth } from "../components/AuthProvider";
 import { db, handleFirestoreError, OperationType, signUpWithEmail, signInWithEmail } from "../firebase";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc, doc, getDoc, updateDoc, serverTimestamp } from "firebase/firestore";
 import ImageViewer from '../components/ImageViewer';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
@@ -37,9 +37,10 @@ export default function CreateEvent() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const initialPlan = (searchParams.get('plan') as Plan) || 'plus';
+  const existingEventId = searchParams.get('eventId');
   
   const { user, signIn, signOut } = useAuth();
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState<number | 'animation'>(1);
   const [currentTestimonialIndex, setCurrentTestimonialIndex] = useState(0);
   const [formData, setFormData] = useState({
     eventType: '',
@@ -109,6 +110,79 @@ export default function CreateEvent() {
     }
   };
 
+  const [demoEventId, setDemoEventId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (existingEventId && user && step !== 4) {
+      const loadEvent = async () => {
+        try {
+          const docRef = doc(db, 'events', existingEventId);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists() && docSnap.data().ownerId === user.uid) {
+            const data = docSnap.data();
+            setFormData(prev => ({
+              ...prev,
+              eventType: data.eventType || '',
+              eventName: data.eventName || '',
+              partner1: data.partner1 || '',
+              partner2: data.partner2 || '',
+              date: data.date || '',
+              plan: data.plan || initialPlan,
+              isCompanyInvoice: data.isCompanyInvoice || false,
+            }));
+            setStep(4);
+          }
+        } catch (error) {
+          console.error("Error loading event:", error);
+        }
+      };
+      loadEvent();
+    }
+  }, [existingEventId, user, step]);
+
+  const handleCreateDemoEvent = async () => {
+    if (!user || user.isAnonymous) return;
+    setIsProcessing(true);
+    setAuthError('');
+    try {
+      const docRef = await addDoc(collection(db, "events"), {
+        eventType: formData.eventType,
+        eventName: formData.eventName,
+        partner1: formData.partner1,
+        partner2: formData.partner2,
+        date: formData.date,
+        email: user.email || '',
+        plan: formData.plan || 'basic',
+        deliveryMode: 'self_print',
+        standsQuantity: 0,
+        printedQrQuantity: 0,
+        selectedStand: null,
+        isCompanyInvoice: false,
+        companyName: null,
+        companyAddress: null,
+        companyTaxId: null,
+        deliveryName: null,
+        deliverySurname: null,
+        deliveryAddress: null,
+        deliveryCity: null,
+        deliveryPostcode: null,
+        selectedDesignId: null,
+        ownerId: user.uid,
+        createdAt: serverTimestamp(),
+        paymentStatus: 'pending',
+        amountPaid: 0,
+        isDemo: true
+      });
+      setDemoEventId(docRef.id);
+      setStep('animation');
+    } catch (err: any) {
+      console.error(err);
+      setAuthError('Napaka pri ustvarjanju dogodka: ' + err.message);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const handleNext = async () => {
     if (step === 1) {
       if (typeof window !== 'undefined' && window.fbq) {
@@ -123,7 +197,7 @@ export default function CreateEvent() {
         window.fbq('track', 'InitiateCheckout');
       }
       if (user && !user.isAnonymous) {
-        setStep(4);
+        handleCreateDemoEvent();
       } else {
         setStep(3);
       }
@@ -135,21 +209,19 @@ export default function CreateEvent() {
         if (typeof window !== 'undefined' && window.fbq) {
           window.fbq('track', 'InitiateCheckout');
         }
-        setStep(4);
+        handleCreateDemoEvent();
       }
       return;
     }
   };
-
-
 
   const handleBack = () => {
     if (step === 4 && (!user || user.isAnonymous)) {
       setStep(3);
     } else if (step === 4 && user && !user.isAnonymous) {
       setStep(2);
-    } else {
-      setStep(s => Math.max(s - 1, 1));
+    } else if (typeof step === 'number' && step > 1) {
+      setStep(step - 1);
     }
   };
 
@@ -322,7 +394,8 @@ export default function CreateEvent() {
     const requiresDelivery = standsQuantity > 0;
     
     try {
-      const docRef = await addDoc(collection(db, "events"), {
+      let docId = existingEventId;
+      const eventData = {
         eventType: formData.eventType,
         eventName: formData.eventName,
         partner1: formData.partner1,
@@ -345,16 +418,26 @@ export default function CreateEvent() {
         deliveryPostcode: requiresDelivery ? formData.deliveryPostcode : null,
         selectedDesignId: null,
         ownerId: user.uid,
-        createdAt: serverTimestamp(),
         paymentStatus: 'pending',
         amountPaid: finalPrice,
-        discountCode: discountApplied ? discountCode : null
-      });
+        discountCode: discountApplied ? discountCode : null,
+        isDemo: false
+      };
+
+      if (docId) {
+        await updateDoc(doc(db, "events", docId), eventData);
+      } else {
+        const docRef = await addDoc(collection(db, "events"), {
+          ...eventData,
+          createdAt: serverTimestamp()
+        });
+        docId = docRef.id;
+      }
 
       setIsProcessing(false);
       setPaymentSuccess(true);
       setTimeout(() => {
-        navigate(`/dashboard?eventId=${docRef.id}&success=true`);
+        navigate(`/dashboard?eventId=${docId}&success=true`);
       }, 3000);
     } catch (error: any) {
       setStripeError(error.message || 'Prišlo je do napake.');
@@ -691,6 +774,40 @@ export default function CreateEvent() {
                     </>
                   )}
                 </div>
+              </motion.div>
+            )}
+
+            {step === 'animation' && (
+              <motion.div
+                key="step-animation"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-white p-8 md:p-12 rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 text-center"
+              >
+                <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Check className="w-10 h-10 text-green-500" />
+                </div>
+                <h2 className="text-3xl font-bold mb-4">Vaš dogodek je ustvarjen! 🎉</h2>
+                <div className="text-left bg-gray-50 rounded-2xl p-6 mb-8 max-w-sm mx-auto">
+                  <p className="font-semibold text-gray-900 mb-4">Tukaj lahko:</p>
+                  <ul className="space-y-3">
+                    <li className="flex items-center gap-3 text-gray-700">
+                      <span className="text-green-500">✅</span> preizkusite galerijo
+                    </li>
+                    <li className="flex items-center gap-3 text-gray-700">
+                      <span className="text-green-500">✅</span> naložite do 5 slik
+                    </li>
+                    <li className="flex items-center gap-3 text-gray-700">
+                      <span className="text-green-500">✅</span> vidite, kako bo Kliksy izgledal na vašem dogodku 😊
+                    </li>
+                  </ul>
+                </div>
+                <button
+                  onClick={() => navigate(`/dashboard`)}
+                  className="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-indigo-700 transition-colors shadow-md shadow-indigo-200"
+                >
+                  Odpri moj dogodek
+                </button>
               </motion.div>
             )}
 
@@ -1167,6 +1284,7 @@ export default function CreateEvent() {
                             discountCode={discountCode}
                             stripePaymentIntentId={stripePaymentIntentId}
                             isUpdatingPrice={isUpdatingPrice}
+                            existingEventId={existingEventId}
                           />
                         </Elements>
                       ) : stripeError ? (
@@ -1238,7 +1356,8 @@ function StripePaymentForm({
   discountApplied,
   discountCode,
   stripePaymentIntentId,
-  isUpdatingPrice
+  isUpdatingPrice,
+  existingEventId
 }: any) {
   const stripe = useStripe();
   const elements = useElements();
@@ -1262,8 +1381,8 @@ function StripePaymentForm({
     const requiresDelivery = standsQuantity > 0;
 
     try {
-      // Create document first
-      const docRef = await addDoc(collection(db, "events"), {
+      let docId = existingEventId;
+      const eventData = {
         eventType: formData.eventType,
         eventName: formData.eventName,
         partner1: formData.partner1,
@@ -1286,17 +1405,27 @@ function StripePaymentForm({
         deliveryPostcode: requiresDelivery ? formData.deliveryPostcode : null,
         selectedDesignId: null,
         ownerId: user.uid,
-        createdAt: serverTimestamp(),
         paymentStatus: 'pending',
         amountPaid: finalPrice,
         discountCode: discountApplied ? discountCode : null,
-        stripePaymentIntentId: stripePaymentIntentId || null
-      });
+        stripePaymentIntentId: stripePaymentIntentId || null,
+        isDemo: false
+      };
+
+      if (docId) {
+        await updateDoc(doc(db, "events", docId), eventData);
+      } else {
+        const docRef = await addDoc(collection(db, "events"), {
+          ...eventData,
+          createdAt: serverTimestamp()
+        });
+        docId = docRef.id;
+      }
 
       const { error: stripeErr } = await stripe.confirmPayment({
         elements,
         confirmParams: {
-          return_url: `${window.location.origin}/dashboard?eventId=${docRef.id}&success=true`,
+          return_url: `${window.location.origin}/dashboard?eventId=${docId}&success=true`,
           payment_method_data: {
             billing_details: {
               email: user.email || undefined,
