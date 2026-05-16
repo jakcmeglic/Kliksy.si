@@ -76,48 +76,148 @@ async function startServer() {
     const smtpHost = process.env.SMTP_HOST;
     const smtpPort = Number(process.env.SMTP_PORT) || 587;
     const smtpUser = process.env.SMTP_USER;
-    const smtpPass = process.env.SMTP_PASS;
+    const smtpPass = process.env.SMTP_PASS ? process.env.SMTP_PASS.replace(/\s+/g, '') : undefined;
+    const resendApiKey = process.env.RESEND_API_KEY;
 
-    if (!smtpHost || !smtpUser || !smtpPass) {
-      console.warn("SMTP configuration missing. Skipping welcome email.");
-      return res.json({ success: false, message: "SMTP not configured" });
+    if (!resendApiKey && (!smtpHost || !smtpUser || !smtpPass)) {
+      console.warn("SMTP and Resend configuration missing. Skipping welcome email.");
+      return res.json({ success: false, message: "Email not configured" });
     }
 
     try {
-      const nodemailer = await import("nodemailer");
-      const transporter = nodemailer.createTransport({
-        host: smtpHost,
-        port: smtpPort,
-        secure: smtpPort === 465,
-        auth: {
-          user: smtpUser,
-          pass: smtpPass,
-        },
-      });
+      if (resendApiKey) {
+        const { Resend } = await import('resend');
+        const resend = new Resend(resendApiKey);
+        await resend.emails.send({
+          from: "Kliksy Podpora <info@kliksy.si>",
+          replyTo: "info@kliksy.si",
+          to: email,
+          subject: "Dobrodošli pri Kliksy!",
+          text: `Dobrodošli pri Kliksy!\n\nPozdravljeni ${displayName || ''},\n\nHvala, ker ste se registrirali pri Kliksy. Veseli smo, da ste se nam pridružili!\n\nZ našo aplikacijo lahko preprosto ustvarite unikatne QR kode za vaše dogodke in zbirate fotografije vaših gostov na enem mestu.\n\nČe imate kakršna koli vprašanja, nam preprosto odgovorite na ta email.\n\nLep pozdrav,\nEkipa Kliksy`,
+          html: `
+            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+              <h1 style="color: #4f46e5;">Dobrodošli pri Kliksy!</h1>
+              <p>Pozdravljeni ${displayName || ''},</p>
+              <p>Hvala, ker ste se registrirali pri Kliksy. Veseli smo, da ste se nam pridružili!</p>
+              <p>Z našo aplikacijo lahko preprosto ustvarite unikatne QR kode za vaše dogodke in zbirate fotografije vaših gostov na enem mestu.</p>
+              <p>Če imate kakršna koli vprašanja, nam preprosto odgovorite na ta email.</p>
+              <br />
+              <p>Lep pozdrav,<br />Ekipa Kliksy</p>
+            </div>
+          `,
+        });
+      } else {
+        const nodemailer = await import("nodemailer");
+        const transporter = nodemailer.createTransport({
+          host: smtpHost,
+          port: smtpPort,
+          secure: smtpPort === 465,
+          auth: {
+            user: smtpUser,
+            pass: smtpPass,
+          },
+        });
 
-      const mailOptions = {
-        from: `"Kliksy" <${smtpUser}>`,
-        replyTo: `"Kliksy Podpora" <info@kliksy.si>`,
-        to: email,
-        subject: "Dobrodošli pri Kliksy!",
-        text: `Dobrodošli pri Kliksy!\n\nPozdravljeni ${displayName || ''},\n\nHvala, ker ste se registrirali pri Kliksy. Veseli smo, da ste se nam pridružili!\n\nZ našo aplikacijo lahko preprosto ustvarite unikatne QR kode za vaše dogodke in zbirate fotografije vaših gostov na enem mestu.\n\nČe imate kakršna koli vprašanja, nam preprosto odgovorite na ta email.\n\nLep pozdrav,\nEkipa Kliksy`,
-        html: `
-          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-            <h1 style="color: #4f46e5;">Dobrodošli pri Kliksy!</h1>
-            <p>Pozdravljeni ${displayName || ''},</p>
-            <p>Hvala, ker ste se registrirali pri Kliksy. Veseli smo, da ste se nam pridružili!</p>
-            <p>Z našo aplikacijo lahko preprosto ustvarite unikatne QR kode za vaše dogodke in zbirate fotografije vaših gostov na enem mestu.</p>
-            <p>Če imate kakršna koli vprašanja, nam preprosto odgovorite na ta email.</p>
-            <br />
-            <p>Lep pozdrav,<br />Ekipa Kliksy</p>
-          </div>
-        `,
-      };
+        const mailOptions = {
+          from: `"Kliksy" <${smtpUser}>`,
+          replyTo: `"Kliksy Podpora" <info@kliksy.si>`,
+          to: email,
+          subject: "Dobrodošli pri Kliksy!",
+          text: `Dobrodošli pri Kliksy!\n\nPozdravljeni ${displayName || ''},\n\nHvala, ker ste se registrirali pri Kliksy. Veseli smo, da ste se nam pridružili!\n\nZ našo aplikacijo lahko preprosto ustvarite unikatne QR kode za vaše dogodke in zbirate fotografije vaših gostov na enem mestu.\n\nČe imate kakršna koli vprašanja, nam preprosto odgovorite na ta email.\n\nLep pozdrav,\nEkipa Kliksy`,
+          html: `
+            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+              <h1 style="color: #4f46e5;">Dobrodošli pri Kliksy!</h1>
+              <p>Pozdravljeni ${displayName || ''},</p>
+              <p>Hvala, ker ste se registrirali pri Kliksy. Veseli smo, da ste se nam pridružili!</p>
+              <p>Z našo aplikacijo lahko preprosto ustvarite unikatne QR kode za vaše dogodke in zbirate fotografije vaših gostov na enem mestu.</p>
+              <p>Če imate kakršna koli vprašanja, nam preprosto odgovorite na ta email.</p>
+              <br />
+              <p>Lep pozdrav,<br />Ekipa Kliksy</p>
+            </div>
+          `,
+        };
 
-      await transporter.sendMail(mailOptions);
+        await transporter.sendMail(mailOptions);
+      }
       res.json({ success: true });
     } catch (error: any) {
       console.error("Error sending welcome email:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/send-event-created-email", async (req, res) => {
+    const { email, eventName } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({ error: "Email is required" });
+    }
+
+    const smtpHost = process.env.SMTP_HOST;
+    const smtpPort = Number(process.env.SMTP_PORT) || 587;
+    const smtpUser = process.env.SMTP_USER;
+    const smtpPass = process.env.SMTP_PASS ? process.env.SMTP_PASS.replace(/\s+/g, '') : undefined;
+    const resendApiKey = process.env.RESEND_API_KEY;
+
+    if (!resendApiKey && (!smtpHost || !smtpUser || !smtpPass)) {
+      console.warn("SMTP and Resend configuration missing. Skipping event created email.");
+      return res.json({ success: false, message: "Email not configured" });
+    }
+
+    try {
+      if (resendApiKey) {
+        const { Resend } = await import('resend');
+        const resend = new Resend(resendApiKey);
+        await resend.emails.send({
+          from: "Kliksy Podpora <info@kliksy.si>",
+          replyTo: "info@kliksy.si",
+          to: email,
+          subject: "Vaš dogodek pri Kliksy je uspešno ustvarjen!",
+          text: `Vaš dogodek je ustvarjen!\n\nDogodek: ${eventName || 'brez imena'}\n\nVaš demo dogodek je uspešno ustvarjen. Zdaj ga lahko pričnete urejati in deliti s svojimi gosti.\n\nLep pozdrav,\nVaša ekipa Kliksy`,
+          html: `
+            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+              <h1 style="color: #4f46e5;">Vaš dogodek je ustvarjen!</h1>
+              <p>Dogodek: <strong>${eventName || 'brez imena'}</strong> smo uspešno pripravili.</p>
+              <p>Vaš demo dogodek je uspešno ustvarjen. Zdaj ga lahko pričnete urejati in deliti s svojimi gosti preko nadzorne plošče.</p>
+              <br />
+              <p>Z lepimi pozdravi,<br />Vaša ekipa Kliksy</p>
+            </div>
+          `,
+        });
+      } else {
+        const nodemailer = await import("nodemailer");
+        const transporter = nodemailer.createTransport({
+          host: smtpHost,
+          port: smtpPort,
+          secure: smtpPort === 465,
+          auth: {
+            user: smtpUser,
+            pass: smtpPass,
+          },
+        });
+
+        const mailOptions = {
+          from: `"Kliksy" <${smtpUser}>`,
+          replyTo: `"Kliksy Podpora" <info@kliksy.si>`,
+          to: email,
+          subject: "Vaš dogodek pri Kliksy je uspešno ustvarjen!",
+          text: `Vaš dogodek je ustvarjen!\n\nDogodek: ${eventName || 'brez imena'}\n\nVaš demo dogodek je uspešno ustvarjen. Zdaj ga lahko pričnete urejati in deliti s svojimi gosti.\n\nLep pozdrav,\nVaša ekipa Kliksy`,
+          html: `
+            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+              <h1 style="color: #4f46e5;">Vaš dogodek je ustvarjen!</h1>
+              <p>Dogodek: <strong>${eventName || 'brez imena'}</strong> smo uspešno pripravili.</p>
+              <p>Vaš demo dogodek je uspešno ustvarjen. Zdaj ga lahko pričnete urejati in deliti s svojimi gosti preko nadzorne plošče.</p>
+              <br />
+              <p>Z lepimi pozdravi,<br />Vaša ekipa Kliksy</p>
+            </div>
+          `,
+        };
+
+        await transporter.sendMail(mailOptions);
+      }
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Error sending event created email:", error);
       res.status(500).json({ error: error.message });
     }
   });
@@ -132,25 +232,15 @@ async function startServer() {
     const smtpHost = process.env.SMTP_HOST;
     const smtpPort = Number(process.env.SMTP_PORT) || 587;
     const smtpUser = process.env.SMTP_USER;
-    const smtpPass = process.env.SMTP_PASS;
+    const smtpPass = process.env.SMTP_PASS ? process.env.SMTP_PASS.replace(/\s+/g, '') : undefined;
+    const resendApiKey = process.env.RESEND_API_KEY;
 
-    if (!smtpHost || !smtpUser || !smtpPass) {
-      console.warn("SMTP configuration missing. Skipping order summary email.");
-      return res.json({ success: false, message: "SMTP not configured" });
+    if (!resendApiKey && (!smtpHost || !smtpUser || !smtpPass)) {
+      console.warn("SMTP and Resend configuration missing. Skipping order summary email.");
+      return res.json({ success: false, message: "Email not configured" });
     }
 
     try {
-      const nodemailer = await import("nodemailer");
-      const transporter = nodemailer.createTransport({
-        host: smtpHost,
-        port: smtpPort,
-        secure: smtpPort === 465,
-        auth: {
-          user: smtpUser,
-          pass: smtpPass,
-        },
-      });
-
       const hasExtras = standsQuantity > 0;
       let extrasHtml = '';
       if (hasExtras) {
@@ -162,33 +252,74 @@ async function startServer() {
         `;
       }
 
-      const mailOptions = {
-        from: `"Kliksy" <${smtpUser}>`,
-        replyTo: `"Kliksy Podpora" <info@kliksy.si>`,
-        to: email,
-        subject: "Povzetek vašega naročila pri Kliksy",
-        text: `Uspešno naročilo!\n\nHvala za vaš nakup! Vaš dogodek ${eventName || 'brez imena'} smo uspešno pripravili.\n\nPodrobnosti naročila:\nPaket: ${plan ? plan.toUpperCase() : 'Neznano'}\nSkupaj plačano: €${Number(amountPaid || 0).toFixed(2)}\n\nDo nadzorne plošče in urejanja vašega dogodka lahko dostopate na naši spletni strani.\n\nZ lepimi pozdravi,\nVaša ekipa Kliksy`,
-        html: `
-          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
-            <h1 style="color: #4f46e5;">Uspešno naročilo!</h1>
-            <p>Hvala za vaš nakup! Vaš dogodek <strong>${eventName || 'brez imena'}</strong> smo uspešno pripravili.</p>
-            
-            <div style="background-color: #f9fafb; padding: 20px; border-radius: 12px; margin: 20px 0;">
-              <h2 style="margin-top: 0;">Podrobnosti naročila</h2>
-              <p><strong>Paket:</strong> ${plan ? plan.toUpperCase() : 'Neznano'}</p>
-              ${extrasHtml}
-              <hr style="border: 1px solid #e5e7eb; margin: 15px 0;"/>
-              <p style="font-size: 1.1em;"><strong>Skupaj plačano:</strong> €${Number(amountPaid || 0).toFixed(2)}</p>
+      if (resendApiKey) {
+        const { Resend } = await import('resend');
+        const resend = new Resend(resendApiKey);
+        await resend.emails.send({
+          from: "Kliksy Podpora <info@kliksy.si>",
+          replyTo: "info@kliksy.si",
+          to: email,
+          subject: "Povzetek vašega naročila pri Kliksy",
+          text: `Uspešno naročilo!\n\nHvala za vaš nakup! Vaš dogodek ${eventName || 'brez imena'} smo uspešno pripravili.\n\nPodrobnosti naročila:\nPaket: ${plan ? plan.toUpperCase() : 'Neznano'}\nSkupaj plačano: €${Number(amountPaid || 0).toFixed(2)}\n\nDo nadzorne plošče in urejanja vašega dogodka lahko dostopate na naši spletni strani.\n\nZ lepimi pozdravi,\nVaša ekipa Kliksy`,
+          html: `
+            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+              <h1 style="color: #4f46e5;">Uspešno naročilo!</h1>
+              <p>Hvala za vaš nakup! Vaš dogodek <strong>${eventName || 'brez imena'}</strong> smo uspešno pripravili.</p>
+              
+              <div style="background-color: #f9fafb; padding: 20px; border-radius: 12px; margin: 20px 0;">
+                <h2 style="margin-top: 0;">Podrobnosti naročila</h2>
+                <p><strong>Paket:</strong> ${plan ? plan.toUpperCase() : 'Neznano'}</p>
+                ${extrasHtml}
+                <hr style="border: 1px solid #e5e7eb; margin: 15px 0;"/>
+                <p style="font-size: 1.1em;"><strong>Skupaj plačano:</strong> €${Number(amountPaid || 0).toFixed(2)}</p>
+              </div>
+              
+              <p>Do nadzorne plošče in urejanja vašega dogodka lahko dostopate na naši spletni strani.</p>
+              <br />
+              <p>Z lepimi pozdravi,<br />Vaša ekipa Kliksy</p>
             </div>
-            
-            <p>Do nadzorne plošče in urejanja vašega dogodka lahko dostopate na naši spletni strani.</p>
-            <br />
-            <p>Z lepimi pozdravi,<br />Vaša ekipa Kliksy</p>
-          </div>
-        `,
-      };
+          `,
+        });
+      } else {
+        const nodemailer = await import("nodemailer");
+        const transporter = nodemailer.createTransport({
+          host: smtpHost,
+          port: smtpPort,
+          secure: smtpPort === 465,
+          auth: {
+            user: smtpUser,
+            pass: smtpPass,
+          },
+        });
 
-      await transporter.sendMail(mailOptions);
+        const mailOptions = {
+          from: `"Kliksy" <${smtpUser}>`,
+          replyTo: `"Kliksy Podpora" <info@kliksy.si>`,
+          to: email,
+          subject: "Povzetek vašega naročila pri Kliksy",
+          text: `Uspešno naročilo!\n\nHvala za vaš nakup! Vaš dogodek ${eventName || 'brez imena'} smo uspešno pripravili.\n\nPodrobnosti naročila:\nPaket: ${plan ? plan.toUpperCase() : 'Neznano'}\nSkupaj plačano: €${Number(amountPaid || 0).toFixed(2)}\n\nDo nadzorne plošče in urejanja vašega dogodka lahko dostopate na naši spletni strani.\n\nZ lepimi pozdravi,\nVaša ekipa Kliksy`,
+          html: `
+            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+              <h1 style="color: #4f46e5;">Uspešno naročilo!</h1>
+              <p>Hvala za vaš nakup! Vaš dogodek <strong>${eventName || 'brez imena'}</strong> smo uspešno pripravili.</p>
+              
+              <div style="background-color: #f9fafb; padding: 20px; border-radius: 12px; margin: 20px 0;">
+                <h2 style="margin-top: 0;">Podrobnosti naročila</h2>
+                <p><strong>Paket:</strong> ${plan ? plan.toUpperCase() : 'Neznano'}</p>
+                ${extrasHtml}
+                <hr style="border: 1px solid #e5e7eb; margin: 15px 0;"/>
+                <p style="font-size: 1.1em;"><strong>Skupaj plačano:</strong> €${Number(amountPaid || 0).toFixed(2)}</p>
+              </div>
+              
+              <p>Do nadzorne plošče in urejanja vašega dogodka lahko dostopate na naši spletni strani.</p>
+              <br />
+              <p>Z lepimi pozdravi,<br />Vaša ekipa Kliksy</p>
+            </div>
+          `,
+        };
+
+        await transporter.sendMail(mailOptions);
+      }
       res.json({ success: true });
     } catch (error: any) {
       console.error("Error sending order summary email:", error);

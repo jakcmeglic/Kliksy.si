@@ -175,6 +175,20 @@ export default function CreateEvent() {
       });
       setDemoEventId(docRef.id);
       setStep('animation');
+      
+      // Send event created email
+      try {
+        fetch('/api/send-event-created-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: user.email,
+            eventName: formData.eventName || (formData.partner1 ? `${formData.partner1} & ${formData.partner2}` : 'Vaš dogodek')
+          })
+        }).catch(err => console.error("Failed to trigger event created email:", err));
+      } catch (e) {
+        console.error("Error triggering event created email:", e);
+      }
     } catch (err: any) {
       console.error(err);
       setAuthError('Napaka pri ustvarjanju dogodka: ' + err.message);
