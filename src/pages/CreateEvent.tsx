@@ -509,7 +509,7 @@ export default function CreateEvent() {
                 </div>
 
                 <div className="space-y-4">
-                  {['poroka', 'poslovni_dogodek', 'rojstni_dan', 'teambuilding'].map((type) => (
+                  {['poroka', 'poslovni_dogodek', 'rojstni_dan', 'baby_shower', 'teambuilding', 'drugo'].map((type) => (
                     <button
                       key={type}
                       onClick={() => setFormData({ ...formData, eventType: type })}
@@ -518,7 +518,7 @@ export default function CreateEvent() {
                       }`}
                     >
                       <span className="font-bold text-lg">
-                        {type === 'poroka' ? 'Poroka' : type === 'poslovni_dogodek' ? 'Poslovni dogodek' : type === 'rojstni_dan' ? 'Rojstni dan' : 'Teambuilding'}
+                        {type === 'poroka' ? 'Poroka' : type === 'poslovni_dogodek' ? 'Poslovni dogodek' : type === 'rojstni_dan' ? 'Rojstni dan' : type === 'baby_shower' ? 'Baby shower' : type === 'teambuilding' ? 'Teambuilding' : 'Drugo'}
                       </span>
                     </button>
                   ))}
