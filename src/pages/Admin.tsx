@@ -108,7 +108,7 @@ export default function Admin() {
   
   const [events, setEvents] = useState<EventData[]>([]);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'stats' | 'orders' | 'promo' | 'abandoned' | 'expired'>('stats');
+  const [activeTab, setActiveTab] = useState<'stats' | 'orders' | 'promo' | 'abandoned' | 'expired' | 'export'>('stats');
   
   const [promoCodes, setPromoCodes] = useState<any[]>([]);
   const [newPromo, setNewPromo] = useState({
@@ -164,6 +164,43 @@ export default function Admin() {
       fetchEvents();
     }
   }, []);
+
+  const exportCsv = (type: 'buyers' | 'no_purchase' | 'past_events') => {
+    let filteredUsers: any[] = [];
+    const today = format(new Date(), 'yyyy-MM-dd');
+    
+    // Group events by Owner
+    const userEvents: Record<string, EventData[]> = {};
+    events.forEach(e => {
+      if (!userEvents[e.ownerId]) userEvents[e.ownerId] = [];
+      userEvents[e.ownerId].push(e);
+    });
+
+    if (type === 'buyers') {
+      filteredUsers = users.filter(u => userEvents[u.uid]?.some(e => e.paymentStatus === 'paid'));
+    } else if (type === 'no_purchase') {
+      filteredUsers = users.filter(u => !userEvents[u.uid]?.some(e => e.paymentStatus === 'paid'));
+    } else if (type === 'past_events') {
+      filteredUsers = users.filter(u => userEvents[u.uid]?.some(e => e.paymentStatus === 'paid' && !!e.date && e.date < today));
+    }
+
+    if (filteredUsers.length === 0) {
+      alert('Ni uporabnikov v tej kategoriji.');
+      return;
+    }
+
+    const csvContent = "data:text/csv;charset=utf-8," 
+      + "Email,Ime,ID Uporabnika\n" 
+      + filteredUsers.map(u => `${u.email || ''},${u.displayName || ''},${u.uid || ''}`).join("\n");
+      
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `izvoz_${type}_${today}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -521,6 +558,7 @@ export default function Admin() {
             { id: 'expired', label: 'Potekli dogodki', icon: Calendar },
             { id: 'abandoned', label: 'Zapuščene košarice', icon: Users },
             { id: 'promo', label: 'Promocijske kode', icon: LogOut }, // Using LogOut as placeholder icon for Tag/Promo
+            { id: 'export', label: 'Izvoz stikov', icon: Download },
           ].map(tab => (
             <button
               key={tab.id}
@@ -1055,6 +1093,45 @@ export default function Admin() {
                   </tbody>
                 </table>
               </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'export' && (
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 max-w-3xl">
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Izvoz stikov (CSV)</h3>
+            <p className="text-gray-500 mb-6">Prenesite CSV datoteke za preprost uvoz v tuje sisteme, kot sta Resend ali Mailchimp.</p>
+            <div className="space-y-4">
+              <button onClick={() => exportCsv('buyers')} className="w-full flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:bg-gray-50 transition text-left">
+                <div className="flex flex-col">
+                  <span className="font-semibold text-gray-900">Kupci</span>
+                  <span className="text-sm text-gray-500">Uporabniki, ki so opravili vsaj en uspešen nakup paketa.</span>
+                </div>
+                <Download className="w-5 h-5 text-gray-400" />
+              </button>
+
+              <button onClick={() => exportCsv('no_purchase')} className="w-full flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:bg-gray-50 transition text-left">
+                <div className="flex flex-col">
+                  <span className="font-semibold text-gray-900">Zgolj profili (brez nakupa)</span>
+                  <span className="text-sm text-gray-500">Uporabniki, ki imajo ustvarjen profil, a niso opravili nakupa.</span>
+                </div>
+                <Download className="w-5 h-5 text-gray-400" />
+              </button>
+
+              <button onClick={() => exportCsv('past_events')} className="w-full flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:bg-gray-50 transition text-left">
+                <div className="flex flex-col">
+                  <span className="font-semibold text-gray-900">Potekli dogodki</span>
+                  <span className="text-sm text-gray-500">Kupci, katerih najnovejši dogodek se je že odvrtel (za pošiljanje anket).</span>
+                </div>
+                <Download className="w-5 h-5 text-gray-400" />
+              </button>
+            </div>
+            
+            <div className="mt-8 bg-blue-50 border border-blue-100 p-4 rounded-xl">
+              <h4 className="font-semibold text-blue-900 mb-2">Avtomatska sinhronizacija z Resend (Opcijsko)</h4>
+              <p className="text-sm text-blue-800">
+                Aplikacija je že konfigurirana za povezavo z Resendom prek spremenljivke <strong>RESEND_API_KEY</strong>. Za samodejno dodajanje stikov v "Audience", namestite <strong>RESEND_AUDIENCE_ID</strong> v `.env` datoteki.
+              </p>
             </div>
           </div>
         )}

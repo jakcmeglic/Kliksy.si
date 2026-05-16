@@ -66,6 +66,27 @@ async function startServer() {
     });
   });
 
+  async function addContactToResend(email: string, firstName: string, lastName: string = '') {
+    const apiKey = process.env.RESEND_API_KEY;
+    const audienceId = process.env.RESEND_AUDIENCE_ID;
+    if (!apiKey || !audienceId) return;
+
+    try {
+      const { Resend } = await import('resend');
+      const resend = new Resend(apiKey);
+      await resend.contacts.create({
+        email,
+        firstName,
+        lastName,
+        unsubscribed: false,
+        audienceId,
+      });
+      console.log(`Successfully added/updated contact ${email} in Resend audience ${audienceId}`);
+    } catch (e: any) {
+      console.error(`Failed to add contact to Resend: ${e.message || String(e)}`);
+    }
+  }
+
   app.post("/api/send-welcome-email", async (req, res) => {
     const { email, displayName } = req.body;
     
@@ -139,6 +160,10 @@ async function startServer() {
 
         await transporter.sendMail(mailOptions);
       }
+      
+      // Auto-add to audience if configured
+      await addContactToResend(email, displayName || '');
+
       res.json({ success: true });
     } catch (error: any) {
       console.error("Error sending welcome email:", error);
@@ -320,6 +345,10 @@ async function startServer() {
 
         await transporter.sendMail(mailOptions);
       }
+      
+      // Auto-add to audience if configured
+      await addContactToResend(email, '');
+
       res.json({ success: true });
     } catch (error: any) {
       console.error("Error sending order summary email:", error);
