@@ -280,6 +280,14 @@ export default function Admin() {
       const userPendingEvents = events.filter(e => e.ownerId === u.uid && e.paymentStatus !== 'paid');
       return { ...u, pendingEvents: userPendingEvents };
     });
+
+    // Sort by createdAt descending
+    calculatedAbandoned.sort((a, b) => {
+      const timeA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+      const timeB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+      return timeB - timeA;
+    });
+
     setAbandonedCarts(calculatedAbandoned);
   }, [users, events]);
 
