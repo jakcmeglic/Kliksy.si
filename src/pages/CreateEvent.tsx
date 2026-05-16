@@ -639,10 +639,10 @@ export default function CreateEvent() {
                       <p className="text-gray-600 mb-6">Prijavljeni ste kot <span className="font-medium text-gray-900">{user.email || 'uporabnik'}</span>.</p>
                       
                       <button 
-                        onClick={() => setStep(4)}
+                        onClick={handleNext}
                         className="w-full bg-black text-white py-3 rounded-xl font-medium hover:bg-gray-800 transition-colors mb-3"
                       >
-                        Nadaljuj na plačilo
+                        Ustvari moj dogodek
                       </button>
                       <button 
                         onClick={() => signOut()}

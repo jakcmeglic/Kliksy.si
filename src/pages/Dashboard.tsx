@@ -84,8 +84,8 @@ export default function Dashboard() {
         if (!querySnapshot.empty) {
           let allEvents = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
           
-          // Filter out pending payments (keep paid or legacy events without paymentStatus)
-          allEvents = allEvents.filter((e: any) => e.paymentStatus !== 'pending');
+          // Filter out pending payments (keep paid, legacy events, or demo events)
+          allEvents = allEvents.filter((e: any) => e.paymentStatus !== 'pending' || e.isDemo);
           
           // Sort events by createdAt descending in memory to avoid needing a composite index
           allEvents.sort((a: any, b: any) => {
