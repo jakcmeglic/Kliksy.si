@@ -567,10 +567,27 @@ export default function Dashboard() {
 
               <div className="grid md:grid-cols-3 gap-8">
                 {/* QR Code Card */}
-                <div className="md:col-span-1 bg-white p-8 rounded-3xl border border-gray-200 shadow-sm text-center flex flex-col items-center">
+                <div className="md:col-span-1 bg-white p-8 rounded-3xl border border-gray-200 shadow-sm text-center flex flex-col items-center relative overflow-hidden">
                   <h3 className="font-bold tracking-tight text-xl mb-2 text-gray-900">Tvoja QR koda</h3>
-                  <p className="text-sm text-gray-500 mb-8">Natisni to kodo in jo postavi na mize.</p>
+                  <p className="text-sm text-gray-500 mb-6">Natisni to kodo in jo postavi na mize.</p>
                   
+                  {event && event.paymentStatus !== 'paid' && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex flex-col items-center justify-center mb-4 text-indigo-600"
+                    >
+                      <div className="bg-indigo-50 border border-indigo-100 px-4 py-2 rounded-2xl shadow-sm mb-2 max-w-[220px]">
+                        <p className="text-sm font-bold leading-snug">
+                          Skeniraj to qr kodo in preizkusi, kako deluje
+                        </p>
+                      </div>
+                      <svg className="w-8 h-8 animate-bounce text-indigo-500 drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                      </svg>
+                    </motion.div>
+                  )}
+
                   <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 mb-6 flex justify-center">
                     <QRCodeSVG 
                       id="raw-qr-code-svg"
