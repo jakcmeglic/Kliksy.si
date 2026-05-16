@@ -1149,7 +1149,7 @@ export default function Admin() {
             <div className="mt-8 bg-blue-50 border border-blue-100 p-4 rounded-xl">
               <h4 className="font-semibold text-blue-900 mb-2">Avtomatska sinhronizacija z Resend (Opcijsko)</h4>
               <p className="text-sm text-blue-800">
-                Aplikacija je že konfigurirana za povezavo z Resendom prek spremenljivke <strong>RESEND_API_KEY</strong>. Za samodejno dodajanje stikov v "Audience", namestite <strong>RESEND_AUDIENCE_ID</strong> v `.env` datoteki.
+                Aplikacija je že konfigurirana za povezavo z Resendom prek spremenljivke <strong>RESEND_API_KEY</strong>. Za samodejno dodajanje stikov v "Audience", namestite <strong>RESEND_AUDIENCE_ID_BUYERS</strong> (za kupce) in <strong>RESEND_AUDIENCE_ID_PROSPECTS</strong> (za tiste, ki so zgolj ustvarili profil) v `.env` datoteki.
               </p>
             </div>
           </div>

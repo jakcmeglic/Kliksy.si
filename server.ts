@@ -36,7 +36,10 @@ async function calculatePrice(plan: string, discountCode: string | undefined, de
 }
 
 // Main server initialization
+import { startCronService } from "./src/cronService.js";
+
 async function startServer() {
+  startCronService();
   const app = express();
   const PORT = Number(process.env.PORT) || 3000;
 
@@ -66,9 +69,12 @@ async function startServer() {
     });
   });
 
-  async function addContactToResend(email: string, firstName: string, lastName: string = '') {
+  async function addContactToResend(email: string, firstName: string, lastName: string = '', audienceType: 'buyers' | 'prospects' = 'prospects') {
     const apiKey = process.env.RESEND_API_KEY;
-    const audienceId = process.env.RESEND_AUDIENCE_ID;
+    const audienceId = audienceType === 'buyers' 
+      ? process.env.RESEND_AUDIENCE_ID_BUYERS 
+      : process.env.RESEND_AUDIENCE_ID_PROSPECTS;
+
     if (!apiKey || !audienceId) return;
 
     try {
@@ -82,6 +88,19 @@ async function startServer() {
         audienceId,
       });
       console.log(`Successfully added/updated contact ${email} in Resend audience ${audienceId}`);
+
+      // If added to buyers, try to remove from prospects
+      if (audienceType === 'buyers' && process.env.RESEND_AUDIENCE_ID_PROSPECTS) {
+        try {
+          await resend.contacts.remove({
+            email,
+            audienceId: process.env.RESEND_AUDIENCE_ID_PROSPECTS
+          });
+          console.log(`Successfully removed contact ${email} from prospects audience.`);
+        } catch (e: any) {
+          // Ignore if not in prospects
+        }
+      }
     } catch (e: any) {
       console.error(`Failed to add contact to Resend: ${e.message || String(e)}`);
     }
@@ -162,7 +181,7 @@ async function startServer() {
       }
       
       // Auto-add to audience if configured
-      await addContactToResend(email, displayName || '');
+      await addContactToResend(email, displayName || '', '', 'prospects');
 
       res.json({ success: true });
     } catch (error: any) {
@@ -347,7 +366,7 @@ async function startServer() {
       }
       
       // Auto-add to audience if configured
-      await addContactToResend(email, '');
+      await addContactToResend(email, '', '', 'buyers');
 
       res.json({ success: true });
     } catch (error: any) {
