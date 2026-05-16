@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { collection, getDocs, query, orderBy, doc, updateDoc, where } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, doc, updateDoc, where, getCountFromServer } from 'firebase/firestore';
 import { db } from '../firebase';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
@@ -327,24 +327,42 @@ export default function Admin() {
   };
 
   useEffect(() => {
-    // Calculate abandoned carts (users who have no events with paymentStatus === 'paid')
-    const calculatedAbandoned = users.filter(u => {
-      const userPaidEvents = events.filter(e => e.ownerId === u.uid && e.paymentStatus === 'paid');
-      return userPaidEvents.length === 0;
-    }).map(u => {
-      // Find if they have any pending orders
-      const userPendingEvents = events.filter(e => e.ownerId === u.uid && e.paymentStatus !== 'paid');
-      return { ...u, pendingEvents: userPendingEvents };
-    });
+    async function calculateAbandoned() {
+      // Calculate abandoned carts (users who have no events with paymentStatus === 'paid')
+      const calculatedAbandoned = users.filter(u => {
+        const userPaidEvents = events.filter(e => e.ownerId === u.uid && e.paymentStatus === 'paid');
+        return userPaidEvents.length === 0;
+      }).map(u => {
+        // Find if they have any pending orders
+        const userPendingEvents = events.filter(e => e.ownerId === u.uid && e.paymentStatus !== 'paid');
+        return { ...u, pendingEvents: userPendingEvents, totalPhotos: 0 };
+      });
 
-    // Sort by createdAt descending
-    calculatedAbandoned.sort((a, b) => {
-      const timeA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
-      const timeB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
-      return timeB - timeA;
-    });
+      // Fetch photo counts for pending events
+      for (const user of calculatedAbandoned) {
+        let totalPhotos = 0;
+        for (const ev of user.pendingEvents) {
+          try {
+            const countSnap = await getCountFromServer(collection(db, 'events', ev.id, 'photos'));
+            totalPhotos += countSnap.data().count;
+          } catch (err) {
+            console.error('Error fetching photo count:', err);
+          }
+        }
+        user.totalPhotos = totalPhotos;
+      }
 
-    setAbandonedCarts(calculatedAbandoned);
+      // Sort by createdAt descending
+      calculatedAbandoned.sort((a, b) => {
+        const timeA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+        const timeB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+        return timeB - timeA;
+      });
+
+      setAbandonedCarts(calculatedAbandoned);
+    }
+    
+    calculateAbandoned();
   }, [users, events]);
 
   const filteredEvents = useMemo(() => {
@@ -849,6 +867,7 @@ export default function Admin() {
                   <th className="px-6 py-4 font-medium">Email</th>
                   <th className="px-6 py-4 font-medium">Registracija</th>
                   <th className="px-6 py-4 font-medium">Neplačani dogodki</th>
+                  <th className="px-6 py-4 font-medium">Slike (Demo)</th>
                   <th className="px-6 py-4 font-medium text-right">Akcija</th>
                 </tr>
               </thead>
@@ -866,7 +885,7 @@ export default function Admin() {
                     </td>
                     <td className="px-6 py-4 text-gray-500">
                       {user.pendingEvents && user.pendingEvents.length > 0 ? (
-                        <div className="flex flex-col gap-1">
+                        <div className="flex flex-col gap-1 items-start">
                           {user.pendingEvents.map((evt: any) => (
                             <span key={evt.id} className="text-xs font-medium text-amber-700 bg-amber-50 px-2 py-1 rounded inline-block">
                               {evt.eventName} ({evt.plan})
@@ -875,6 +894,17 @@ export default function Admin() {
                         </div>
                       ) : (
                         <span className="text-gray-400 italic">Ni ustvarjenih dogodkov</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 font-medium text-gray-700">
+                      {user.totalPhotos !== undefined ? (
+                        user.totalPhotos > 0 ? (
+                          <span className="text-green-600">{user.totalPhotos} slik</span>
+                        ) : (
+                          <span className="text-gray-400">0 slik</span>
+                        )
+                      ) : (
+                        <span className="text-gray-300">...</span>
                       )}
                     </td>
                     <td className="px-6 py-4 text-right">
@@ -891,7 +921,7 @@ export default function Admin() {
                 ))}
                 {abandonedCarts.length === 0 && !loading && (
                   <tr>
-                    <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                    <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
                       Ni zapuščenih košaric.
                     </td>
                   </tr>
