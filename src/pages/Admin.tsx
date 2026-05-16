@@ -622,7 +622,7 @@ export default function Admin() {
           /* Orders Table */
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="p-6 border-b border-gray-100 flex justify-between items-center">
-            <h3 className="text-lg font-bold text-gray-900">Vsa naročila</h3>
+            <h3 className="text-lg font-bold text-gray-900">Plačana naročila</h3>
             {loading && <span className="text-sm text-gray-500">Nalaganje...</span>}
           </div>
           <div className="overflow-x-auto">
@@ -640,7 +640,7 @@ export default function Admin() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {filteredEvents.map((event) => {
+                {filteredEvents.filter(e => e.paymentStatus === 'paid').map((event) => {
                   const basePrice = PLAN_PRICES[event.plan] || 0;
                   const upsellPrice = getUpsellPrice(event.standsQuantity || 0, event.printedQrQuantity || 0, event.deliveryMode);
                   const total = event.amountPaid !== undefined ? event.amountPaid : (basePrice + upsellPrice);
