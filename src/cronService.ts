@@ -49,6 +49,7 @@ async function checkAbandonedProfiles() {
       
       const createdTime = u.createdAt instanceof Timestamp ? u.createdAt.toMillis() : u.createdAt;
       // Between 2 hours and 24 hours ago
+      // meaning: created at least 2 hours ago, but not older than 24 hours
       return createdTime <= twoHoursAgo && createdTime >= twentyFourHoursAgo;
     });
 
@@ -80,6 +81,7 @@ async function checkAbandonedProfiles() {
       
       const createdTime = u.createdAt instanceof Timestamp ? u.createdAt.toMillis() : u.createdAt;
       // Between 48 hours and 72 hours ago
+      // meaning: created at least 48 hours ago, but not older than 72 hours
       return createdTime <= fortyEightHoursAgo && createdTime >= seventyTwoHoursAgo;
     });
 
