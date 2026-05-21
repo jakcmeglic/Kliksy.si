@@ -393,8 +393,7 @@ export default function GuestView() {
       {/* Hidden Inputs */}
       <input 
         type="file" 
-        accept={canUploadVideo ? "image/*,video/*" : "image/*"}
-        capture="environment"
+        accept="image/*"
         className="hidden" 
         ref={cameraInputRef}
         onChange={handleFileSelect}
