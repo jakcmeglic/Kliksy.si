@@ -47,7 +47,16 @@ async function checkAbandonedProfiles() {
       if (u.abandonedEmailSent) return false;
       if (!u.createdAt) return false;
       
-      const createdTime = u.createdAt instanceof Timestamp ? u.createdAt.toMillis() : u.createdAt;
+      let createdTime: number;
+      if (typeof u.createdAt.toMillis === 'function') {
+        createdTime = u.createdAt.toMillis();
+      } else if (u.createdAt.seconds) {
+        createdTime = u.createdAt.seconds * 1000;
+      } else if (typeof u.createdAt === 'number') {
+        createdTime = u.createdAt;
+      } else {
+        createdTime = new Date(u.createdAt).getTime();
+      }
       // Between 2 hours and 24 hours ago
       // meaning: created at least 2 hours ago, but not older than 24 hours
       return createdTime <= twoHoursAgo && createdTime >= twentyFourHoursAgo;
@@ -79,7 +88,16 @@ async function checkAbandonedProfiles() {
       if (u.abandonedTwoDaysEmailSent) return false;
       if (!u.createdAt) return false;
       
-      const createdTime = u.createdAt instanceof Timestamp ? u.createdAt.toMillis() : u.createdAt;
+      let createdTime: number;
+      if (typeof u.createdAt.toMillis === 'function') {
+        createdTime = u.createdAt.toMillis();
+      } else if (u.createdAt.seconds) {
+        createdTime = u.createdAt.seconds * 1000;
+      } else if (typeof u.createdAt === 'number') {
+        createdTime = u.createdAt;
+      } else {
+        createdTime = new Date(u.createdAt).getTime();
+      }
       // Between 48 hours and 72 hours ago
       // meaning: created at least 48 hours ago, but not older than 72 hours
       return createdTime <= fortyEightHoursAgo && createdTime >= seventyTwoHoursAgo;
