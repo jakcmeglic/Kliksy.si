@@ -416,7 +416,7 @@ export default function GuestView() {
           {event.eventType === 'poroka' || !event.eventType ? `${event.partner1} & ${event.partner2}` : event.eventName}
         </h1>
         <p className="text-gray-500 text-sm">
-          {event.eventType === 'poroka' || !event.eventType ? 'Hvala, ker deliš spomine z nama.' : 'Hvala, ker deliš spomine z nami.'}
+          {event.welcomeMessage || (event.eventType === 'poroka' || !event.eventType ? 'Hvala, ker deliš spomine z nama.' : 'Hvala, ker deliš spomine z nami.')}
         </p>
       </header>
 

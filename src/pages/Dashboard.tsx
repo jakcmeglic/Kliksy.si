@@ -29,6 +29,14 @@ export default function Dashboard() {
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const [imageToDelete, setImageToDelete] = useState<string | null>(null);
+  const [welcomeMessage, setWelcomeMessage] = useState("");
+  const [isSavingSettings, setIsSavingSettings] = useState(false);
+
+  useEffect(() => {
+    if (event) {
+      setWelcomeMessage(event.welcomeMessage || (event.eventType === 'poroka' || !event.eventType ? "Hvala, ker deliš spomine z nama." : "Hvala, ker deliš spomine z nami."));
+    }
+  }, [event]);
 
   useEffect(() => {
     if (authLoading) return;
@@ -744,15 +752,34 @@ export default function Dashboard() {
                 <div>
                   <label className="block text-sm font-medium mb-2 text-gray-700">Pozdravno sporočilo za goste</label>
                   <textarea 
-                    defaultValue={event.eventType === 'poroka' || !event.eventType ? "Hvala, ker deliš spomine z nama." : "Hvala, ker deliš spomine z nami."}
+                    value={welcomeMessage}
+                    onChange={(e) => setWelcomeMessage(e.target.value)}
                     rows={3}
                     className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all resize-none text-gray-900"
                   />
                 </div>
                 
                 <div className="pt-6 border-t border-gray-100">
-                  <button className="px-8 py-3 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 transition-colors shadow-sm">
-                    Shrani spremembe
+                  <button 
+                    onClick={async () => {
+                      if (!event) return;
+                      setIsSavingSettings(true);
+                      try {
+                        const eventDocRef = doc(db, "events", event.id);
+                        await updateDoc(eventDocRef, { welcomeMessage });
+                        setEvent({ ...event, welcomeMessage });
+                        alert('Spremembe so bile uspešno shranjene!');
+                      } catch (err) {
+                        console.error("Error saving settings:", err);
+                        alert('Prišlo je do napake pri shranjevanju.');
+                      } finally {
+                        setIsSavingSettings(false);
+                      }
+                    }}
+                    disabled={isSavingSettings}
+                    className="px-8 py-3 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 transition-colors shadow-sm disabled:opacity-50 min-w-[180px]"
+                  >
+                    {isSavingSettings ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : "Shrani spremembe"}
                   </button>
                 </div>
               </div>
