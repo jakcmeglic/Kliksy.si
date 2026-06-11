@@ -317,6 +317,7 @@ async function startServer() {
           from: "Kliksy Podpora <info@kliksy.si>",
           replyTo: "info@kliksy.si",
           to: email,
+          bcc: "info@kliksy.si",
           subject: "Povzetek vašega naročila pri Kliksy",
           text: `Uspešno naročilo!\n\nHvala za vaš nakup! Vaš dogodek ${eventName || 'brez imena'} smo uspešno pripravili.\n\nPodrobnosti naročila:\nPaket: ${plan ? plan.toUpperCase() : 'Neznano'}\nSkupaj plačano: €${Number(amountPaid || 0).toFixed(2)}\n\nDo nadzorne plošče in urejanja vašega dogodka lahko dostopate na naši spletni strani.\n\nZ lepimi pozdravi,\nVaša ekipa Kliksy`,
           html: `
@@ -357,6 +358,7 @@ async function startServer() {
           from: `"Kliksy" <${smtpUser}>`,
           replyTo: `"Kliksy Podpora" <info@kliksy.si>`,
           to: email,
+          bcc: "info@kliksy.si",
           subject: "Povzetek vašega naročila pri Kliksy",
           text: `Uspešno naročilo!\n\nHvala za vaš nakup! Vaš dogodek ${eventName || 'brez imena'} smo uspešno pripravili.\n\nPodrobnosti naročila:\nPaket: ${plan ? plan.toUpperCase() : 'Neznano'}\nSkupaj plačano: €${Number(amountPaid || 0).toFixed(2)}\n\nDo nadzorne plošče in urejanja vašega dogodka lahko dostopate na naši spletni strani.\n\nZ lepimi pozdravi,\nVaša ekipa Kliksy`,
           html: `
