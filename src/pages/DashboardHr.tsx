@@ -9,7 +9,7 @@ import { useAuth } from "../components/AuthProvider";
 import { db, storage, handleFirestoreError, OperationType } from "../firebase";
 import { collection, query, where, getDocs, onSnapshot, doc, getDoc, orderBy, updateDoc, arrayUnion, arrayRemove, deleteDoc } from "firebase/firestore";
 import { ref, deleteObject } from 'firebase/storage';
-import QRModal from "../components/QRModal";
+import QRModalHr from "../components/QRModalHr";
 import ImageViewer from "../components/ImageViewer";
 
 export default function DashboardHr() {
@@ -38,7 +38,7 @@ export default function DashboardHr() {
 
   useEffect(() => {
     if (event) {
-      setWelcomeMessage(event.welcomeMessage || (event.eventType === 'poroka' || !event.eventType ? "Hvala, ker deliš spomine z nama." : "Hvala, ker deliš spomine z nami."));
+      setWelcomeMessage(event.welcomeMessage || (event.eventType === 'poroka' || !event.eventType ? "Hvala što dijeliš uspomene s nama." : "Hvala što dijeliš uspomene s nama."));
     }
   }, [event]);
 
@@ -274,9 +274,9 @@ export default function DashboardHr() {
   };
   
   const stats = [
-    { label: "Naložene slike", value: photos.length.toString(), icon: ImageIcon },
-    { label: "Gostje", value: new Set(photos.map(p => p.deviceId).filter(Boolean)).size.toString() || "0", icon: Users },
-    { label: "Zadnja slika", value: photos.length > 0 ? "Pravkar" : "-", icon: Clock },
+    { label: "Učitane slike", value: photos.length.toString(), icon: ImageIcon },
+    { label: "Gosti", value: new Set(photos.map(p => p.deviceId).filter(Boolean)).size.toString() || "0", icon: Users },
+    { label: "Zadnja slika", value: photos.length > 0 ? "Upravo" : "-", icon: Clock },
   ];
 
   const handleDownloadSingle = async (url: string, index: number) => {
@@ -507,7 +507,7 @@ export default function DashboardHr() {
           {event.paymentStatus !== 'paid' && (
             <div className="mb-8 bg-indigo-50 border border-indigo-100 rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-sm">
               <div>
-                <h3 className="text-lg font-bold text-indigo-900 mb-2">Demo paket (omejeno na 5 slik)</h3>
+                <h3 className="text-lg font-bold text-indigo-900 mb-2">Demo paket (ograničeno na 5 slika)</h3>
                 <p className="text-indigo-700">Trenutno isprobavate demo paket. Da bi gosti mogli učitati više slika i pristupiti svim funkcijama, otključajte vaš događaj.</p>
               </div>
               <button 
@@ -535,8 +535,8 @@ export default function DashboardHr() {
                   {activeTab === 'settings' && 'Postavke'}
                 </h1>
                 <p className="text-gray-500">
-                  {event.eventType === 'poroka' || !event.eventType ? 'Upravljaj svoje poročne spomine.' : 
-                   event.eventType === 'rojstni_dan' ? 'Upravljaj svoje rojstnodnevne spomine.' : 
+                  {event.eventType === 'poroka' || !event.eventType ? 'Upravljaj svojim vjenčanim uspomenama.' : 
+                   event.eventType === 'rojstni_dan' ? 'Upravljaj svojim rođendanskim uspomenama.' : 
                    event.eventType === 'poslovni_događaj' ? 'Upravljajte uspomenama s poslovnog događaja.' : 
                    event.eventType === 'teambuilding' ? 'Upravljaj spomine s teambuildinga.' : 
                    'Upravljajte uspomenama događaja.'}
@@ -566,7 +566,7 @@ export default function DashboardHr() {
                   <Download className="w-4 h-4" />
                 )}
                 <span className="hidden sm:inline">{isDownloading ? "Pripravljam ZIP..." : "Preuzmi sve (ZIP)"}</span>
-                <span className="sm:hidden">{isDownloading ? "..." : "Prenesi vse"}</span>
+                <span className="sm:hidden">{isDownloading ? "..." : "Preuzmi sve"}</span>
               </button>
             </div>
           </header>
@@ -601,8 +601,8 @@ export default function DashboardHr() {
               <div className="grid md:grid-cols-3 gap-8">
                 {/* QR Code Card */}
                 <div className="md:col-span-1 bg-white p-8 rounded-3xl border border-gray-200 shadow-sm text-center flex flex-col items-center relative overflow-hidden">
-                  <h3 className="font-bold tracking-tight text-xl mb-2 text-gray-900">Tvoja QR koda</h3>
-                  <p className="text-sm text-gray-500 mb-6">Natisni to kodo in jo postavi na mize.</p>
+                  <h3 className="font-bold tracking-tight text-xl mb-2 text-gray-900">Tvoj QR kod</h3>
+                  <p className="text-sm text-gray-500 mb-6">Ispiši ovaj kod i postavi ga na stolove.</p>
                   
                   {event && event.paymentStatus !== 'paid' && (
                     <motion.div 
@@ -612,7 +612,7 @@ export default function DashboardHr() {
                     >
                       <div className="bg-indigo-50 border border-indigo-100 px-4 py-2 rounded-2xl shadow-sm mb-2 max-w-[220px]">
                         <p className="text-sm font-bold leading-snug">
-                          Skeniraj to qr kodo in preizkusi, kako deluje
+                          Skeniraj ovaj QR kod i isprobaj kako radi
                         </p>
                       </div>
                       <svg className="w-8 h-8 animate-bounce text-indigo-500 drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -637,22 +637,22 @@ export default function DashboardHr() {
                     onClick={() => setIsQRModalOpen(true)}
                     className="w-full py-3 px-4 mb-2 bg-gray-100 text-gray-900 rounded-xl text-sm font-medium hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
                   >
-                    <Download className="w-4 h-4" /> Preuzmi QR kod z designom
+                    <Download className="w-4 h-4" /> Preuzmi QR kod s dizajnom
                   </button>
                   <button 
                     onClick={handleDownloadRawQR}
                     className="w-full py-3 px-4 bg-white border border-gray-200 text-gray-900 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
                   >
-                    <Download className="w-4 h-4" /> Prenesi samo QR kodo
+                    <Download className="w-4 h-4" /> Preuzmi samo QR kod
                   </button>
                 </div>
 
                 {/* Recent Photos Preview */}
                 <div className="md:col-span-2 bg-white p-8 rounded-3xl border border-gray-200 shadow-sm">
                   <div className="flex items-center justify-between mb-6">
-                    <h3 className="font-bold tracking-tight text-xl text-gray-900">Zadnje naloženo</h3>
+                    <h3 className="font-bold tracking-tight text-xl text-gray-900">Zadnje učitano</h3>
                     <button onClick={() => setActiveTab('gallery')} className="text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors">
-                      Poglej vse
+                      Pogledaj sve
                     </button>
                   </div>
                   
@@ -685,7 +685,7 @@ export default function DashboardHr() {
                     ))}
                     {photos.length === 0 && (
                       <div className="col-span-full py-12 text-center text-gray-500">
-                        Še ni naloženih fotografij.
+                        Još nema učitanih fotografija.
                       </div>
                     )}
                   </div>
@@ -745,13 +745,13 @@ export default function DashboardHr() {
                 ))}
                 {photos.length === 0 && (
                   <div className="col-span-full py-20 text-center text-gray-500">
-                    Še ni naloženih fotografij.
+                    Još nema učitanih fotografija.
                   </div>
                 )}
               </div>
               <div className="text-center pt-8">
                 <button className="px-8 py-3 bg-white border border-gray-200 rounded-full text-sm font-medium hover:bg-gray-50 text-gray-700 transition-colors shadow-sm">
-                  Naloži več
+                  Učitaj više
                 </button>
               </div>
             </motion.div>
@@ -814,7 +814,7 @@ export default function DashboardHr() {
                     disabled={isSavingSettings}
                     className="px-8 py-3 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 transition-colors shadow-sm disabled:opacity-50 min-w-[180px]"
                   >
-                    {isSavingSettings ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : "Spremi spremembe"}
+                    {isSavingSettings ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : "Spremi promjene"}
                   </button>
                 </div>
               </div>
@@ -824,7 +824,7 @@ export default function DashboardHr() {
         </div>
       </main>
 
-      <QRModal 
+      <QRModalHr 
         isOpen={isQRModalOpen} 
         onClose={() => setIsQRModalOpen(false)} 
         event={event} 
