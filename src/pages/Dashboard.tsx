@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { QRCodeSVG } from "qrcode.react";
-import { Download, Image as ImageIcon, Users, Clock, Settings, ExternalLink, LogOut, Heart, Loader2, ArrowLeft, Plus, Trash2 } from "lucide-react";
+import { Download, Image as ImageIcon, Users, Clock, Settings, ExternalLink, LogOut, Heart, Loader2, ArrowLeft, Plus, Trash2, Play } from "lucide-react";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import { useAuth } from "../components/AuthProvider";
@@ -635,7 +635,12 @@ export default function Dashboard() {
                     {photos.slice(0, 6).map((photo, i) => (
                       <div key={photo.id} className="aspect-square rounded-xl overflow-hidden bg-gray-100 group relative cursor-pointer" onClick={() => setSelectedImageIndex(i)}>
                         {photo.type === 'video' ? (
-                          <video src={photo.url} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" muted playsInline />
+                          <>
+                            <video src={`${photo.url}#t=0.001`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" muted playsInline preload="metadata" />
+                            <div className="absolute top-2 left-2 bg-black/40 backdrop-blur-sm rounded-full p-1 border border-white/10 shadow-sm pointer-events-none">
+                              <Play className="w-3 h-3 text-white fill-white" />
+                            </div>
+                          </>
                         ) : (
                           <img src={photo.url} alt="Wedding moment" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" />
                         )}
@@ -674,7 +679,12 @@ export default function Dashboard() {
                 {photos.map((photo, i) => (
                   <div key={photo.id} className="aspect-square rounded-xl overflow-hidden bg-gray-100 group relative cursor-pointer" onClick={() => setSelectedImageIndex(i)}>
                     {photo.type === 'video' ? (
-                      <video src={photo.url} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" muted playsInline />
+                      <>
+                        <video src={`${photo.url}#t=0.001`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" muted playsInline preload="metadata" />
+                        <div className="absolute top-2 left-2 bg-black/40 backdrop-blur-sm rounded-full p-1 border border-white/10 shadow-sm pointer-events-none">
+                          <Play className="w-3 h-3 text-white fill-white" />
+                        </div>
+                      </>
                     ) : (
                       <img src={photo.url} alt="Wedding moment" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" />
                     )}

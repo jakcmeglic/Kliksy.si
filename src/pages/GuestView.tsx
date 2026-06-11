@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Camera, Upload, CheckCircle2, Plus, Heart, Loader2, Download, ArrowLeft, ChevronUp } from "lucide-react";
+import { Camera, Upload, CheckCircle2, Plus, Heart, Loader2, Download, ArrowLeft, ChevronUp, Play } from "lucide-react";
 import { db, storage, handleFirestoreError, OperationType } from "../firebase";
 import { doc, getDoc, collection, addDoc, serverTimestamp, Timestamp, query, orderBy, limit, onSnapshot, getDocs, updateDoc, arrayUnion, arrayRemove, where } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -517,7 +517,12 @@ export default function GuestView() {
                   }}
                 >
                   {photo.type === 'video' ? (
-                    <video src={photo.url} className="w-full h-full object-cover" muted playsInline preload="metadata" />
+                    <>
+                      <video src={`${photo.url}#t=0.001`} className="w-full h-full object-cover" muted playsInline preload="metadata" />
+                      <div className="absolute top-2 left-2 bg-black/40 backdrop-blur-sm rounded-full p-1">
+                        <Play className="w-3 h-3 text-white fill-white" />
+                      </div>
+                    </>
                   ) : (
                     <img src={photo.url} alt="Wedding moment" className="w-full h-full object-cover" referrerPolicy="no-referrer" loading="lazy" />
                   )}
