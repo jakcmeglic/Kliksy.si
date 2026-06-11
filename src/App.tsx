@@ -1,6 +1,9 @@
+import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Landing from './pages/Landing';
+import LandingHr from './pages/LandingHr';
 import CreateEvent from './pages/CreateEvent';
+import CreateEventHr from './pages/CreateEventHr';
 import GuestView from './pages/GuestView';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
@@ -13,13 +16,21 @@ import { AuthProvider } from './components/AuthProvider';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
 export default function App() {
+  const [isHr, setIsHr] = useState(false);
+
+  useEffect(() => {
+    if (window.location.hostname.includes('hr.getkliksy.com')) {
+      setIsHr(true);
+    }
+  }, []);
+
   return (
     <ErrorBoundary>
       <AuthProvider>
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route path="/create" element={<CreateEvent />} />
+            <Route path="/" element={isHr ? <LandingHr /> : <Landing />} />
+            <Route path="/create" element={isHr ? <CreateEventHr /> : <CreateEvent />} />
             <Route path="/event/:id" element={<GuestView />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/admin" element={<Admin />} />
