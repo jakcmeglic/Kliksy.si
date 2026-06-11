@@ -193,7 +193,7 @@ export default function CreateEventHr() {
       }
     } catch (err: any) {
       console.error(err);
-      setAuthError('Napaka pri ustvarjanju dogodka: ' + err.message);
+      setAuthError('Došlo je do pogreške pri stvaranju događaja: ' + err.message);
     } finally {
       setIsProcessing(false);
     }
@@ -262,7 +262,7 @@ export default function CreateEventHr() {
       }
     } catch (error: any) {
       if (authMode === 'forgot_password') {
-        setAuthError("Napaka pri pošiljanju povezave. Preverite elektronski naslov.");
+        setAuthError("Pogreška pri slanju poveznice. Provjerite e-mail u.");
       } else {
         setAuthError(error.message || 'Došlo je do pogreške pri prijavi.');
       }
@@ -374,7 +374,7 @@ export default function CreateEventHr() {
         } catch (err: any) {
           if (!isSubscribed) return;
           console.error(err);
-          setStripeError(err.message || 'Napaka pri povezavi s strežnikom.');
+          setStripeError(err.message || 'Pogreška u povezivanju s poslužiteljem.');
         } finally {
           if (isSubscribed) {
             setIsUpdatingPrice(false);
@@ -506,8 +506,8 @@ export default function CreateEventHr() {
                 className="bg-white p-8 md:p-12 rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100"
               >
                 <div className="mb-8">
-                  <h2 className="text-3xl font-bold mb-2">Vrsta dogodka</h2>
-                  <p className="text-gray-600">Izberite vrsto vašega dogodka.</p>
+                  <h2 className="text-3xl font-bold mb-2">Vrsta događaja</h2>
+                  <p className="text-gray-600">Odaberite vrstu vašeg događaja.</p>
                 </div>
 
                 <div className="space-y-4">
@@ -553,7 +553,7 @@ export default function CreateEventHr() {
                     {formData.eventType === 'poroka' ? 'Vaš veliki dan' : 'Pojedinosti dogodka'}
                   </h2>
                   <p className="text-gray-600">
-                    {formData.eventType === 'poroka' ? 'Vnesite osnovne podatke o vajini poroki.' : 'Vnesite osnovne podatke o dogodku.'}
+                    {formData.eventType === 'poroka' ? 'Unesite osnovne podatke o vašem vjenčanju.' : 'Unesite osnovne podatke o događaju.'}
                   </p>
                 </div>
 
@@ -643,8 +643,8 @@ export default function CreateEventHr() {
                 </button>
 
                 <div className="mb-8 text-center">
-                  <h2 className="text-3xl font-bold mb-2">Ustvarite račun</h2>
-                  <p className="text-gray-600">Za upravljanje vašega dogodka potrebujemo vaš račun.</p>
+                  <h2 className="text-3xl font-bold mb-2">Stvorite račun</h2>
+                  <p className="text-gray-600">Za upravljanje vašim događajem potreban nam je vaš račun.</p>
                 </div>
 
                 <div className="bg-white border border-gray-200 p-6 rounded-2xl">
@@ -655,14 +655,14 @@ export default function CreateEventHr() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
                       </div>
-                      <h3 className="text-xl font-bold mb-2">Uspešno prijavljeni</h3>
-                      <p className="text-gray-600 mb-6">Prijavljeni ste kot <span className="font-medium text-gray-900">{user.email || 'uporabnik'}</span>.</p>
+                      <h3 className="text-xl font-bold mb-2">Uspješno prijavljeni</h3>
+                      <p className="text-gray-600 mb-6">Prijavljeni ste kao <span className="font-medium text-gray-900">{user.email || 'korisnik'}</span>.</p>
                       
                       <button 
                         onClick={handleNext}
                         className="w-full bg-black text-white py-3 rounded-xl font-medium hover:bg-gray-800 transition-colors mb-3"
                       >
-                        Ustvari moj dogodek
+                        Napravi moj događaj
                       </button>
                       <button 
                         onClick={() => signOut()}
@@ -718,7 +718,7 @@ export default function CreateEventHr() {
                           <div>
                             <input 
                               type="password" 
-                              placeholder="Geslo"
+                              placeholder="Lozinka"
                               value={authPassword}
                               onChange={e => setAuthPassword(e.target.value)}
                               className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-all"
@@ -743,7 +743,7 @@ export default function CreateEventHr() {
                           type="submit"
                           className="w-full bg-black text-white py-3 rounded-xl font-medium hover:bg-gray-800 transition-colors"
                         >
-                          {authMode === 'register' ? 'Ustvari račun' : authMode === 'forgot_password' ? 'Pošlji povezavo' : 'Prijavi se'}
+                          {authMode === 'register' ? 'Napravi račun' : authMode === 'forgot_password' ? 'Pošalji poveznicu' : 'Prijavi se'}
                         </button>
                       </form>
 
@@ -807,7 +807,7 @@ export default function CreateEventHr() {
                 <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                   <Check className="w-10 h-10 text-green-500" />
                 </div>
-                <h2 className="text-3xl font-bold mb-4">Vaš dogodek je ustvarjen! 🎉</h2>
+                <h2 className="text-3xl font-bold mb-4">Vaš događaj je stvoren! 🎉</h2>
                 <div className="text-left bg-gray-50 rounded-2xl p-6 mb-8 max-w-sm mx-auto">
                   <p className="font-semibold text-gray-900 mb-4">Tukaj lahko:</p>
                   <ul className="space-y-3">
@@ -826,7 +826,7 @@ export default function CreateEventHr() {
                   onClick={() => navigate(`/dashboard?eventId=${demoEventId}`)}
                   className="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-indigo-700 transition-colors shadow-md shadow-indigo-200"
                 >
-                  Odpri moj dogodek
+                  Otvori moj događaj
                 </button>
               </motion.div>
             )}
@@ -960,7 +960,7 @@ export default function CreateEventHr() {
 
                 {/* Testimonial Slider */}
                 <div className="bg-white border border-gray-100 rounded-2xl p-6 md:p-8 shadow-sm text-center relative mb-12">
-                   <p className="font-bold text-gray-900 mb-4 text-[15px]">Kaj pravijo naši uporabniki? 💜</p>
+                   <p className="font-bold text-gray-900 mb-4 text-[15px]">Kaj pravijo naši korisniki? 💜</p>
                    
                    <div className="flex justify-center gap-1 mb-6">
                      {[1,2,3,4,5].map(star => <Star key={star} className="w-4 h-4 text-[#5B45FF] fill-[#5B45FF]" />)}
@@ -1226,7 +1226,7 @@ export default function CreateEventHr() {
                           className="space-y-4 overflow-hidden"
                         >
                           <div>
-                            <label className="block text-sm font-medium mb-1">Ime podjetja</label>
+                            <label className="block text-sm font-medium mb-1">Ime tvrtke</label>
                             <input 
                               type="text" 
                               value={formData.companyName}
@@ -1350,7 +1350,7 @@ export default function CreateEventHr() {
                             </span>
                           ) : (
                             <span className="flex items-center gap-2">
-                              Ustvari dogodek brezplačno <Check className="w-5 h-5" />
+                              Napravi događaj besplatno <Check className="w-5 h-5" />
                             </span>
                           )}
                         </button>
@@ -1406,7 +1406,7 @@ export default function CreateEventHr() {
 
               <h3 className="text-xl font-bold text-gray-900 mt-6 mb-2 bg-yellow-100 px-3 py-1 rounded-md inline-block">3. Odgovornost za naložene vsebine (Pomembno)</h3>
               <p className="mb-4 font-medium text-gray-800">
-                Organizatorji oziroma tisti ponudniki (uporabniki), ki na naši platformi ustvarijo in odprejo dogodek, prevzemajo popolno in izključno odgovornost za vse fotografije, videoposnetke ter druge vsebine, ki jih njim ali njihovim gostom uspe naložiti v dotično virtualno galerijo. 
+                Organizatorji oziroma tisti ponudniki (korisniki), ki na naši platformi ustvarijo in odprejo dogodek, prevzemajo popolno in izključno odgovornost za vse fotografije, videoposnetke ter druge vsebine, ki jih njim ali njihovim gostom uspe naložiti v dotično virtualno galerijo. 
               </p>
               <p className="mb-4">
                 Kliksy.si (upravljavec platforme) nastopa zgolj kot ponudnik tehnološke rešitve oz. informacijske infrastrukture za lažje zbiranje slik in pri tem ročno ne pregleduje vsake naložene fotografije. V kolikor se v galeriji znajdejo neprimerne, avtorsko sporne ali nezakonite vsebine (npr. golota, nasilje, protipravne vsebine), je dolžnost in odgovornost ustvarjalca dogodka, da te slike redno pregleduje in s pomočjo orodij (ki so na voljo v nadzorni plošči) nemudoma izbriše.
@@ -1422,7 +1422,7 @@ export default function CreateEventHr() {
               <p className="mb-4">Platforma zagotavlja visoko zanesljivost dostopanja do podatkov, kljub temu pa upravljavec ne prevzema odgovornosti za morebitne izpade delovanja strežnikov izven lastnega nadzora.</p>
 
               <h3 className="text-xl font-bold text-gray-900 mt-6 mb-2">7. Končne določbe</h3>
-              <p className="mb-4">Pogoji uporabe pričnejo veljati z dnem objave. Upravljavec si pridržuje pravico do spremembe pogojev, o čemer se uporabnike pravočasno seznani.</p>
+              <p className="mb-4">Pogoji uporabe pričnejo veljati z dnem objave. Upravljavec si pridržuje pravico do spremembe pogojev, o čemer se korisnike pravočasno seznani.</p>
             </div>
             
             <div className="sticky bottom-0 bg-white/90 backdrop-blur-md pt-4 pb-2 border-t border-gray-100 flex gap-3">

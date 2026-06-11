@@ -29,7 +29,7 @@ const REVIEWS = [
   },
   { 
     name: "Maja & David", date: "Avgust 2025", 
-    text: "Vse slike zbrane na enem mestu, brez stresa in prošenj pošiljanja. Toplo priporočava vsakemu paru!",
+    text: "Sve slike prikupljene na jednom mjestu, bez stresa i preuzimanja. Toplo preporučujemo svakom paru!",
     initials: "MD", gender: "couple"
   },
   {
@@ -39,7 +39,7 @@ const REVIEWS = [
   },
   { 
     name: "Nina & Rok", date: "September 2025", 
-    text: "Najboljši dodatek najini poroki! Vsak gost je dodal vsaj nekaj slik. Spomini, ki jih ne bi nikoli dobili drugače.",
+    text: "Najbolji dodatak našem vjenčanju! Svaki gost je dodao barem nekoliko slika. Uspomene koje nikada drugačije ne bismo dobili.",
     initials: "NR", gender: "couple"
   },
   {
@@ -49,7 +49,7 @@ const REVIEWS = [
   },
   {
     name: "Ana & Peter", date: "Avgust 2025",
-    text: "Zelo priročno! Super je bilo opazovati dogodek skozi oči naših prijateljev. Toplo priporočam.",
+    text: "Vrlo praktično! Bilo je sjajno gledati događaj očima naših prijatelja. Toplo preporučujem.",
     initials: "AP", gender: "couple"
   },
   {
@@ -760,7 +760,7 @@ export default function LandingHr() {
             <div className="md:col-span-2 lg:col-span-2">
               <h4 className="font-extrabold text-gray-900 mb-6 text-[15px]">Pravno</h4>
               <ul className="space-y-4 text-gray-500 font-medium text-[15px]">
-                <li><Link to="/pogoji-uporabe" className="hover:text-gray-900 transition-colors">Pogoji uporabe</Link></li>
+                <li><Link to="/pogoji-uporabe" className="hover:text-gray-900 transition-colors">Opći uvjeti korištenja</Link></li>
                 <li><Link to="/zasebnost" className="hover:text-gray-900 transition-colors">Privatnost</Link></li>
                 <li><Link to="/piskotki" className="hover:text-gray-900 transition-colors">Kolačići</Link></li>
               </ul>
