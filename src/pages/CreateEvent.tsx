@@ -61,6 +61,7 @@ export default function CreateEvent() {
   });
   const [expandedPlan, setExpandedPlan] = useState<Plan | null>(initialPlan);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [termsAcceptedFree, setTermsAcceptedFree] = useState(false);
   
   // Auth states
   const [authMode, setAuthMode] = useState<'login' | 'register' | 'forgot_password'>('register');
@@ -1322,22 +1323,36 @@ export default function CreateEvent() {
                         </div>
                       )
                     ) : (
-                      <button 
-                        onClick={handleCheckoutFree}
-                        disabled={isProcessing || !user || user.isAnonymous}
-                        className="w-full bg-gray-900 text-white py-4 rounded-xl font-medium hover:bg-black transition-colors flex items-center justify-center gap-2 mt-8 disabled:opacity-70"
-                      >
-                        {isProcessing ? (
-                          <span className="flex items-center gap-2">
-                            <Loader2 className="w-5 h-5 animate-spin" />
-                            Obdelujem...
-                          </span>
-                        ) : (
-                          <span className="flex items-center gap-2">
-                            Ustvari dogodek brezplačno <Check className="w-5 h-5" />
-                          </span>
-                        )}
-                      </button>
+                      <div className="mt-8">
+                        <div className="flex items-start gap-2 mb-4">
+                          <input 
+                            type="checkbox" 
+                            id="terms_free" 
+                            checked={termsAcceptedFree} 
+                            onChange={(e) => setTermsAcceptedFree(e.target.checked)} 
+                            className="mt-1 w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 cursor-pointer"
+                          />
+                          <label htmlFor="terms_free" className="text-sm text-gray-700 cursor-pointer">
+                            Strinjam se s <Link to="/pogoji-uporabe" className="text-indigo-600 hover:text-indigo-800 hover:underline" target="_blank">splošnimi pogoji</Link>*
+                          </label>
+                        </div>
+                        <button 
+                          onClick={handleCheckoutFree}
+                          disabled={isProcessing || !user || user.isAnonymous || !termsAcceptedFree}
+                          className="w-full bg-gray-900 text-white py-4 rounded-xl font-medium hover:bg-black transition-colors flex items-center justify-center gap-2 disabled:opacity-70"
+                        >
+                          {isProcessing ? (
+                            <span className="flex items-center gap-2">
+                              <Loader2 className="w-5 h-5 animate-spin" />
+                              Obdelujem...
+                            </span>
+                          ) : (
+                            <span className="flex items-center gap-2">
+                              Ustvari dogodek brezplačno <Check className="w-5 h-5" />
+                            </span>
+                          )}
+                        </button>
+                      </div>
                     )}
                     {finalPrice > 0 && (
                       <p className="text-center text-xs text-gray-400 mt-3 flex items-center justify-center gap-1">
@@ -1380,6 +1395,7 @@ function StripePaymentForm({
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [termsAcceptedStripe, setTermsAcceptedStripe] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1502,10 +1518,23 @@ function StripePaymentForm({
         </div>
       </div>
 
+      <div className="mt-6 flex items-start gap-2">
+        <input 
+          type="checkbox" 
+          id="terms_stripe" 
+          checked={termsAcceptedStripe} 
+          onChange={(e) => setTermsAcceptedStripe(e.target.checked)} 
+          className="mt-1 w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 cursor-pointer"
+        />
+        <label htmlFor="terms_stripe" className="text-sm text-gray-700 cursor-pointer">
+          Strinjam se s <Link to="/pogoji-uporabe" className="text-indigo-600 hover:text-indigo-800 hover:underline" target="_blank">splošnimi pogoji</Link>*
+        </label>
+      </div>
+
       <button 
         type="submit"
-        disabled={isProcessing || !stripe || !elements || isUpdatingPrice}
-        className="w-full bg-gray-900 text-white py-4 rounded-xl font-medium hover:bg-black transition-colors flex items-center justify-center gap-2 mt-6 disabled:opacity-70 shadow-lg"
+        disabled={isProcessing || !stripe || !elements || isUpdatingPrice || !termsAcceptedStripe}
+        className="w-full bg-gray-900 text-white py-4 rounded-xl font-medium hover:bg-black transition-colors flex items-center justify-center gap-2 mt-4 disabled:opacity-70 shadow-lg"
       >
         {isProcessing || isUpdatingPrice ? (
           <span className="flex items-center gap-2">
