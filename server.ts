@@ -485,6 +485,65 @@ async function startServer() {
   });
 
   // API routes FIRST
+  app.post("/api/create-upgrade-session", async (req, res) => {
+    try {
+      const { currentPlan, newPlan, eventId, successUrl, cancelUrl } = req.body;
+
+      const plans = {
+        osnovni: 3900,
+        basic: 3900,
+        plus: 4900,
+        premium: 7900
+      };
+
+      const oldPrice = plans[currentPlan as keyof typeof plans];
+      const newPrice = plans[newPlan as keyof typeof plans];
+
+      if (!oldPrice || !newPrice || newPrice <= oldPrice) {
+        return res.status(400).json({ error: "Invalid upgrade request" });
+      }
+
+      const amount = newPrice - oldPrice;
+
+      const stripeKey = process.env.STRIPE_SECRET_KEY;
+      if (!stripeKey) {
+        throw new Error("STRIPE_SECRET_KEY is not configured limit.");
+      }
+
+      const stripe = new Stripe(stripeKey, { apiVersion: '2025-02-24.acacia' as any });
+
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        line_items: [
+          {
+            price_data: {
+              currency: 'eur',
+              product_data: {
+                name: `Nadgradnja na ${newPlan.toUpperCase()}`,
+                description: `Nadgradnja paketa iz ${currentPlan.toUpperCase()} na ${newPlan.toUpperCase()}`,
+              },
+              unit_amount: amount,
+            },
+            quantity: 1,
+          },
+        ],
+        mode: 'payment',
+        success_url: successUrl,
+        cancel_url: cancelUrl,
+        client_reference_id: eventId,
+        metadata: {
+          upgradeToPlan: newPlan,
+          isUpgrade: 'true'
+        }
+      });
+
+      res.json({ url: session.url });
+    } catch (error: any) {
+      console.error("Stripe upgrade error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   app.post("/api/create-checkout-session", async (req, res) => {
     try {
       const { plan, discountCode, standsQuantity, eventId, successUrl, cancelUrl } = req.body;

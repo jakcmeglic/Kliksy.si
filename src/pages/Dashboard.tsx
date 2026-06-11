@@ -18,6 +18,8 @@ export default function Dashboard() {
   const [searchParams] = useSearchParams();
   const urlEventId = searchParams.get('eventId');
   const isSuccess = searchParams.get('success') === 'true';
+  const isUpgradeSuccess = searchParams.get('upgradeSuccess') === 'true';
+  const newUpgradePlan = searchParams.get('newPlan');
   
   const [activeTab, setActiveTab] = useState<'overview' | 'gallery' | 'settings'>('overview');
   const [event, setEvent] = useState<any>(null);
@@ -27,6 +29,8 @@ export default function Dashboard() {
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState('');
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
+  const [isUpgradingStatus, setIsUpgradingStatus] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const [imageToDelete, setImageToDelete] = useState<string | null>(null);
   const [welcomeMessage, setWelcomeMessage] = useState("");
@@ -83,6 +87,18 @@ export default function Dashboard() {
             return; // The navigate will re-trigger the useEffect without success=true
           } catch (err) {
             console.error("Error updating payment status:", err);
+          }
+        }
+
+        // Handle successful UPGRADE redirect
+        if (isUpgradeSuccess && urlEventId && newUpgradePlan) {
+          try {
+            const eventDocRef = doc(db, "events", urlEventId);
+            await updateDoc(eventDocRef, { plan: newUpgradePlan });
+            navigate(`/dashboard?eventId=${urlEventId}`, { replace: true });
+            return;
+          } catch (err) {
+            console.error("Error updating plan status:", err);
           }
         }
 
@@ -424,7 +440,7 @@ export default function Dashboard() {
             )}
             <p className="text-sm text-gray-500 mt-2">{new Date(event.date).toLocaleDateString('sl-SI')}</p>
             {event.plan && (
-              <div className="mt-3">
+              <div className="mt-3 flex flex-col items-start gap-2">
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
                   event.paymentStatus !== 'paid' ? 'bg-indigo-50 text-indigo-800 border-indigo-200' :
                   event.plan === 'premium' ? 'bg-amber-50 text-amber-800 border-amber-200' : 
@@ -433,6 +449,15 @@ export default function Dashboard() {
                 }`}>
                   Paket: {event.paymentStatus !== 'paid' ? 'Demo' : event.plan.charAt(0).toUpperCase() + event.plan.slice(1)}
                 </span>
+                
+                {event.paymentStatus === 'paid' && event.plan !== 'premium' && (
+                  <button 
+                    onClick={() => setIsUpgradeModalOpen(true)}
+                    className="text-xs font-bold text-indigo-600 hover:text-indigo-800 hover:underline flex items-center gap-1 transition-colors"
+                  >
+                    Nadgradi paket
+                  </button>
+                )}
               </div>
             )}
             
@@ -845,6 +870,115 @@ export default function Dashboard() {
                 Izbriši
               </button>
             </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Upgrade Modal */}
+      {isUpgradeModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm -moz-backdrop-blur" onClick={!isUpgradingStatus ? () => setIsUpgradeModalOpen(false) : undefined}>
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-2xl p-6 md:p-8 text-center max-w-lg w-full shadow-xl relative"
+          >
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">Nadgradite svoj paket</h3>
+            <p className="text-gray-500 mb-6">Izberite višji paket za več funkcionalnosti. Plačali boste le razliko v ceni.</p>
+            
+            <div className="space-y-4 mb-8">
+              {(event?.plan === 'osnovni' || event?.plan === 'basic') && (
+                <button 
+                  onClick={async () => {
+                    setIsUpgradingStatus(true);
+                    try {
+                      const resp = await fetch('/api/create-upgrade-session', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          currentPlan: 'basic',
+                          newPlan: 'plus',
+                          eventId: event.id,
+                          successUrl: `${window.location.origin}/dashboard?eventId=${event.id}&upgradeSuccess=true&newPlan=plus`,
+                          cancelUrl: `${window.location.origin}/dashboard?eventId=${event.id}&cancelUpgrade=true`
+                        })
+                      });
+                      const data = await resp.json();
+                      if (data.url) {
+                        window.location.href = data.url;
+                      } else {
+                        alert("Napaka pri povezavi s plačilnim sistemom.");
+                        setIsUpgradingStatus(false);
+                      }
+                    } catch (err) {
+                      alert("Napaka pri povezavi.");
+                      setIsUpgradingStatus(false);
+                    }
+                  }}
+                  disabled={isUpgradingStatus}
+                  className="w-full flex items-center justify-between p-4 border-2 border-blue-100 rounded-xl hover:border-blue-500 transition-all text-left bg-blue-50/50 group"
+                >
+                  <div className="pr-4">
+                    <h4 className="font-bold text-lg text-gray-900 group-hover:text-blue-700">Nadgradi na Plus</h4>
+                    <p className="text-sm text-gray-500">Neomejeno slik, daljši dostop do galerije, live galerija</p>
+                  </div>
+                  <div className="font-bold text-blue-600 bg-blue-100 px-3 py-1.5 rounded-lg shrink-0">+ 10€</div>
+                </button>
+              )}
+
+              <button 
+                onClick={async () => {
+                    setIsUpgradingStatus(true);
+                    try {
+                      const resp = await fetch('/api/create-upgrade-session', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          currentPlan: event.plan === 'osnovni' ? 'basic' : event.plan,
+                          newPlan: 'premium',
+                          eventId: event.id,
+                          successUrl: `${window.location.origin}/dashboard?eventId=${event.id}&upgradeSuccess=true&newPlan=premium`,
+                          cancelUrl: `${window.location.origin}/dashboard?eventId=${event.id}&cancelUpgrade=true`
+                        })
+                      });
+                      const data = await resp.json();
+                      if (data.url) {
+                        window.location.href = data.url;
+                      } else {
+                        alert("Napaka pri povezavi s plačilnim sistemom.");
+                        setIsUpgradingStatus(false);
+                      }
+                    } catch (err) {
+                      alert("Napaka pri povezavi.");
+                      setIsUpgradingStatus(false);
+                    }
+                }}
+                disabled={isUpgradingStatus}
+                 className="w-full flex items-center justify-between p-4 border-2 border-amber-100 rounded-xl hover:border-amber-500 transition-all text-left bg-amber-50/50 group"
+              >
+                  <div className="pr-4">
+                    <h4 className="font-bold text-lg text-gray-900 group-hover:text-amber-700">Nadgradi na Premium</h4>
+                    <p className="text-sm text-gray-500">Vse iz Plus paketa + podpora za nalaganje videoposnetkov</p>
+                  </div>
+                  <div className="font-bold text-amber-600 bg-amber-100 px-3 py-1.5 rounded-lg shrink-0">
+                    + {(event?.plan === 'osnovni' || event?.plan === 'basic') ? '40' : '30'}€
+                  </div>
+              </button>
+            </div>
+
+            <button 
+              onClick={() => setIsUpgradeModalOpen(false)}
+              disabled={isUpgradingStatus}
+              className="w-full py-3 text-gray-500 font-medium hover:text-gray-900 hover:bg-gray-50 rounded-xl transition-colors disabled:opacity-50"
+            >
+              Prekliči
+            </button>
+            
+            {isUpgradingStatus && (
+              <div className="absolute inset-0 bg-white/60 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+                <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+              </div>
+            )}
           </motion.div>
         </div>
       )}
