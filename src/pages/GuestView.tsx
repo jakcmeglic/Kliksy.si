@@ -66,6 +66,7 @@ export default function GuestView() {
   const [uploadError, setUploadError] = useState('');
   const [recentPhotos, setRecentPhotos] = useState<any[]>([]);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
+  const [galleryMode, setGalleryMode] = useState<'scroll' | 'grid'>('scroll');
   const [allPhotos, setAllPhotos] = useState<any[]>([]);
   const [hasScrolledGallery, setHasScrolledGallery] = useState(false);
   const [videoCount, setVideoCount] = useState(0);
@@ -572,73 +573,116 @@ export default function GuestView() {
               >
                 <ArrowLeft className="w-6 h-6" />
               </button>
-              <div className="text-white/90 font-bold px-5 py-2 bg-black/40 backdrop-blur-md rounded-full pointer-events-auto border border-white/10 shadow-lg">
-                Galerija
+              
+              <div className="flex items-center gap-1 bg-black/40 backdrop-blur-md rounded-full p-1 pointer-events-auto border border-white/10 shadow-lg">
+                <button 
+                  onClick={() => setGalleryMode('scroll')}
+                  className={`px-4 py-1.5 rounded-full text-sm font-bold transition-colors ${galleryMode === 'scroll' ? 'bg-white text-black' : 'text-white/80 hover:text-white'}`}
+                >
+                  Scroll
+                </button>
+                <button 
+                  onClick={() => setGalleryMode('grid')}
+                  className={`px-4 py-1.5 rounded-full text-sm font-bold transition-colors ${galleryMode === 'grid' ? 'bg-white text-black' : 'text-white/80 hover:text-white'}`}
+                >
+                  Mreža
+                </button>
               </div>
               <div className="w-12 h-12" /> {/* Spacer for centering */}
             </div>
 
-            {/* Scrollable Area */}
-            <div 
-              ref={(node) => {
-                if (node && selectedImageIndex !== null && !node.dataset.scrolled && allPhotos.length > 0) {
-                  const element = node.children[selectedImageIndex] as HTMLElement;
-                  if (element) {
-                    node.scrollTop = element.offsetTop;
-                    node.dataset.scrolled = 'true';
-                  }
-                }
-              }}
-              className="flex-1 overflow-y-auto snap-y snap-mandatory h-full hide-scrollbar"
-              onScroll={() => { if (!hasScrolledGallery) setHasScrolledGallery(true); }}
-            >
-              {allPhotos.map((photo) => (
-                <div key={photo.id} className="w-full h-[100dvh] snap-start snap-always relative flex items-center justify-center bg-black">
-                  {photo.type === 'video' ? (
-                    <video 
-                      src={photo.url} 
-                      className="w-full h-full object-contain" 
-                      autoPlay={false} 
-                      preload="metadata"
-                      controls
-                      muted 
-                      loop 
-                      playsInline 
-                    />
-                  ) : (
-                    <img src={photo.url} alt="Gallery item" className="w-full h-full object-contain" referrerPolicy="no-referrer" loading="lazy" />
-                  )}
-                  <TikTokLikeButton photo={photo} deviceId={deviceId} onToggleLike={handleToggleLike} />
-                </div>
-              ))}
-              
-              {allPhotos.length === 0 && (
-                <div className="flex items-center justify-center h-full text-white/60">
-                  <Loader2 className="w-8 h-8 animate-spin" />
-                </div>
-              )}
-            </div>
-            
-            {/* Scroll Indiciator Hint */}
-            <AnimatePresence>
-              {!hasScrolledGallery && allPhotos.length > 1 && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="absolute bottom-12 left-1/2 -translate-x-1/2 z-[60] flex flex-col items-center pointer-events-none"
+            {/* Gallery Area */}
+            {galleryMode === 'scroll' ? (
+              <>
+                {/* Scrollable Area */}
+                <div 
+                  ref={(node) => {
+                    if (node && selectedImageIndex !== null && !node.dataset.scrolled && allPhotos.length > 0) {
+                      const element = node.children[selectedImageIndex] as HTMLElement;
+                      if (element) {
+                        node.scrollTop = element.offsetTop;
+                        node.dataset.scrolled = 'true';
+                      }
+                    }
+                  }}
+                  className="flex-1 overflow-y-auto snap-y snap-mandatory h-full hide-scrollbar"
+                  onScroll={() => { if (!hasScrolledGallery) setHasScrolledGallery(true); }}
                 >
-                  <motion.div
-                    animate={{ y: [0, -15, 0], opacity: [0.5, 1, 0.5] }}
-                    transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-                    className="flex flex-col items-center"
-                  >
-                    <span className="text-white font-medium text-sm mb-2 drop-shadow-lg bg-black/40 px-3 py-1 rounded-full backdrop-blur-md">Potegni navzgor</span>
-                    <ChevronUp className="w-8 h-8 text-white drop-shadow-lg" />
-                  </motion.div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                  {allPhotos.map((photo) => (
+                    <div key={photo.id} className="w-full h-[100dvh] snap-start snap-always relative flex items-center justify-center bg-black">
+                      {photo.type === 'video' ? (
+                        <video 
+                          src={photo.url} 
+                          className="w-full h-full object-contain" 
+                          autoPlay={false} 
+                          preload="metadata"
+                          controls
+                          muted 
+                          loop 
+                          playsInline 
+                        />
+                      ) : (
+                        <img src={photo.url} alt="Gallery item" className="w-full h-full object-contain" referrerPolicy="no-referrer" loading="lazy" />
+                      )}
+                      <TikTokLikeButton photo={photo} deviceId={deviceId} onToggleLike={handleToggleLike} />
+                    </div>
+                  ))}
+                  
+                  {allPhotos.length === 0 && (
+                    <div className="flex items-center justify-center h-full text-white/60">
+                      <Loader2 className="w-8 h-8 animate-spin" />
+                    </div>
+                  )}
+                </div>
+                
+                {/* Scroll Indiciator Hint */}
+                <AnimatePresence>
+                  {!hasScrolledGallery && allPhotos.length > 1 && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="absolute bottom-12 left-1/2 -translate-x-1/2 z-[60] flex flex-col items-center pointer-events-none"
+                    >
+                      <motion.div
+                        animate={{ y: [0, -15, 0], opacity: [0.5, 1, 0.5] }}
+                        transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                        className="flex flex-col items-center"
+                      >
+                        <span className="text-white font-medium text-sm mb-2 drop-shadow-lg bg-black/40 px-3 py-1 rounded-full backdrop-blur-md">Potegni navzgor</span>
+                        <ChevronUp className="w-8 h-8 text-white drop-shadow-lg" />
+                      </motion.div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </>
+            ) : (
+              <div className="flex-1 overflow-y-auto pt-24 px-4 pb-12 bg-black pointer-events-auto hide-scrollbar">
+                <div className="grid grid-cols-3 gap-2">
+                  {allPhotos.map((photo, i) => (
+                    <div key={photo.id} className="aspect-square rounded-xl overflow-hidden bg-gray-900 cursor-pointer relative" onClick={() => { setSelectedImageIndex(i); setGalleryMode('scroll'); }}>
+                      {photo.type === 'video' ? (
+                        <>
+                          <video src={`${photo.url}#t=0.001`} className="w-full h-full object-cover" muted playsInline preload="metadata" />
+                          <div className="absolute top-2 left-2 bg-black/40 backdrop-blur-sm rounded-full p-1 border border-white/10 shadow-sm pointer-events-none">
+                            <Play className="w-3 h-3 text-white fill-white" />
+                          </div>
+                        </>
+                      ) : (
+                        <img src={photo.url} alt="Gallery item" className="w-full h-full object-cover" referrerPolicy="no-referrer" loading="lazy" />
+                      )}
+                      {/* Thumb Like Indicator */}
+                      {photo.likes > 0 && (
+                        <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-black/50 backdrop-blur-md px-2 py-1 rounded-full pointer-events-none">
+                          <Heart className="w-3 h-3 text-red-500 fill-red-500" />
+                          <span className="text-white text-xs font-bold">{photo.likes}</span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             
           </motion.div>
         )}
