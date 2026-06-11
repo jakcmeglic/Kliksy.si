@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Landing from './pages/Landing';
 import LandingHr from './pages/LandingHr';
@@ -20,13 +19,7 @@ import { AuthProvider } from './components/AuthProvider';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
 export default function App() {
-  const [isHr, setIsHr] = useState(false);
-
-  useEffect(() => {
-    if (window.location.hostname.includes('hr.getkliksy.com')) {
-      setIsHr(true);
-    }
-  }, []);
+  const isHr = window.location.hostname.includes('hr.getkliksy.com');
 
   return (
     <ErrorBoundary>
