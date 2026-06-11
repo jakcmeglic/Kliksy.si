@@ -205,10 +205,10 @@ export default function DashboardHr() {
   if (!event) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-[#FDFCFB] p-6 text-center">
-        <h2 className="text-3xl font-extrabold tracking-tight text-gray-900 mb-4">Nimate še dogodka</h2>
-        <p className="text-gray-600 mb-8">Ustvarite svoj prvi dogodek za začetek zbiranja spominov.</p>
+        <h2 className="text-3xl font-extrabold tracking-tight text-gray-900 mb-4">Nemate još događaj</h2>
+        <p className="text-gray-600 mb-8">Napravite svoj prvi događaj za početak skupljanja uspomena.</p>
         <Link to="/create" className="bg-gray-900 text-white px-8 py-4 rounded-full font-medium hover:bg-black transition-colors shadow-sm">
-          Ustvari dogodek
+          Napravi događaj
         </Link>
       </div>
     );
@@ -414,7 +414,7 @@ export default function DashboardHr() {
         
         <div className="p-6 flex-1">
           <div className="mb-8">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Tvoj dogodek</p>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Tvoj događaj</p>
             {events.length > 1 ? (
               <select
                 value={event.id}
@@ -466,7 +466,7 @@ export default function DashboardHr() {
               className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2 border-2 border-dashed border-gray-200 text-gray-600 rounded-xl text-sm font-medium hover:bg-gray-50 hover:text-gray-900 hover:border-gray-300 transition-colors"
             >
               <Plus className="w-4 h-4" />
-              Dodaj nov dogodek
+              Dodaj novi događaj
             </button>
           </div>
 
@@ -508,13 +508,13 @@ export default function DashboardHr() {
             <div className="mb-8 bg-indigo-50 border border-indigo-100 rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-sm">
               <div>
                 <h3 className="text-lg font-bold text-indigo-900 mb-2">Demo paket (omejeno na 5 slik)</h3>
-                <p className="text-indigo-700">Trenutno preizkušate demo paket. Da bodo gostje lahko naložili več slik in dostopali do vseh funkcij, odklenite vaš dogodek.</p>
+                <p className="text-indigo-700">Trenutno isprobavate demo paket. Da bi gosti mogli učitati više slika i pristupiti svim funkcijama, otključajte vaš događaj.</p>
               </div>
               <button 
                 onClick={() => navigate(`/create?eventId=${event.id}`)}
                 className="shrink-0 bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-indigo-700 transition md:ml-auto shadow-md shadow-indigo-200"
               >
-                Odkleni moj dogodek
+                Otključaj moj događaj
               </button>
             </div>
           )}
@@ -530,16 +530,16 @@ export default function DashboardHr() {
               </button>
               <div>
                 <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 mb-1">
-                  {activeTab === 'overview' && 'Pregled dogodka'}
+                  {activeTab === 'overview' && 'Pregled događaja'}
                   {activeTab === 'gallery' && 'Vse fotografije'}
                   {activeTab === 'settings' && 'Postavke'}
                 </h1>
                 <p className="text-gray-500">
                   {event.eventType === 'poroka' || !event.eventType ? 'Upravljaj svoje poročne spomine.' : 
                    event.eventType === 'rojstni_dan' ? 'Upravljaj svoje rojstnodnevne spomine.' : 
-                   event.eventType === 'poslovni_dogodek' ? 'Upravljaj spomine s poslovnega dogodka.' : 
+                   event.eventType === 'poslovni_događaj' ? 'Upravljajte uspomenama s poslovnog događaja.' : 
                    event.eventType === 'teambuilding' ? 'Upravljaj spomine s teambuildinga.' : 
-                   'Upravljaj spomine dogodka.'}
+                   'Upravljajte uspomenama događaja.'}
                 </p>
               </div>
             </div>
@@ -763,11 +763,11 @@ export default function DashboardHr() {
               animate={{ opacity: 1, y: 0 }}
               className="bg-white p-8 rounded-3xl border border-gray-200 shadow-sm max-w-2xl"
             >
-              <h3 className="font-bold tracking-tight text-xl mb-6 text-gray-900">Postavke dogodka</h3>
+              <h3 className="font-bold tracking-tight text-xl mb-6 text-gray-900">Postavke događaja</h3>
               
               <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-700">Ime dogodka</label>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">Ime događaja</label>
                   <input 
                     type="text" 
                     defaultValue={event.eventType === 'poroka' || !event.eventType ? `${event.partner1} & ${event.partner2}` : event.eventName}
@@ -861,7 +861,7 @@ export default function DashboardHr() {
                 onClick={() => setImageToDelete(null)}
                 className="flex-1 px-4 py-3 bg-gray-100 font-bold text-gray-700 rounded-xl hover:bg-gray-200 transition-colors"
               >
-                Poništi
+                Odustani
               </button>
               <button 
                 onClick={confirmDelete}
@@ -971,7 +971,7 @@ export default function DashboardHr() {
               disabled={isUpgradingStatus}
               className="w-full py-3 text-gray-500 font-medium hover:text-gray-900 hover:bg-gray-50 rounded-xl transition-colors disabled:opacity-50"
             >
-              Poništi
+              Odustani
             </button>
             
             {isUpgradingStatus && (

@@ -1,0 +1,81 @@
+import fs from 'fs';
+
+let content = fs.readFileSync('src/pages/DashboardHr.tsx', 'utf-8');
+
+const dict = {
+  'Nadzorna plošča': 'Nadzorna ploča',
+  'Galerija': 'Galerija',
+  'Nastavitve': 'Postavke',
+  'Vaš dogodek': 'Vaš događaj',
+  'Ogled za goste': 'Prikaz za goste',
+  'Prenesi vse slike': 'Preuzmi sve slike',
+  'Pripravljamo arhiv...': 'Priprema arhive...',
+  'Prekini': 'Prekini',
+  'Podrobnosti dogodka': 'Pojedinosti o događaju',
+  'Datum': 'Datum',
+  'Predvajaj Slide-show': 'Pokreni Slide-show',
+  'Ustvarjeno': 'Stvoreno',
+  'shrani': 'spremi',
+  'Shrani': 'Spremi',
+  'Prekliči': 'Odustani',
+  'Izbriši sliko': 'Obriši sliku',
+  'Ali ste prepričani, da želite izbrisati to sliko?': 'Jeste li sigurni da želite obrisati ovu sliku?',
+  'Odjava': 'Odjava',
+  'Spremeni paket': 'Promijeni paket',
+  'Trenutni paket': 'Trenutni paket',
+  'Dobi več prostora': 'Nabavi više prostora',
+  'Tukaj lahko najdete povezavo in QR kodo za vaš dogodek': 'Ovdje možete pronaći poveznicu i QR kod za vaš događaj',
+  'Povezava za goste': 'Poveznica za goste',
+  'Kopiraj povezavo': 'Kopiraj poveznicu',
+  'Delite to povezavo z gosti': 'Podijelite ovu poveznicu s gostima',
+  'Kopirano!': 'Kopirano!',
+  'Prenesi QR kodo': 'Preuzmi QR kod',
+  'Izbriši': 'Obriši',
+  'Potrditev izbrisa': 'Potvrda brisanja',
+  'Brez fotografij': 'Nema fotografija',
+  'Trenutno še ni naloženih fotografij. Delite povezavo z gosti!': 'Trenutno nema učitanih fotografija. Podijelite poveznicu s gostima!',
+  'Prenesi vse (ZIP)': 'Preuzmi sve (ZIP)',
+  'Skupaj slik': 'Ukupno slika',
+  'Urejanje dogodka': 'Uređivanje događaja',
+  'Naziv dogodka': 'Naziv događaja',
+  'Ime (Partner 1)': 'Ime (Partner 1)',
+  'Ime (Partner 2)': 'Ime (Partner 2)',
+  'Pozdravno sporočilo za goste': 'Poruka dobrodošlice za goste',
+  'Dodatki': 'Dodaci',
+  'Brez dodatkov': 'Bez dodataka',
+  'Slovensko': 'Hrvatski',
+  'Prišlo je do napake pri nalaganju.': 'Došlo je do pogreške pri učitavanju.',
+  'Shranjevanje...': 'Spremanje...',
+  'Moje galerije': 'Moje galerije',
+  'Moje galerija': 'Moja galerija',
+  'Dodaj novo': 'Dodaj novu',
+  'Nimate še nobenega dogodka.': 'Nemate još nijedan događaj.',
+  'Ustvarite ga zdaj!': 'Napravite ga sada!',
+  'Dogodki preverjeni, nalaganje medijev...': 'Događaji provjereni, učitavanje medija...',
+  'Vse datoteke': 'Sve datoteke',
+  'Datoteka': 'Datoteka',
+  'Preklicano': 'Otkazano',
+  'Vaš brskalnik ne podpira prenosa večjih datotek na ta način.': 'Vaš preglednik ne podržava preuzimanje većih datoteka na ovaj način.',
+  'Poskusite posamezno ali uporabite računalnik.': 'Pokušajte pojedinačno ili koristite računalo.',
+  'Zbiram datoteke...': 'Prikupljam datoteke...',
+  'Ustvarjam ZIP, to lahko traja nekaj časa...': 'Stvaram ZIP, to može potrajati...',
+  'ZIP ustvarjen, pričenjam prenos...': 'ZIP stvoren, započinjem preuzimanje...',
+  'Shranjujem ZIP...': 'Spremam ZIP...',
+  'Datoteke pripravljene za prenos...': 'Datoteke spremne za preuzimanje...',
+  'Pregled nastanitev...': 'Pregled smještaja...',
+  'Vrsta dogodka': 'Vrsta događaja',
+  'Poroka': 'Vjenčanje',
+  'Rojstni dan': 'Rođendan',
+  'Zabava': 'Zabava',
+  'Poročena': 'Vjenčani',
+  'Export default function Dashboard()': 'export default function DashboardHr()',
+  'export default function Dashboard(': 'export default function DashboardHr('
+};
+
+for (const [slo, hr] of Object.entries(dict)) {
+  content = content.split(slo).join(hr);
+}
+
+fs.writeFileSync('src/pages/DashboardHr.tsx', content);
+
+console.log("Translation done");

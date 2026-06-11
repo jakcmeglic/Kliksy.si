@@ -4,6 +4,7 @@ import LandingHr from './pages/LandingHr';
 import CreateEvent from './pages/CreateEvent';
 import CreateEventHr from './pages/CreateEventHr';
 import GuestView from './pages/GuestView';
+import GuestViewHr from './pages/GuestViewHr';
 import Dashboard from './pages/Dashboard';
 import DashboardHr from './pages/DashboardHr';
 import Login from './pages/Login';
@@ -28,7 +29,7 @@ export default function App() {
           <Routes>
             <Route path="/" element={isHr ? <LandingHr /> : <Landing />} />
             <Route path="/create" element={isHr ? <CreateEventHr /> : <CreateEvent />} />
-            <Route path="/event/:id" element={<GuestView />} />
+            <Route path="/event/:id" element={isHr ? <GuestViewHr /> : <GuestView />} />
             <Route path="/dashboard" element={isHr ? <DashboardHr /> : <Dashboard />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/login" element={<Login />} />
