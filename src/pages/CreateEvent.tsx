@@ -62,6 +62,7 @@ export default function CreateEvent() {
   const [expandedPlan, setExpandedPlan] = useState<Plan | null>(initialPlan);
   const [isProcessing, setIsProcessing] = useState(false);
   const [termsAcceptedFree, setTermsAcceptedFree] = useState(false);
+  const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
   
   // Auth states
   const [authMode, setAuthMode] = useState<'login' | 'register' | 'forgot_password'>('register');
@@ -1304,6 +1305,7 @@ export default function CreateEvent() {
                             stripePaymentIntentId={stripePaymentIntentId}
                             isUpdatingPrice={isUpdatingPrice}
                             existingEventId={existingEventId}
+                            onOpenTerms={() => setIsTermsModalOpen(true)}
                           />
                         </Elements>
                       ) : stripeError ? (
@@ -1333,7 +1335,7 @@ export default function CreateEvent() {
                             className="mt-1 w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 cursor-pointer"
                           />
                           <label htmlFor="terms_free" className="text-sm text-gray-700 cursor-pointer">
-                            Strinjam se s <Link to="/pogoji-uporabe" className="text-indigo-600 hover:text-indigo-800 hover:underline" target="_blank">splošnimi pogoji</Link>*
+                            Strinjam se s <button type="button" onClick={() => setIsTermsModalOpen(true)} className="text-indigo-600 hover:text-indigo-800 hover:underline">splošnimi pogoji</button>*
                           </label>
                         </div>
                         <button 
@@ -1374,6 +1376,66 @@ export default function CreateEvent() {
           onClose={() => setViewingImage(null)}
         />
       )}
+
+      {isTermsModalOpen && (
+        <div className="fixed inset-0 z-[100] flex justify-center items-end sm:items-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm" onClick={() => setIsTermsModalOpen(false)}>
+          <motion.div 
+            initial={{ opacity: 0, y: 100 }}
+            animate={{ opacity: 1, y: 0 }}
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-t-3xl sm:rounded-2xl p-6 md:p-8 w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-xl relative"
+          >
+            <div className="sticky top-0 bg-white/90 backdrop-blur-md pb-4 pt-2 -mt-4 border-b border-gray-100 flex justify-between items-center z-10">
+              <h2 className="text-2xl font-bold text-gray-900">Splošni pogoji uporabe</h2>
+              <button 
+                onClick={() => setIsTermsModalOpen(false)}
+                className="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors text-gray-600"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="prose prose-sm md:prose-base text-gray-600 mt-6 pb-8">
+              <p className="mb-4">Splošni pogoji poslovanja in uporabe spletne strani kliksy.si so sestavljeni v skladu z Zakonom o varstvu potrošnikov (ZVPot), Zakonom o varstvu osebnih podatkov (ZVOP-1), Splošno uredbo o varstvu podatkov (GDPR) in Zakonom o elektronskih komunikacijah (ZEKom-1).</p>
+              
+              <h3 className="text-xl font-bold text-gray-900 mt-6 mb-2">1. Splošne določbe</h3>
+              <p className="mb-4">Z uporabo spletnega mesta kliksy.si potrjujete, da ste seznanjeni in se strinjate z navedenimi pogoji uporabe. Storitev omogoča ustvarjanje virtualnih galerij za shranjevanje in deljenje fotografij iz dogodkov.</p>
+
+              <h3 className="text-xl font-bold text-gray-900 mt-6 mb-2">2. Uporaba storitve in ustvarjanje dogodkov</h3>
+              <p className="mb-4">Z ustvarjanjem dogodka na naši platformi zakupljate dostop do virtualne galerije, kjer vaše stranke/gosti lahko nalagajo fotografije. Uporabnik je dolžan platformo uporabljati v skladu s predpisi.</p>
+
+              <h3 className="text-xl font-bold text-gray-900 mt-6 mb-2 bg-yellow-100 px-3 py-1 rounded-md inline-block">3. Odgovornost za naložene vsebine (Pomembno)</h3>
+              <p className="mb-4 font-medium text-gray-800">
+                Organizatorji oziroma tisti ponudniki (uporabniki), ki na naši platformi ustvarijo in odprejo dogodek, prevzemajo popolno in izključno odgovornost za vse fotografije, videoposnetke ter druge vsebine, ki jih njim ali njihovim gostom uspe naložiti v dotično virtualno galerijo. 
+              </p>
+              <p className="mb-4">
+                Kliksy.si (upravljavec platforme) nastopa zgolj kot ponudnik tehnološke rešitve oz. informacijske infrastrukture za lažje zbiranje slik in pri tem ročno ne pregleduje vsake naložene fotografije. V kolikor se v galeriji znajdejo neprimerne, avtorsko sporne ali nezakonite vsebine (npr. golota, nasilje, protipravne vsebine), je dolžnost in odgovornost ustvarjalca dogodka, da te slike redno pregleduje in s pomočjo orodij (ki so na voljo v nadzorni plošči) nemudoma izbriše.
+              </p>
+
+              <h3 className="text-xl font-bold text-gray-900 mt-6 mb-2">4. Cene in plačilo</h3>
+              <p className="mb-4">Vse cene na spletnem mestu so navedene v evrih. Plačila se izvajajo prek varne povezave (Stripe). Za vsa vplačila izdamo ustrezne račune, ki so v skladu s slovensko zakonodajo.</p>
+              
+              <h3 className="text-xl font-bold text-gray-900 mt-6 mb-2">5. Pravica do odstopa od pogodbe in reklamacije</h3>
+              <p className="mb-4">Uporabnik ima v skladu z ZVPot pravico, da nas v 14 dneh obvesti, če odstopa od pogodbe, in zahteva vračilo kupnine znotraj naše reklamacijske sheme in naše 30-dnevne garancije nezadovoljstva. Vračilo bo izvedeno na isto transakcijsko sredstvo.</p>
+
+              <h3 className="text-xl font-bold text-gray-900 mt-6 mb-2">6. Omejitev odgovornosti upravljavca</h3>
+              <p className="mb-4">Platforma zagotavlja visoko zanesljivost dostopanja do podatkov, kljub temu pa upravljavec ne prevzema odgovornosti za morebitne izpade delovanja strežnikov izven lastnega nadzora.</p>
+
+              <h3 className="text-xl font-bold text-gray-900 mt-6 mb-2">7. Končne določbe</h3>
+              <p className="mb-4">Pogoji uporabe pričnejo veljati z dnem objave. Upravljavec si pridržuje pravico do spremembe pogojev, o čemer se uporabnike pravočasno seznani.</p>
+            </div>
+            
+            <div className="sticky bottom-0 bg-white/90 backdrop-blur-md pt-4 pb-2 border-t border-gray-100 flex gap-3">
+              <button 
+                onClick={() => setIsTermsModalOpen(false)}
+                className="w-full bg-gray-900 text-white font-bold py-3 px-6 rounded-xl hover:bg-black transition-colors"
+              >
+                Zapri in nadaljuj
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1390,7 +1452,8 @@ function StripePaymentForm({
   discountCode,
   stripePaymentIntentId,
   isUpdatingPrice,
-  existingEventId
+  existingEventId,
+  onOpenTerms
 }: any) {
   const stripe = useStripe();
   const elements = useElements();
@@ -1527,7 +1590,7 @@ function StripePaymentForm({
           className="mt-1 w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 cursor-pointer"
         />
         <label htmlFor="terms_stripe" className="text-sm text-gray-700 cursor-pointer">
-          Strinjam se s <Link to="/pogoji-uporabe" className="text-indigo-600 hover:text-indigo-800 hover:underline" target="_blank">splošnimi pogoji</Link>*
+          Strinjam se s <button type="button" onClick={onOpenTerms} className="text-indigo-600 hover:text-indigo-800 hover:underline">splošnimi pogoji</button>*
         </label>
       </div>
 
