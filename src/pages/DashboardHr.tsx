@@ -63,7 +63,10 @@ export default function DashboardHr() {
                 if (typeof window !== 'undefined' && window.fbq) {
                   window.fbq('track', 'Purchase', { currency: 'EUR', value: eventData.amountPaid || 0 });
                 }
-                await updateDoc(eventDocRef, { paymentStatus: 'paid' });
+                await updateDoc(eventDocRef, { 
+                  paymentStatus: 'paid',
+                  paidAt: new Date().toISOString() 
+                });
                 
                 // Trigger order summary email
                 fetch('/api/send-order-summary', {

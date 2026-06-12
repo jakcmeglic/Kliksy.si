@@ -400,6 +400,15 @@ async function startServer() {
           text: textContent,
           html: htmlContent,
         });
+
+        // Send explicit notification to admin
+        await resend.emails.send({
+          from: "Kliksy Sistem <info@kliksy.si>",
+          to: "info@kliksy.si",
+          subject: `NOVO NAROČILO: ${eventName || 'Neznano'} - ${Number(amountPaid || 0).toFixed(2)}€`,
+          text: `Dobili ste novo naročilo!\nEmail: ${email}\nDogodek: ${eventName || 'Neznano'}\nPaket: ${plan}\nDodatki: ${standsQuantity > 0 ? standsQuantity + ' podstavkov' : 'Brez'}\nZnesek: ${Number(amountPaid || 0).toFixed(2)}€`,
+        }).catch(err => console.error("Admin notif error:", err));
+
         if (error) {
           console.error("Resend API Error:", error);
         }
@@ -425,7 +434,15 @@ async function startServer() {
           html: htmlContent,
         };
 
+        const adminMailOptions = {
+          from: `"Kliksy Sistem" <${smtpUser}>`,
+          to: "info@kliksy.si",
+          subject: `NOVO NAROČILO: ${eventName || 'Neznano'} - ${Number(amountPaid || 0).toFixed(2)}€`,
+          text: `Dobili ste novo naročilo!\nEmail: ${email}\nDogodek: ${eventName || 'Neznano'}\nPaket: ${plan}\nDodatki: ${standsQuantity > 0 ? standsQuantity + ' podstavkov' : 'Brez'}\nZnesek: ${Number(amountPaid || 0).toFixed(2)}€`,
+        };
+
         await transporter.sendMail(mailOptions);
+        await transporter.sendMail(adminMailOptions).catch(err => console.error("Admin notif error:", err));
       }
       
       // Auto-add to audience if configured

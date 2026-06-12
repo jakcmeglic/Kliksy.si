@@ -58,6 +58,7 @@ interface EventData {
   amountPaid?: number;
   discountCode?: string;
   createdAt: any;
+  paidAt?: string;
   ownerId: string;
   selectedDesignId?: string;
   // Delivery info
@@ -250,8 +251,8 @@ export default function Admin() {
       
       // Sort locally: newest first, items without createdAt go to the bottom
       data.sort((a, b) => {
-        const timeA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
-        const timeB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+        const timeA = a.paidAt ? new Date(a.paidAt).getTime() : (a.createdAt?.toMillis ? a.createdAt.toMillis() : 0);
+        const timeB = b.paidAt ? new Date(b.paidAt).getTime() : (b.createdAt?.toMillis ? b.createdAt.toMillis() : 0);
         return timeB - timeA;
       });
       
@@ -496,15 +497,17 @@ export default function Admin() {
     setIsUpdating(true);
     try {
       const amount = parseFloat(editAmount);
+      const paidAtIso = new Date().toISOString();
       await updateDoc(doc(db, 'events', editingEvent.id), {
         paymentStatus: 'paid',
+        paidAt: paidAtIso,
         amountPaid: isNaN(amount) ? 0 : amount
       });
       
       // Update local state
       setEvents(events.map(ev => 
         ev.id === editingEvent.id 
-          ? { ...ev, paymentStatus: 'paid', amountPaid: isNaN(amount) ? 0 : amount } 
+          ? { ...ev, paymentStatus: 'paid', paidAt: paidAtIso, amountPaid: isNaN(amount) ? 0 : amount } 
           : ev
       ));
       
@@ -724,7 +727,7 @@ export default function Admin() {
                     <React.Fragment key={event.id}>
                       <tr className="hover:bg-gray-50 transition-colors">
                         <td className="px-6 py-4 whitespace-nowrap text-gray-500 border-b-0">
-                          {event.createdAt ? format(event.createdAt.toDate(), 'dd. MM. yyyy HH:mm') : 'N/A'}
+                          {event.paidAt ? format(new Date(event.paidAt), 'dd. MM. yyyy HH:mm') : event.createdAt ? format(event.createdAt.toDate(), 'dd. MM. yyyy HH:mm') : 'N/A'}
                         </td>
                         <td className="px-6 py-4 border-b-0">
                           <div className="font-medium text-gray-900">{event.eventName}</div>
@@ -806,12 +809,38 @@ export default function Admin() {
                               QR Koda
                             </button>
                             {event.paymentStatus === 'paid' && (
-                              <button
-                                onClick={() => setInvoicePreview({ event, total })}
-                                className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#f5a623] bg-opacity-10 text-[#e08e0b] hover:bg-opacity-20 rounded-lg text-xs font-medium transition-colors"
-                              >
-                                Izdaj račun (Čebelca)
-                              </button>
+                              <>
+                                <button
+                                  onClick={() => setInvoicePreview({ event, total })}
+                                  className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#f5a623] bg-opacity-10 text-[#e08e0b] hover:bg-opacity-20 rounded-lg text-xs font-medium transition-colors"
+                                >
+                                  Izdaj račun (Čebelca)
+                                </button>
+                                <button
+                                  title="Ponovno pošlji potrditev naročila kupcu in obvestilo adminu"
+                                  onClick={() => {
+                                    if(window.confirm('Ponovno pošljem email s potrditvijo naročila in obvestilom za admina?')) {
+                                      fetch('/api/send-order-summary', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({
+                                          email: event.email,
+                                          eventName: event.eventName,
+                                          plan: event.selectedPlan || 'unknown',
+                                          amountPaid: event.amountPaid || event.selectedPlanPrice || 0,
+                                          standsQuantity: event.standsQuantity || 0,
+                                          printedQrQuantity: event.printedQrQuantity || 0,
+                                          deliveryMode: event.deliveryMode,
+                                          lang: event.email && event.email.endsWith('.hr') ? 'hr' : 'sl'
+                                        })
+                                      }).then(() => alert('E-mail uspešno poslan!')).catch(e => alert('Napaka pri pošiljanju: ' + e));
+                                    }
+                                  }}
+                                  className="inline-flex items-center justify-center px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-xs font-medium transition-colors"
+                                >
+                                  Pošlji E-mail
+                                </button>
+                              </>
                             )}
                           </div>
                         </td>
