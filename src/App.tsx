@@ -8,6 +8,7 @@ import GuestViewHr from './pages/GuestViewHr';
 import Dashboard from './pages/Dashboard';
 import DashboardHr from './pages/DashboardHr';
 import Login from './pages/Login';
+import LoginHr from './pages/LoginHr';
 import Admin from './pages/Admin';
 import EmailTest from './pages/EmailTest';
 import Terms from './pages/Terms';
@@ -32,7 +33,7 @@ export default function App() {
             <Route path="/event/:id" element={isHr ? <GuestViewHr /> : <GuestView />} />
             <Route path="/dashboard" element={isHr ? <DashboardHr /> : <Dashboard />} />
             <Route path="/admin" element={<Admin />} />
-            <Route path="/login" element={<Login />} />
+            <Route path="/login" element={isHr ? <LoginHr /> : <Login />} />
             <Route path="/email-test" element={<EmailTest />} />
             <Route path="/pogoji-uporabe" element={isHr ? <TermsHr /> : <Terms />} />
             <Route path="/zasebnost" element={isHr ? <PrivacyHr /> : <Privacy />} />

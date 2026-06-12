@@ -55,7 +55,7 @@ export default function GuestViewHr() {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (isUploadingRef.current) {
         e.preventDefault();
-        e.returnValue = 'Slike se še vedno nalagajo. Ali res želite zapreti aplikacijo?';
+        e.returnValue = 'Slike se još uvijek učitavaju. Jeste li sigurni da želite zatvoriti aplikaciju?';
         return e.returnValue;
       }
     };
@@ -263,11 +263,11 @@ export default function GuestViewHr() {
     if (isDemo) {
       const allowedRemaining = Math.max(0, 5 - recentPhotos.length);
       if (allowedRemaining === 0) {
-        setUploadError("To je demo dogodek. Dosežena je omejitev 5 slik.");
+        setUploadError("Ovo je demo događaj. Dosegnuto je ograničenje od 5 slika.");
         return;
       }
       if (files.length > allowedRemaining) {
-        setUploadError(`To je demo dogodek. Naložite lahko samo še ${allowedRemaining} slik.`);
+        setUploadError(`Ovo je demo događaj. Možete učitati samo još ${allowedRemaining} slika.`);
         files = files.slice(0, allowedRemaining); // Optional: just slice it or return. Let's return out of caution to not surprise user.
         return;
       }
@@ -346,12 +346,12 @@ export default function GuestViewHr() {
             setUploadProgress({ current: 0, total: 0 });
           }, 3000);
         } else {
-          setUploadError("Nobene slike ni bilo mogoče naložiti. Poskusite znova.");
+          setUploadError("Nije bilo moguće učitati nijednu sliku. Pokušajte ponovno.");
           setUploadProgress({ current: 0, total: 0 });
         }
       } catch (error: any) {
         setUploadProgress({ current: 0, total: 0 });
-        const errorMessage = error.message ? `Napaka: ${error.message}` : "Došlo je do pogreške pri nalaganju. Poskusite znova.";
+        const errorMessage = error.message ? `Pogreška: ${error.message}` : "Došlo je do pogreške pri učitavanju. Pokušajte ponovno.";
         setUploadError(errorMessage);
         console.error("Upload error:", error);
       } finally {
@@ -418,7 +418,7 @@ export default function GuestViewHr() {
           {event.eventType === 'poroka' || !event.eventType ? `${event.partner1} & ${event.partner2}` : event.eventName}
         </h1>
         <p className="text-gray-500 text-sm">
-          {event.welcomeMessage || (event.eventType === 'poroka' || !event.eventType ? 'Hvala, ker deliš spomine z nama.' : 'Hvala, ker deliš spomine z nami.')}
+          {event.welcomeMessage || (event.eventType === 'poroka' || !event.eventType ? 'Hvala što dijelite uspomene s nama.' : 'Hvala što dijelite uspomene s nama.')}
         </p>
       </header>
 
@@ -441,7 +441,7 @@ export default function GuestViewHr() {
                 >
                   <div className="bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-full text-xs font-medium flex items-center justify-center gap-1.5 shadow-sm border border-indigo-100">
                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                     Nalagam ({uploadProgress.current}/{uploadProgress.total})...
+                     Učitavam ({uploadProgress.current}/{uploadProgress.total})...
                   </div>
                 </motion.div>
               )}
@@ -466,7 +466,7 @@ export default function GuestViewHr() {
                 <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center">
                   <Camera className="w-8 h-8 text-white" />
                 </div>
-                <span className="text-xl font-bold">Slikaj zdaj</span>
+                <span className="text-xl font-bold">Slikaj sad</span>
               </button>
 
               <button 
@@ -476,7 +476,7 @@ export default function GuestViewHr() {
                 <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center">
                   <Upload className="w-8 h-8 text-gray-900" />
                 </div>
-                <span className="text-xl font-bold">Naloži iz galerije</span>
+                <span className="text-xl font-bold">Učitaj iz galerije</span>
               </button>
 
               {uploadError && (
@@ -496,12 +496,12 @@ export default function GuestViewHr() {
           >
             <div className="flex items-center justify-between mb-4 px-2">
               <div className="flex items-center gap-2">
-                <h3 className="font-bold text-lg text-gray-900">Zadnji spomini</h3>
-                <span className="text-xs font-medium bg-indigo-50 px-2 py-1 rounded-full text-indigo-600">V živo</span>
+                <h3 className="font-bold text-lg text-gray-900">Zadnje uspomene</h3>
+                <span className="text-xs font-medium bg-indigo-50 px-2 py-1 rounded-full text-indigo-600">Uživo</span>
               </div>
               {(recentPhotos.length > 0) && (
                 <button onClick={() => setSelectedImageIndex(0)} className="text-sm font-bold text-indigo-600 hover:text-indigo-700">
-                  Poglej vse
+                  Pogledaj sve
                 </button>
               )}
             </div>
@@ -539,7 +539,7 @@ export default function GuestViewHr() {
               ))}
               {recentPhotos.length === 0 && (
                 <div className="col-span-3 py-8 text-center text-sm text-gray-500">
-                  Bodi prvi, ki naloži fotografijo!
+                  Budi prvi koji će učitati fotografiju!
                 </div>
               )}
             </div>
