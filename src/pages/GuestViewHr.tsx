@@ -84,7 +84,7 @@ export default function GuestViewHr() {
       try {
         localStorage.setItem('guestDeviceId', id);
       } catch (e) {
-        console.warn("Ni bilo mogoče shraniti v localStorage.", e);
+        console.warn("Nije bilo moguće spremiti u localStorage.", e);
       }
     }
     return id;
@@ -579,13 +579,13 @@ export default function GuestViewHr() {
                   onClick={() => setGalleryMode('scroll')}
                   className={`px-4 py-1.5 rounded-full text-sm font-bold transition-colors ${galleryMode === 'scroll' ? 'bg-white text-black' : 'text-white/80 hover:text-white'}`}
                 >
-                  Scroll
+                  Listanje
                 </button>
                 <button 
                   onClick={() => setGalleryMode('grid')}
                   className={`px-4 py-1.5 rounded-full text-sm font-bold transition-colors ${galleryMode === 'grid' ? 'bg-white text-black' : 'text-white/80 hover:text-white'}`}
                 >
-                  Mreža
+                  Mrežni prikaz
                 </button>
               </div>
               <div className="w-12 h-12" /> {/* Spacer for centering */}
@@ -649,7 +649,7 @@ export default function GuestViewHr() {
                         transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
                         className="flex flex-col items-center"
                       >
-                        <span className="text-white font-medium text-sm mb-2 drop-shadow-lg bg-black/40 px-3 py-1 rounded-full backdrop-blur-md">Potegni navzgor</span>
+                        <span className="text-white font-medium text-sm mb-2 drop-shadow-lg bg-black/40 px-3 py-1 rounded-full backdrop-blur-md">Povuci prema gore</span>
                         <ChevronUp className="w-8 h-8 text-white drop-shadow-lg" />
                       </motion.div>
                     </motion.div>
