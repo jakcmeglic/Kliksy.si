@@ -345,7 +345,7 @@ export default function DashboardHr() {
         setSelectedImageIndex(photos.length - 2);
       }
     } catch (error) {
-      console.error("Napaka pri brisanju slike:", error);
+      console.error("Greška pri brisanju slike:", error);
       // Fallback alert for network errors, etc. Not blocked by all browsers, but console handle is enough.
     } finally {
       setImageToDelete(null);
@@ -531,14 +531,14 @@ export default function DashboardHr() {
               <div>
                 <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 mb-1">
                   {activeTab === 'overview' && 'Pregled događaja'}
-                  {activeTab === 'gallery' && 'Vse fotografije'}
+                  {activeTab === 'gallery' && 'Sve fotografije'}
                   {activeTab === 'settings' && 'Postavke'}
                 </h1>
                 <p className="text-gray-500">
                   {event.eventType === 'poroka' || !event.eventType ? 'Upravljaj svojim vjenčanim uspomenama.' : 
                    event.eventType === 'rojstni_dan' ? 'Upravljaj svojim rođendanskim uspomenama.' : 
                    event.eventType === 'poslovni_događaj' ? 'Upravljajte uspomenama s poslovnog događaja.' : 
-                   event.eventType === 'teambuilding' ? 'Upravljaj spomine s teambuildinga.' : 
+                   event.eventType === 'teambuilding' ? 'Upravljaj svojim teambuilding uspomenama.' : 
                    'Upravljajte uspomenama događaja.'}
                 </p>
               </div>
@@ -803,10 +803,10 @@ export default function DashboardHr() {
                         const eventDocRef = doc(db, "events", event.id);
                         await updateDoc(eventDocRef, { welcomeMessage });
                         setEvent({ ...event, welcomeMessage });
-                        alert('Spremembe so bile uspešno shranjene!');
+                        alert('Promjene su uspješno spremljene!');
                       } catch (err) {
                         console.error("Error saving settings:", err);
-                        alert('Prišlo je do napake pri shranjevanju.');
+                        alert('Došlo je do pogreške pri spremanju.');
                       } finally {
                         setIsSavingSettings(false);
                       }
@@ -855,7 +855,7 @@ export default function DashboardHr() {
               <Trash2 className="w-8 h-8 text-red-500" />
             </div>
             <h3 className="text-xl font-bold text-gray-900 mb-2">Izbris slike</h3>
-            <p className="text-gray-500 mb-6 font-medium leading-relaxed">Ta slika bo trajno izbrisana in odstranjena iz galerije. Tega dejanja ni mogoče razveljaviti.</p>
+            <p className="text-gray-500 mb-6 font-medium leading-relaxed">Ova slika bit će trajno izbrisana i uklonjena iz galerije. Ova se radnja ne može poništiti.</p>
             <div className="flex gap-3">
               <button 
                 onClick={() => setImageToDelete(null)}
@@ -883,8 +883,8 @@ export default function DashboardHr() {
             onClick={(e) => e.stopPropagation()}
             className="bg-white rounded-2xl p-6 md:p-8 text-center max-w-lg w-full shadow-xl relative"
           >
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">Nadgradite svoj paket</h3>
-            <p className="text-gray-500 mb-6">Izberite višji paket za več funkcionalnosti. Plačali boste le razliko v ceni.</p>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">Nadogradite svoj paket</h3>
+            <p className="text-gray-500 mb-6">Odaberite viši paket za više funkcionalnosti. Platit ćete samo razliku u cijeni.</p>
             
             <div className="space-y-4 mb-8">
               {(event?.plan === 'osnovni' || event?.plan === 'basic') && (
@@ -907,11 +907,11 @@ export default function DashboardHr() {
                       if (data.url) {
                         window.location.href = data.url;
                       } else {
-                        alert("Napaka pri povezavi s plačilnim sistemom.");
+                        alert("Greška u povezivanju sa sustavom naplate.");
                         setIsUpgradingStatus(false);
                       }
                     } catch (err) {
-                      alert("Napaka pri povezavi.");
+                      alert("Greška pri povezivanju.");
                       setIsUpgradingStatus(false);
                     }
                   }}
@@ -919,8 +919,8 @@ export default function DashboardHr() {
                   className="w-full flex items-center justify-between p-4 border-2 border-blue-100 rounded-xl hover:border-blue-500 transition-all text-left bg-blue-50/50 group"
                 >
                   <div className="pr-4">
-                    <h4 className="font-bold text-lg text-gray-900 group-hover:text-blue-700">Nadgradi na Plus</h4>
-                    <p className="text-sm text-gray-500">Neomejeno slik, daljši dostop do galerije, live galerija</p>
+                    <h4 className="font-bold text-lg text-gray-900 group-hover:text-blue-700">Nadogradi na Plus</h4>
+                    <p className="text-sm text-gray-500">Neograničeno slika, duži pristup galeriji, live galerija</p>
                   </div>
                   <div className="font-bold text-blue-600 bg-blue-100 px-3 py-1.5 rounded-lg shrink-0">+ 10€</div>
                 </button>
@@ -945,11 +945,11 @@ export default function DashboardHr() {
                       if (data.url) {
                         window.location.href = data.url;
                       } else {
-                        alert("Napaka pri povezavi s plačilnim sistemom.");
+                        alert("Greška u povezivanju sa sustavom naplate.");
                         setIsUpgradingStatus(false);
                       }
                     } catch (err) {
-                      alert("Napaka pri povezavi.");
+                      alert("Greška pri povezivanju.");
                       setIsUpgradingStatus(false);
                     }
                 }}
@@ -957,8 +957,8 @@ export default function DashboardHr() {
                  className="w-full flex items-center justify-between p-4 border-2 border-amber-100 rounded-xl hover:border-amber-500 transition-all text-left bg-amber-50/50 group"
               >
                   <div className="pr-4">
-                    <h4 className="font-bold text-lg text-gray-900 group-hover:text-amber-700">Nadgradi na Premium</h4>
-                    <p className="text-sm text-gray-500">Vse iz Plus paketa + podpora za nalaganje videoposnetkov</p>
+                    <h4 className="font-bold text-lg text-gray-900 group-hover:text-amber-700">Nadogradi na Premium</h4>
+                    <p className="text-sm text-gray-500">Sve iz Plus paketa + podrška za prijenos videa</p>
                   </div>
                   <div className="font-bold text-amber-600 bg-amber-100 px-3 py-1.5 rounded-lg shrink-0">
                     + {(event?.plan === 'osnovni' || event?.plan === 'basic') ? '40' : '30'}€

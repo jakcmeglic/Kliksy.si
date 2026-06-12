@@ -8,7 +8,7 @@ import { collection, addDoc, doc, getDoc, updateDoc, serverTimestamp } from "fir
 import ImageViewer from '../components/ImageViewer';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import { DESIGNS } from '../components/QRDesigns';
+import { DESIGNS } from '../components/QRDesignsHr';
 import { QRCodeSVG } from 'qrcode.react';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
@@ -98,17 +98,17 @@ export default function CreateEventHr() {
     basic: { 
       name: 'Basic', 
       price: 39,
-      features: ['Unikatna QR koda', 'Do 50 gostov', 'Do 200 fotografij', 'Dostop do galerije 1 mesec', 'Prenos vseh slik (ZIP)']
+      features: ['Jedinstveni QR kod', 'Do 50 gostiju', 'Do 200 fotografija', 'Pristup galeriji 1 mjesec', 'Preuzimanje svih slika (ZIP)']
     },
     plus: { 
       name: 'Plus', 
       price: 49,
-      features: ['Unikatna QR koda', 'Neomejeno število gostov', 'Neomejeno fotografij', 'Dostop do galerije 1 leto', 'Prenos vseh slik (ZIP)', 'Live galerija (projekcija)', 'Personalizirana stran z imeni']
+      features: ['Jedinstveni QR kod', 'Neograničen broj gostiju', 'Neograničeno fotografija', 'Pristup galeriji 1 godina', 'Preuzimanje svih slika (ZIP)', 'Live galerija (projekcija)', 'Personalizirana stranica s imenima']
     },
     premium: { 
       name: 'Premium', 
       price: 79,
-      features: ['Unikatna QR koda', 'Neomejeno število gostov', 'Neomejeno fotografij', 'Do 100 videoposnetkov', 'Dostop do galerije 2 leti', 'Prenos vseh slik (ZIP)', 'Live galerija (projekcija)', 'Personalizirana stran z imeni', 'Premium design predloge', 'Prioritetna podpora']
+      features: ['Jedinstveni QR kod', 'Neograničen broj gostiju', 'Neograničeno fotografija', 'Do 100 videozapisa', 'Pristup galeriji 2 godine', 'Preuzimanje svih slika (ZIP)', 'Live galerija (projekcija)', 'Personalizirana stranica s imenima', 'Premium predlošci dizajna', 'Prioritetna podrška']
     }
   };
 
@@ -185,7 +185,7 @@ export default function CreateEventHr() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             email: user.email,
-            eventName: formData.eventName || (formData.partner1 ? `${formData.partner1} & ${formData.partner2}` : 'Vaš dogodek')
+            eventName: formData.eventName || (formData.partner1 ? `${formData.partner1} & ${formData.partner2}` : 'Vaš događaj')
           })
         }).catch(err => console.error("Failed to trigger event created email:", err));
       } catch (e) {
@@ -253,7 +253,7 @@ export default function CreateEventHr() {
       if (authMode === 'forgot_password') {
         const { resetPassword } = await import('../firebase');
         await resetPassword(authEmail);
-        setAuthSuccess("Povezava za ponastavitev gesla je bila poslana na vaš elektronski naslov.");
+        setAuthSuccess("Poveznica za ponovno postavljanje lozinke poslana je na vašu e-mail adresu.");
         setAuthMode('login');
       } else if (authMode === 'register') {
         await signUpWithEmail(authEmail, authPassword);
@@ -404,7 +404,7 @@ export default function CreateEventHr() {
       standsQuantity > 0 &&
       (!formData.deliveryName || !formData.deliverySurname || !formData.deliveryAddress || !formData.deliveryPostcode || !formData.deliveryCity)
     ) {
-      setStripeError('Za dostavo podstavkov morate izpolniti vse podatke o prejemniku in naslovu za dostavo!');
+      setStripeError('Za dostavu podmetača morate ispuniti sve podatke o primatelju i adresi za dostavu!');
       return;
     }
     
@@ -520,7 +520,7 @@ export default function CreateEventHr() {
                       }`}
                     >
                       <span className="font-bold text-lg">
-                        {type === 'poroka' ? 'Vjenčanje' : type === 'poslovni_dogodek' ? 'Poslovni dogodek' : type === 'rojstni_dan' ? 'Rođendan' : type === 'baby_shower' ? 'Baby shower' : type === 'teambuilding' ? 'Teambuilding' : 'Drugo'}
+                        {type === 'poroka' ? 'Vjenčanje' : type === 'poslovni_dogodek' ? 'Poslovni događaj' : type === 'rojstni_dan' ? 'Rođendan' : type === 'baby_shower' ? 'Baby shower' : type === 'teambuilding' ? 'Teambuilding' : 'Drugo'}
                       </span>
                     </button>
                   ))}
@@ -550,7 +550,7 @@ export default function CreateEventHr() {
 
                 <div className="mb-8">
                   <h2 className="text-3xl font-bold mb-2">
-                    {formData.eventType === 'poroka' ? 'Vaš veliki dan' : 'Pojedinosti dogodka'}
+                    {formData.eventType === 'poroka' ? 'Vaš veliki dan' : 'Pojedinosti događaja'}
                   </h2>
                   <p className="text-gray-600">
                     {formData.eventType === 'poroka' ? 'Unesite osnovne podatke o vašem vjenčanju.' : 'Unesite osnovne podatke o događaju.'}
@@ -597,7 +597,7 @@ export default function CreateEventHr() {
                           value={formData.eventName}
                           onChange={e => setFormData({...formData, eventName: e.target.value})}
                           className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-all"
-                          placeholder="Ime vašega dogodka"
+                          placeholder="Ime vašeg događaja"
                         />
                       </div>
                     </div>
@@ -643,7 +643,7 @@ export default function CreateEventHr() {
                 </button>
 
                 <div className="mb-8 text-center">
-                  <h2 className="text-3xl font-bold mb-2">Stvorite račun</h2>
+                  <h2 className="text-3xl font-bold mb-2">Napravite račun</h2>
                   <p className="text-gray-600">Za upravljanje vašim događajem potreban nam je vaš račun.</p>
                 </div>
 
@@ -706,7 +706,7 @@ export default function CreateEventHr() {
                         <div>
                           <input 
                             type="email" 
-                            placeholder="Email naslov"
+                            placeholder="Email adresa"
                             value={authEmail}
                             onChange={e => setAuthEmail(e.target.value)}
                             className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-all"
@@ -845,10 +845,10 @@ export default function CreateEventHr() {
 
                 <div className="mb-8 relative">
                   <div className="inline-block bg-[#F3F1FF] text-[#5B45FF] px-4 py-1.5 rounded-full text-[12px] font-bold tracking-wider uppercase mb-3 border border-[#5B45FF]/10 shadow-sm">
-                    -30% Samo še danes!
+                    -30% Samo još danas!
                   </div>
-                  <h2 className="text-3xl font-bold mb-2">Odabir paketa in plačilo</h2>
-                  <p className="text-gray-600">Odaberite paket in zaključite nakup.</p>
+                  <h2 className="text-3xl font-bold mb-2">Odabir paketa i plaćanje</h2>
+                  <p className="text-gray-600">Odaberite paket i dovršite kupnju.</p>
                 </div>
 
                 <div className="space-y-4 mb-8">
@@ -879,7 +879,7 @@ export default function CreateEventHr() {
                             <p className="text-sm text-gray-500">
                               {planKey === 'basic' && 'Osnovne funkcionalnosti'}
                               {planKey === 'plus' && 'Live galerija + personalizacija'}
-                              {planKey === 'premium' && 'Vse + premium podpora'}
+                              {planKey === 'premium' && 'Sve + premium podrška'}
                             </p>
                           </div>
                         </div>
@@ -1104,7 +1104,7 @@ export default function CreateEventHr() {
                         className="mt-8 overflow-hidden"
                       >
                         <div className="p-6 bg-indigo-50 border border-indigo-100 rounded-2xl">
-                          <h4 className="font-bold mb-4 text-indigo-900">Prejemnik in naslov za dostavo</h4>
+                          <h4 className="font-bold mb-4 text-indigo-900">Primatelj i adresa za dostavu</h4>
                           <div className="space-y-3">
                             <div className="grid grid-cols-2 gap-3">
                               <input
@@ -1195,7 +1195,7 @@ export default function CreateEventHr() {
                         disabled={isUpdatingPrice}
                         className={`px-6 py-3 rounded-xl font-medium transition-colors whitespace-nowrap w-full sm:w-auto ${discountApplied ? 'bg-red-100 text-red-600 hover:bg-red-200' : 'bg-gray-900 text-white hover:bg-black disabled:opacity-50'}`}
                       >
-                        {isUpdatingPrice ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : (discountApplied ? 'Odstrani' : 'Primijeni')}
+                        {isUpdatingPrice ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : (discountApplied ? 'Ukloni' : 'Primijeni')}
                       </button>
                     </div>
                     {discountError && <p className="text-red-500 text-sm mt-2">{discountError}</p>}
@@ -1214,7 +1214,7 @@ export default function CreateEventHr() {
                         onChange={(e) => setFormData({...formData, isCompanyInvoice: e.target.checked})}
                         className="w-5 h-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
                       />
-                      <span className="font-medium text-gray-900">Potrebujem račun na podjetje</span>
+                      <span className="font-medium text-gray-900">Trebam račun na tvrtku</span>
                     </label>
 
                     <AnimatePresence>
@@ -1279,7 +1279,7 @@ export default function CreateEventHr() {
                       <Check className="w-10 h-10 text-green-600" />
                     </div>
                     <h3 className="text-2xl font-bold mb-2">Plaćanje uspešno!</h3>
-                    <p className="text-gray-600">Pripravljamo vaš dogodek...</p>
+                    <p className="text-gray-600">Priprema vašeg događaja...</p>
                   </motion.div>
                 ) : (
                   <>
@@ -1396,33 +1396,33 @@ export default function CreateEventHr() {
             </div>
             
             <div className="prose prose-sm md:prose-base text-gray-600 mt-6 pb-8">
-              <p className="mb-4">Splošni pogoji poslovanja in uporabe spletne strani kliksy.si so sestavljeni v skladu z Zakonom o varstvu potrošnikov (ZVPot), Zakonom o varstvu osebnih podatkov (ZVOP-1), Splošno uredbo o varstvu podatkov (GDPR) in Zakonom o elektronskih komunikacijah (ZEKom-1).</p>
+              <p className="mb-4">Opći uvjeti poslovanja i korištenja web stranice kliksy.si sastavljeni su u skladu sa Zakonom o zaštiti potrošača (ZVPot), Zakonom o zaštiti osobnih podataka (ZVOP-1), Općom uredbom o zaštiti podataka (GDPR) i Zakonom o elektroničkim komunikacijama (ZEKom-1).</p>
               
-              <h3 className="text-xl font-bold text-gray-900 mt-6 mb-2">1. Splošne določbe</h3>
-              <p className="mb-4">Z uporabo spletnega mesta kliksy.si potrjujete, da ste seznanjeni in se strinjate z navedenimi pogoji uporabe. Storitev omogoča ustvarjanje virtualnih galerij za shranjevanje in deljenje fotografij iz dogodkov.</p>
+              <h3 className="text-xl font-bold text-gray-900 mt-6 mb-2">1. Opće odredbe</h3>
+              <p className="mb-4">Korištenjem web stranice kliksy.si potvrđujete da ste upoznati s navedenim uvjetima korištenja i da se s njima slažete. Usluga omogućuje stvaranje virtualnih galerija za pohranu i dijeljenje fotografija s događaja.</p>
 
-              <h3 className="text-xl font-bold text-gray-900 mt-6 mb-2">2. Uporaba storitve in ustvarjanje dogodkov</h3>
-              <p className="mb-4">Z ustvarjanjem dogodka na naši platformi zakupljate dostop do virtualne galerije, kjer vaše stranke/gosti lahko nalagajo fotografije. Uporabnik je dolžan platformo uporabljati v skladu s predpisi.</p>
+              <h3 className="text-xl font-bold text-gray-900 mt-6 mb-2">2. Korištenje usluge i stvaranje događaja</h3>
+              <p className="mb-4">Stvaranjem događaja na našoj platformi kupujete pristup virtualnoj galeriji gdje vaši klijenti/gosti mogu učitavati fotografije. Korisnik je dužan koristiti platformu u skladu s propisima.</p>
 
-              <h3 className="text-xl font-bold text-gray-900 mt-6 mb-2 bg-yellow-100 px-3 py-1 rounded-md inline-block">3. Odgovornost za naložene vsebine (Pomembno)</h3>
+              <h3 className="text-xl font-bold text-gray-900 mt-6 mb-2 bg-yellow-100 px-3 py-1 rounded-md inline-block">3. Odgovornost za učitani sadržaj (Važno)</h3>
               <p className="mb-4 font-medium text-gray-800">
-                Organizatorji oziroma tisti ponudniki (korisniki), ki na naši platformi ustvarijo in odprejo dogodek, prevzemajo popolno in izključno odgovornost za vse fotografije, videoposnetke ter druge vsebine, ki jih njim ali njihovim gostom uspe naložiti v dotično virtualno galerijo. 
+                Organizatori, odnosno pružatelji usluga (korisnici) koji na našoj platformi kreiraju i otvore događaj, preuzimaju potpunu i isključivu odgovornost za sve fotografije, videozapise i ostale sadržaje koje oni ili njihovi gosti uspješno učitavaju u spomenutu virtualnu galeriju.
               </p>
               <p className="mb-4">
-                Kliksy.si (upravljavec platforme) nastopa zgolj kot ponudnik tehnološke rešitve oz. informacijske infrastrukture za lažje zbiranje slik in pri tem ročno ne pregleduje vsake naložene fotografije. V kolikor se v galeriji znajdejo neprimerne, avtorsko sporne ali nezakonite vsebine (npr. golota, nasilje, protipravne vsebine), je dolžnost in odgovornost ustvarjalca dogodka, da te slike redno pregleduje in s pomočjo orodij (ki so na voljo v nadzorni plošči) nemudoma izbriše.
+                Kliksy.si (upravitelj platforme) djeluje isključivo kao pružatelj tehnološkog rješenja ili informacijske infrastrukture za lakše prikupljanje slika te pri tome ručno ne pregledava svaku učitanu fotografiju. Ukoliko se u galeriji nađu neprimjereni, autorski sporni ili nezakoniti sadržaji (npr. golotinja, nasilje, protupravni sadržaji), dužnost je i odgovornost kreatora događaja redovito pregledavati te slike i uz pomoć dostupnih alata (koji se nalaze na nadzornoj ploči) odmah ih izbrisati.
               </p>
 
-              <h3 className="text-xl font-bold text-gray-900 mt-6 mb-2">4. Cene in plačilo</h3>
-              <p className="mb-4">Vse cene na spletnem mestu so navedene v evrih. Plačila se izvajajo prek varne povezave (Stripe). Za vsa vplačila izdamo ustrezne račune, ki so v skladu s slovensko zakonodajo.</p>
+              <h3 className="text-xl font-bold text-gray-900 mt-6 mb-2">4. Cijene i plaćanje</h3>
+              <p className="mb-4">Sve cijene na web stranici izražene su u eurima. Plaćanja se vrše preko sigurne veze (Stripe). Za sva plaćanja izdajemo odgovarajuće račune koji su u skladu sa zakonodavstvom.</p>
               
-              <h3 className="text-xl font-bold text-gray-900 mt-6 mb-2">5. Pravica do odstopa od pogodbe in reklamacije</h3>
-              <p className="mb-4">Uporabnik ima v skladu z ZVPot pravico, da nas v 14 dneh obvesti, če odstopa od pogodbe, in zahteva vračilo kupnine znotraj naše reklamacijske sheme in naše 30-dnevne garancije nezadovoljstva. Vračilo bo izvedeno na isto transakcijsko sredstvo.</p>
+              <h3 className="text-xl font-bold text-gray-900 mt-6 mb-2">5. Pravo na odustajanje od ugovora i reklamacije</h3>
+              <p className="mb-4">U skladu s propisima, korisnik ima pravo obavijestiti nas u roku od 14 dana ako odustaje od ugovora i zatražiti povrat novca unutar naše politike reklamacija i garancije nezadovoljstva u trajanju od 30 dana. Povrat sredstava bit će izvršen na isto sredstvo plaćanja.</p>
 
-              <h3 className="text-xl font-bold text-gray-900 mt-6 mb-2">6. Omejitev odgovornosti upravljavca</h3>
-              <p className="mb-4">Platforma zagotavlja visoko zanesljivost dostopanja do podatkov, kljub temu pa upravljavec ne prevzema odgovornosti za morebitne izpade delovanja strežnikov izven lastnega nadzora.</p>
+              <h3 className="text-xl font-bold text-gray-900 mt-6 mb-2">6. Ograničenje odgovornosti operatera</h3>
+              <p className="mb-4">Platforma osigurava visoku pouzdanost pristupa podacima, no upravitelj ne preuzima odgovornost za eventualne zastoje u radu servera izvan svoje kontrole.</p>
 
-              <h3 className="text-xl font-bold text-gray-900 mt-6 mb-2">7. Končne določbe</h3>
-              <p className="mb-4">Pogoji uporabe pričnejo veljati z dnem objave. Upravljavec si pridržuje pravico do spremembe pogojev, o čemer se korisnike pravočasno seznani.</p>
+              <h3 className="text-xl font-bold text-gray-900 mt-6 mb-2">7. Završne odredbe</h3>
+              <p className="mb-4">Uvjeti korištenja stupaju na snagu danom objave. Upravitelj zadržava pravo izmjene uvjeta, o čemu se korisnici pravovremeno obavještavaju.</p>
             </div>
             
             <div className="sticky bottom-0 bg-white/90 backdrop-blur-md pt-4 pb-2 border-t border-gray-100 flex gap-3">
@@ -1468,7 +1468,7 @@ function StripePaymentForm({
       standsQuantity > 0 &&
       (!formData.deliveryName || !formData.deliverySurname || !formData.deliveryAddress || !formData.deliveryPostcode || !formData.deliveryCity)
     ) {
-      onError('Za dostavo podstavkov morate izpolniti vse podatke o prejemniku in naslovu za dostavo!');
+      onError('Za dostavu podmetača morate ispuniti sve podatke o primatelju i adresi za dostavu!');
       return;
     }
 
