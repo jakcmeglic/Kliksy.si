@@ -20,12 +20,12 @@ const TESTIMONIALS = [
     subtitle: "Vjenčani 2026"
   },
   { 
-    text: "Gosti so bili navdušeni, mi pa smo imeli vse slike zbrane na enem mestu! Priporočava vsem.", 
+    text: "Gosti su bili oduševljeni, a mi smo imali sve slike okupljene na jednom mjestu! Preporučujemo svima.", 
     names: "Maja & Tadej", 
     subtitle: "Vjenčani 2026"
   },
   { 
-    text: "Enostavno za uporabo in popolna preglednost. Najlepši spomini ostanejo vedno z vami.", 
+    text: "Jednostavno za korištenje i potpuna transparentnost. Najljepše uspomene ostaju uvijek s vama.", 
     names: "Nika & Jure", 
     subtitle: "Vjenčani 2026"
   }
@@ -928,8 +928,8 @@ export default function CreateEventHr() {
                       <div className="w-12 h-12 rounded-full bg-indigo-100 border-2 border-white shadow-sm flex items-center justify-center text-[20px] z-0">🎉</div>
                     </div>
                     <div>
-                      <p className="font-bold text-[#5B45FF] text-[16px] leading-tight uppercase tracking-wide">200+ dogodkov</p>
-                      <p className="text-[14px] text-gray-600 font-medium mt-1">je bilo že ustvarjenih letos 💜</p>
+                      <p className="font-bold text-[#5B45FF] text-[16px] leading-tight uppercase tracking-wide">200+ događaja</p>
+                      <p className="text-[14px] text-gray-600 font-medium mt-1">je već stvoreno ove godine 💜</p>
                     </div>
                   </div>
 
@@ -940,8 +940,8 @@ export default function CreateEventHr() {
                         <ShieldCheck className="w-5 h-5 text-indigo-500" />
                       </div>
                       <div>
-                        <p className="font-bold text-gray-900 text-[13px] leading-tight mb-1">30-dnevna<br/>garancija</p>
-                        <p className="text-[11px] text-gray-500 font-medium leading-tight">Brez vprašanj,<br/>vračilo kupnine</p>
+                        <p className="font-bold text-gray-900 text-[13px] leading-tight mb-1">30-dnevno<br/>jamstvo</p>
+                        <p className="text-[11px] text-gray-500 font-medium leading-tight">Povrat novca,<br/>bez pitanja</p>
                       </div>
                     </div>
 
@@ -951,8 +951,8 @@ export default function CreateEventHr() {
                         <Lock className="w-5 h-5 text-indigo-500" />
                       </div>
                       <div>
-                        <p className="font-bold text-gray-900 text-[13px] leading-tight mb-1">100% varno<br/>plačilo</p>
-                        <p className="text-[11px] text-gray-500 font-medium leading-tight">Zavarovano z<br/>Stripe zaščito</p>
+                        <p className="font-bold text-gray-900 text-[13px] leading-tight mb-1">100% sigurno<br/>plaćanje</p>
+                        <p className="text-[11px] text-gray-500 font-medium leading-tight">Osigurano<br/>Stripe zaštitom</p>
                       </div>
                     </div>
                   </div>
@@ -960,7 +960,7 @@ export default function CreateEventHr() {
 
                 {/* Testimonial Slider */}
                 <div className="bg-white border border-gray-100 rounded-2xl p-6 md:p-8 shadow-sm text-center relative mb-12">
-                   <p className="font-bold text-gray-900 mb-4 text-[15px]">Kaj pravijo naši korisniki? 💜</p>
+                   <p className="font-bold text-gray-900 mb-4 text-[15px]">Što kažu naši korisnici? 💜</p>
                    
                    <div className="flex justify-center gap-1 mb-6">
                      {[1,2,3,4,5].map(star => <Star key={star} className="w-4 h-4 text-[#5B45FF] fill-[#5B45FF]" />)}
@@ -1028,11 +1028,11 @@ export default function CreateEventHr() {
                 </div>
 
                 <div className="space-y-4 mb-8">
-                  <h3 className="text-xl font-bold mb-4">Morda potrebujete še to?</h3>
+                  <h3 className="text-xl font-bold mb-4">Možda trebate i ovo?</h3>
                   
                   <div className="mt-8 p-6 bg-gray-50 rounded-2xl border border-gray-200">
-                    <h4 className="font-bold mb-2">Podstavki za mizo (opcijsko)</h4>
-                    <p className="text-sm text-gray-600 mb-4">Izberite količino podstavkov za vaše QR kode.</p>
+                    <h4 className="font-bold mb-2">Podmetači za stol (opcionalno)</h4>
+                    <p className="text-sm text-gray-600 mb-4">Odaberite količinu podmetača za vaše QR kodove.</p>
                     
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                       {standImages.map((img, idx) => (
@@ -1044,7 +1044,7 @@ export default function CreateEventHr() {
                             className="w-full aspect-square relative cursor-pointer group"
                             onClick={() => setViewingImage(idx)}
                           >
-                            <img src={img} alt={`Podstavek ${idx + 1}`} className="w-full h-full object-cover" />
+                            <img src={img} alt={`Podmetač ${idx + 1}`} className="w-full h-full object-cover" />
                             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
                               <div className="bg-white/90 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity transform scale-90 group-hover:scale-100 shadow-sm">
                                 <Maximize2 className="w-5 h-5 text-gray-700" />
@@ -1056,7 +1056,7 @@ export default function CreateEventHr() {
                             className="p-3 bg-white border-t border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50"
                             onClick={() => setSelectedStand(idx)}
                           >
-                            <span className="text-sm font-medium text-gray-700">Podstavek {idx + 1}</span>
+                            <span className="text-sm font-medium text-gray-700">Podmetač {idx + 1}</span>
                             <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
                               selectedStand === idx ? 'border-indigo-600' : 'border-gray-300'
                             }`}>
@@ -1074,7 +1074,7 @@ export default function CreateEventHr() {
                           standsQuantity === 0 ? 'bg-black text-white border-black' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
                         }`}
                       >
-                        Brez
+                        Bez
                       </button>
                       {[5, 10, 20, 30].map((qty) => {
                         const price = (qty === 5 ? 19.99 : qty === 10 ? 24.99 : qty === 20 ? 29.99 : 34.99);
@@ -1087,7 +1087,7 @@ export default function CreateEventHr() {
                               standsQuantity === qty ? 'bg-black text-white border-black' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
                             }`}
                           >
-                            <span>{qty} kosov</span>
+                            <span>{qty} komada</span>
                             <span className={standsQuantity === qty ? 'text-gray-300 text-xs' : 'text-gray-500 text-xs'}>+{price}€</span>
                           </button>
                         );
@@ -1116,7 +1116,7 @@ export default function CreateEventHr() {
                               />
                               <input
                                 type="text"
-                                placeholder="Priimek"
+                                placeholder="Prezime"
                                 value={formData.deliverySurname}
                                 onChange={(e) => setFormData({...formData, deliverySurname: e.target.value})}
                                 className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none transition-all text-sm"
@@ -1125,7 +1125,7 @@ export default function CreateEventHr() {
                             <div>
                               <input
                                 type="text"
-                                placeholder="Ulica in hišna številka"
+                                placeholder="Ulica i kućni broj"
                                 value={formData.deliveryAddress}
                                 onChange={(e) => setFormData({...formData, deliveryAddress: e.target.value})}
                                 className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none transition-all text-sm"
@@ -1134,14 +1134,14 @@ export default function CreateEventHr() {
                             <div className="grid grid-cols-2 gap-3">
                               <input
                                 type="text"
-                                placeholder="Poštna številka"
+                                placeholder="Poštanski broj"
                                 value={formData.deliveryPostcode}
                                 onChange={(e) => setFormData({...formData, deliveryPostcode: e.target.value})}
                                 className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none transition-all text-sm"
                               />
                               <input
                                 type="text"
-                                placeholder="Mesto"
+                                placeholder="Grad"
                                 value={formData.deliveryCity}
                                 onChange={(e) => setFormData({...formData, deliveryCity: e.target.value})}
                                 className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none transition-all text-sm"
@@ -1291,7 +1291,7 @@ export default function CreateEventHr() {
                     
                     {finalPrice > 0 ? (
                       clientSecret ? (
-                        <Elements key={clientSecret} stripe={stripePromise} options={{ clientSecret, appearance: { theme: 'stripe' }, locale: 'sl' }}>
+                        <Elements key={clientSecret} stripe={stripePromise} options={{ clientSecret, appearance: { theme: 'stripe' }, locale: 'hr' }}>
                           <StripePaymentForm 
                             user={user}
                             formData={formData}
@@ -1310,7 +1310,7 @@ export default function CreateEventHr() {
                         </Elements>
                       ) : stripeError ? (
                         <div className="flex flex-col items-center justify-center p-8 border border-red-200 rounded-xl bg-red-50">
-                          <p className="text-sm text-red-600 font-medium mb-2">Plačilnega okna ni bilo mogoče naložiti</p>
+                          <p className="text-sm text-red-600 font-medium mb-2">Ploča za plaćanje nije se mogla učitati</p>
                           <button 
                             onClick={() => setStep(3)}
                             className="px-4 py-2 bg-white border border-red-200 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 transition-colors"
@@ -1321,7 +1321,7 @@ export default function CreateEventHr() {
                       ) : (
                         <div className="flex flex-col items-center justify-center p-8 border border-gray-200 rounded-xl bg-gray-50">
                           <Loader2 className="w-8 h-8 animate-spin text-gray-400 mb-4" />
-                          <p className="text-sm text-gray-500">Pripravljam varno plačilo...</p>
+                          <p className="text-sm text-gray-500">Priprema sigurnog plaćanja...</p>
                         </div>
                       )
                     ) : (
@@ -1346,7 +1346,7 @@ export default function CreateEventHr() {
                           {isProcessing ? (
                             <span className="flex items-center gap-2">
                               <Loader2 className="w-5 h-5 animate-spin" />
-                              Obdelujem...
+                              Obrađujem...
                             </span>
                           ) : (
                             <span className="flex items-center gap-2">
@@ -1358,7 +1358,7 @@ export default function CreateEventHr() {
                     )}
                     {finalPrice > 0 && (
                       <p className="text-center text-xs text-gray-400 mt-3 flex items-center justify-center gap-1">
-                        Varno plačilo zagotavlja Stripe
+                        Sigurno plaćanje osigurava Stripe
                       </p>
                     )}
                   </>
@@ -1544,7 +1544,7 @@ function StripePaymentForm({
   return (
     <form onSubmit={handleSubmit} className="w-full">
       <div className="mb-6 p-5 border border-gray-200 rounded-xl bg-gray-50 space-y-4">
-        <h4 className="font-medium text-gray-900 mb-2">Podatki za plačilo</h4>
+        <h4 className="font-medium text-gray-900 mb-2">Podaci za plaćanje</h4>
         <div className="bg-white p-3 rounded-lg border border-gray-300">
           <PaymentElement options={{ 
             layout: 'accordion',
@@ -1562,14 +1562,14 @@ function StripePaymentForm({
           <Lock className="w-6 h-6 text-gray-400 shrink-0" />
           <div className="text-left">
             <p className="text-[11px] font-bold text-gray-900 leading-none">SSL</p>
-            <p className="text-[11px] text-gray-500 font-medium leading-tight">zaščita</p>
+            <p className="text-[11px] text-gray-500 font-medium leading-tight">zaštita</p>
           </div>
         </div>
         <div className="flex items-center justify-center gap-2">
           <ShieldCheck className="w-6 h-6 text-indigo-500 shrink-0" />
           <div className="text-left">
             <p className="text-[11px] font-bold text-gray-900 leading-none">Stripe</p>
-            <p className="text-[11px] text-gray-500 font-medium leading-tight">varno plačilo</p>
+            <p className="text-[11px] text-gray-500 font-medium leading-tight">sigurno plaćanje</p>
           </div>
         </div>
         <div className="flex items-center justify-center gap-2">
@@ -1602,11 +1602,11 @@ function StripePaymentForm({
         {isProcessing || isUpdatingPrice ? (
           <span className="flex items-center gap-2">
             <Loader2 className="w-5 h-5 animate-spin" />
-            {isUpdatingPrice ? 'Osvežujem ceno...' : 'Obdelujem...'}
+            {isUpdatingPrice ? 'Osvježavam cijenu...' : 'Obrađujem...'}
           </span>
         ) : (
           <span className="flex items-center gap-2">
-            Potrdi in ustvari galerijo <Check className="w-5 h-5" />
+            Potvrdi i stvori galeriju <Check className="w-5 h-5" />
           </span>
         )}
       </button>
@@ -1616,9 +1616,13 @@ function StripePaymentForm({
           <ShieldCheck className="w-6 h-6 text-[#5B45FF]" />
         </div>
         <div className="pt-0.5">
-          <p className="font-bold text-[#5B45FF] text-[13px] leading-tight mb-0.5">30-dnevna garancija vračila denarja</p>
-          <p className="text-[12px] text-gray-500 font-medium leading-tight">Če z izdelkom niste 100% zadovoljni, vam vrnemo denar – brez vprašanj.</p>
+          <p className="font-bold text-[#5B45FF] text-[13px] leading-tight mb-0.5">30-dnevno jamstvo povrata novca</p>
+          <p className="text-[12px] text-gray-500 font-medium leading-tight">Ako niste 100% zadovoljni proizvodom, vraćamo vam novac – bez pitanja.</p>
         </div>
+      </div>
+      
+      <div className="mt-4 text-center text-xs text-gray-400">
+        Sigurno plaćanje osigurava Stripe
       </div>
     </form>
   );
