@@ -1548,6 +1548,13 @@ function StripePaymentForm({
         <div className="bg-white p-3 rounded-lg border border-gray-300">
           <PaymentElement options={{ 
             layout: 'accordion',
+            defaultValues: {
+              billingDetails: {
+                address: {
+                  country: 'SI'
+                }
+              }
+            },
             fields: {
               billingDetails: {
                 email: 'never'

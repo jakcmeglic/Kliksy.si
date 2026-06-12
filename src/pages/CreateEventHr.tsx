@@ -1262,7 +1262,7 @@ export default function CreateEventHr() {
                   </div>
 
                   <div className="flex justify-between items-center text-sm text-gray-500">
-                    <span>Skupaj za plačilo</span>
+                    <span>Ukupno za plaćanje</span>
                     <div className="text-right">
                       {discountApplied && <span className="text-gray-400 line-through mr-2">{(originalPrice + upsellPrice).toFixed(2)}€</span>}
                       <span className="text-xl font-bold text-black">{finalPrice.toFixed(2)}€</span>
@@ -1549,6 +1549,13 @@ function StripePaymentForm({
         <div className="bg-white p-3 rounded-lg border border-gray-300">
           <PaymentElement options={{ 
             layout: 'accordion',
+            defaultValues: {
+              billingDetails: {
+                address: {
+                  country: 'HR'
+                }
+              }
+            },
             fields: {
               billingDetails: {
                 email: 'never'

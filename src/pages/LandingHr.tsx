@@ -13,63 +13,63 @@ const EVENT_TYPES = [
 
 const REVIEWS = [
   { 
-    name: "Tina & Luka", date: "April 2026", 
-    text: "Noro dobra ideja! Dobila sva toliko spontanih fotografij, ki jih drugače ne bi nikoli videla. Gosti so navdušeni nad kako enostavno je bilo.",
+    name: "Tina & Luka", date: "Travanj 2026", 
+    text: "Ludo dobra ideja! Dobili smo toliko spontanih fotografija koje inače ne bismo nikada vidjeli. Gosti su oduševljeni koliko je bilo jednostavno.",
     initials: "TL", gender: "couple"
   },
   {
-    name: "Marko", date: "Marec 2026",
-    text: "Za moj 30. rojstni dan smo uporabili Kliksy. Noro, koliko zabavnih slik sem dobil naslednji dan. Prijatelji so takoj začeli nalagati slike!",
+    name: "Marko", date: "Ožujak 2026",
+    text: "Za moj 30. rođendan koristili smo Kliksy. Ludo, koliko sam zabavnih slika dobio sljedeći dan. Prijatelji su odmah počeli dodavati slike!",
     initials: "M", gender: "male"
   },
   {
-    name: "Ekipa podjetja", date: "December 2025",
-    text: "Končno smo dokumentirali našo božično zabavo na enem mestu. Kot tehniki močno pohvalimo preprostost. Scan and shoot. Nobenega kreiranja računov.",
+    name: "Ekipa tvrtke", date: "Prosinac 2025",
+    text: "Konačno smo dokumentirali našu božićnu zabavu na jednom mjestu. Kao tehničari jako hvalimo jednostavnost. Scan and shoot. Bez kreiranja korisničkih računa.",
     initials: "IT", gender: "couple"
   },
   { 
-    name: "Maja & David", date: "Avgust 2025", 
+    name: "Maja & David", date: "Kolovoz 2025", 
     text: "Sve slike prikupljene na jednom mjestu, bez stresa i preuzimanja. Toplo preporučujemo svakom paru!",
     initials: "MD", gender: "couple"
   },
   {
-    name: "Špela", date: "Junij 2025",
-    text: "Odlična zadeva! QR kode sem dala na mize in zjutraj me je pričakala popolna galerija vseh trenutkov iz mojega praznovanja diplome, ki sem jih zamudila.",
+    name: "Špela", date: "Lipanj 2025",
+    text: "Odlična stvar! QR kodove sam stavila na stolove i ujutro me dočekala savršena galerija svih trenutaka s moje proslave diplome koje sam propustila.",
     initials: "Š", gender: "female"
   },
   { 
-    name: "Nina & Rok", date: "September 2025", 
+    name: "Nina & Rok", date: "Rujan 2025", 
     text: "Najbolji dodatak našem vjenčanju! Svaki gost je dodao barem nekoliko slika. Uspomene koje nikada drugačije ne bismo dobili.",
     initials: "NR", gender: "couple"
   },
   {
-    name: "Tomaž", date: "November 2025",
-    text: "Letni teambuilding na enem mestu posnet s strani vseh sodelavcev. Končno nam ni treba prositi, da podelijo slike po različnih skupinah in platformah.",
+    name: "Tomaž", date: "Studeni 2025",
+    text: "Godišnji teambuilding na jednom mjestu zabilježen od strane svih kolega. Konačno ne moramo moliti da dijele slike po raznim grupama i platformama.",
     initials: "T", gender: "male"
   },
   {
-    name: "Ana & Peter", date: "Avgust 2025",
+    name: "Ana & Peter", date: "Kolovoz 2025",
     text: "Vrlo praktično! Bilo je sjajno gledati događaj očima naših prijatelja. Toplo preporučujem.",
     initials: "AP", gender: "couple"
   },
   {
-    name: "Sara & Matej", date: "September 2025",
-    text: "Enostavno za starejše goste! Moja babica je brez težav naložila svoje fotografije. Kakovost slik je takšna, kot mora biti.",
+    name: "Sara & Matej", date: "Rujan 2025",
+    text: "Jednostavno za starije goste! Moja baka je bez problema dodala svoje fotografije. Kvaliteta slika je takva kakva mora biti.",
     initials: "SM", gender: "couple"
   },
   {
-    name: "Tjaša & Miha", date: "April 2026",
-    text: "Fotograf bo rabil en mesec za slike, mi pa smo imeli preko 500 norih in spontanih slik že isti večer!",
+    name: "Tjaša & Miha", date: "Travanj 2026",
+    text: "Fotografu će trebati mjesec dana za slike, a mi smo imali preko 500 ludih i spontanih slika već istu večer!",
     initials: "TM", gender: "couple"
   }
 ];
 
 const FAQS = [
   { q: "Trebaju li gosti aplikaciju?", a: "Ne! Kliksy radi potpuno u pregledniku na telefonu. Gosti samo skeniraju QR kod svojom kamerom i odmah mogu dodavati fotografije - bez preuzimanja i bez registracije." },
-  { q: "Ali deluje tudi brez interneta?", a: "Za nalaganje fotografij potrebujejo gosti internetno povezavo (mobilne podatke ali Wi-Fi dogodka). Galerijo pa lahko pregledujete in uporabljate kadarkoli, ko ste na spletu." },
-  { q: "Kako dolgo imam dostop do galerije?", a: "Odvisno od izbranega paketa. Pri Basic paketu je to 1 mesec, pri Plus 1 leto, pri Premium pa 2 leti. V tem času si lahko spomine kadarkoli prenesete." },
-  { q: "Ali je galerija zasebna?", a: "Da, vaša galerija je 100% zasebna. Do nje lahko dostopajo le tisti, ki jim pošljete povezavo, in gosti, ki so skenirali QR kodo." },
-  { q: "Kaj pa, če imam več dogodkov?", a: "Znotraj svoje nadzorne plošče (dashboarda) lahko dodajate nove dogodke in imate vse dogodke zbrane pod svojim profilom." }
+  { q: "Radi li i bez interneta?", a: "Za dodavanje fotografija gosti trebaju internetsku vezu (mobilne podatke ili Wi-Fi događaja). Galeriju možete pregledavati i koristiti kad god ste na mreži." },
+  { q: "Koliko dugo imam pristup galeriji?", a: "Ovisno o odabranom paketu. Kod Basic paketa to je 1 mjesec, kod Plus 1 godina, a kod Premium paketa 2 godine. U tom vremenu možete preuzeti uspomene bilo kada." },
+  { q: "Je li galerija privatna?", a: "Da, vaša galerija je 100% privatna. Njoj mogu pristupiti samo oni kojima pošaljete poveznicu i gosti koji su skenirali QR kod." },
+  { q: "Što ako imam više događaja?", a: "Unutar svoje nadzorne ploče (dashboarda) možete dodati nove događaje i imati sve događaje prikupljene na svom profilu." }
 ];
 
 export default function LandingHr() {
@@ -413,10 +413,10 @@ export default function LandingHr() {
                    <img src={LANDING_IMAGES.guestTakingPhoto} alt="Guest taking photo" className="w-full h-[360px] object-cover" />
                  ) : (
                    <div className="w-full h-[360px] p-6 pt-12 flex flex-col bg-white">
-                    <p className="text-center font-bold text-lg mb-8">Dodaj svojo fotografijo</p>
-                    <div className="bg-gray-900 text-white p-4 rounded-full text-center font-bold mb-4 shadow-xl">Izberi iz galerije</div>
-                    <div className="text-center text-sm font-bold text-gray-400 mb-4">ali</div>
-                    <div className="bg-gray-100 text-gray-600 p-4 rounded-full text-center font-bold">Posnemi s kamero</div>
+                    <p className="text-center font-bold text-lg mb-8">Dodaj svoju fotografiju</p>
+                    <div className="bg-gray-900 text-white p-4 rounded-full text-center font-bold mb-4 shadow-xl">Odaberi iz galerije</div>
+                    <div className="text-center text-sm font-bold text-gray-400 mb-4">ili</div>
+                    <div className="bg-gray-100 text-gray-600 p-4 rounded-full text-center font-bold">Snimi kamerom</div>
                    </div>
                  )}
                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-gray-900 rounded-b-2xl"></div>
@@ -720,17 +720,17 @@ export default function LandingHr() {
       {/* Bottom CTA */}
       <section className="py-12 px-4 sm:px-6 bg-white">
         <div className="max-w-[1280px] mx-auto bg-[#1C1F26] rounded-[2rem] sm:rounded-[2.5rem] pt-12 px-6 pb-0 md:pt-20 md:px-20 text-center relative flex flex-col items-center shadow-2xl overflow-hidden">
-            <h2 className="text-[32px] sm:text-[36px] md:text-[44px] font-extrabold mb-4 sm:mb-6 text-white tracking-tight leading-[1.1] relative z-10">Ste pripravljeni na<br/>zbiranje spominov?</h2>
+            <h2 className="text-[32px] sm:text-[36px] md:text-[44px] font-extrabold mb-4 sm:mb-6 text-white tracking-tight leading-[1.1] relative z-10">Jeste li spremni za<br/>prikupljanje uspomena?</h2>
             <p className="text-[15px] sm:text-[17px] text-gray-400 mb-8 sm:mb-10 max-w-lg mx-auto font-medium leading-relaxed relative z-10">
-              Ustvari svojo galerijo in ne izgubi niti ene fotografije s svojega posebnega dne.
+              Stvorite svoju galeriju i ne izgubite nijednu fotografiju sa svog posebnog dana.
             </p>
             <Link to="/create" onClick={() => { if (typeof window !== 'undefined' && window.fbq) { window.fbq('track', 'AddToCart'); } }} className="inline-flex w-full sm:w-auto items-center justify-center gap-2 bg-[#5B45FF] text-white px-8 py-4 rounded-full text-[15px] sm:text-[17px] font-bold hover:bg-[#4E3BE0] transition-all hover:scale-105 active:scale-95 shadow-xl shadow-[#5B45FF]/30 relative z-10 mb-12">
               Napravi svoju galeriju sada <ArrowRight className="w-5 h-5" />
             </Link>
           
           <div className="relative w-full flex justify-center gap-3 sm:gap-6 px-4 pb-0 -mb-8 sm:-mb-12 mt-4 z-0">
-             <img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=300" className="w-[100px] sm:w-[180px] h-[120px] sm:h-[200px] object-cover rounded-xl shadow-2xl transform rotate-[-4deg] translate-y-4" alt="Spomini iz zabave" />
-             <img src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80&w=300" className="w-[120px] sm:w-[220px] h-[140px] sm:h-[240px] object-cover rounded-xl shadow-2xl z-10" alt="Vrhunski spomini" />
+             <img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=300" className="w-[100px] sm:w-[180px] h-[120px] sm:h-[200px] object-cover rounded-xl shadow-2xl transform rotate-[-4deg] translate-y-4" alt="Uspomene sa zabave" />
+             <img src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80&w=300" className="w-[120px] sm:w-[220px] h-[140px] sm:h-[240px] object-cover rounded-xl shadow-2xl z-10" alt="Vrhunske uspomene" />
              <img src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=300" className="w-[100px] sm:w-[180px] h-[120px] sm:h-[200px] object-cover rounded-xl shadow-2xl transform rotate-[4deg] translate-y-4" alt="Prijatelji" />
           </div>
         </div>
@@ -745,7 +745,7 @@ export default function LandingHr() {
                  Kliksy<span className="text-[#5B45FF]">.</span>
               </Link>
               <p className="text-gray-500 leading-relaxed font-medium text-[15px] max-w-sm">
-                Zbiranje spominov še nikoli ni bilo tako enostavno.
+                Prikupljanje uspomena nikad nije bilo tako jednostavno.
               </p>
             </div>
             <div className="md:col-span-2 lg:col-span-2">
