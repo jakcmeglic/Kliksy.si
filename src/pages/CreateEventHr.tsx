@@ -185,7 +185,8 @@ export default function CreateEventHr() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             email: user.email,
-            eventName: formData.eventName || (formData.partner1 ? `${formData.partner1} & ${formData.partner2}` : 'Vaš događaj')
+            eventName: formData.eventName || (formData.partner1 ? `${formData.partner1} & ${formData.partner2}` : 'Vaš događaj'),
+            lang: 'hr'
           })
         }).catch(err => console.error("Failed to trigger event created email:", err));
       } catch (e) {

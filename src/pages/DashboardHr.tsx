@@ -76,7 +76,8 @@ export default function DashboardHr() {
                     amountPaid: eventData.amountPaid,
                     standsQuantity: eventData.standsQuantity,
                     printedQrQuantity: eventData.printedQrQuantity,
-                    deliveryMode: eventData.deliveryMode
+                    deliveryMode: eventData.deliveryMode,
+                    lang: 'hr'
                   })
                 }).catch(err => console.error("Failed to send order summary email:", err));
               }

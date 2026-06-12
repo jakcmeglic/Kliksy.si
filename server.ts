@@ -115,11 +115,42 @@ async function startServer() {
   }
 
   app.post("/api/send-welcome-email", async (req, res) => {
-    const { email, displayName } = req.body;
+    const { email, displayName, lang } = req.body;
     
     if (!email) {
       return res.status(400).json({ error: "Email is required" });
     }
+
+    const isHr = lang === 'hr';
+    const subjectContent = isHr ? "Dobrodošli u Kliksy!" : "Dobrodošli pri Kliksy!";
+    
+    const textContent = isHr 
+      ? `Dobrodošli u Kliksy!\n\nPoštovani ${displayName || ''},\n\nHvala vam što ste se registrirali u Kliksy. Drago nam je da ste nam se pridružili!\n\nS našom aplikacijom možete jednostavno stvoriti jedinstvene QR kodove za vaše događaje i prikupljati fotografije vaših gostiju na jednom mjestu.\n\nAko imate bilo kakvih pitanja, jednostavno odgovorite na ovaj e-mail.\n\nSrdačan pozdrav,\nKliksy tim`
+      : `Dobrodošli pri Kliksy!\n\nPozdravljeni ${displayName || ''},\n\nHvala, ker ste se registrirali pri Kliksy. Veseli smo, da ste se nam pridružili!\n\nZ našo aplikacijo lahko preprosto ustvarite unikatne QR kode za vaše dogodke in zbirate fotografije vaših gostov na enem mestu.\n\nČe imate kakršna koli vprašanja, nam preprosto odgovorite na ta email.\n\nLep pozdrav,\nEkipa Kliksy`;
+
+    const htmlContent = isHr
+      ? `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+          <h1 style="color: #4f46e5;">Dobrodošli u Kliksy!</h1>
+          <p>Poštovani ${displayName || ''},</p>
+          <p>Hvala vam što ste se registrirali u Kliksy. Drago nam je da ste nam se pridružili!</p>
+          <p>S našom aplikacijom možete jednostavno stvoriti jedinstvene QR kodove za vaše događaje i prikupljati fotografije vaših gostiju na jednom mjestu.</p>
+          <p>Ako imate bilo kakvih pitanja, jednostavno odgovorite na ovaj e-mail.</p>
+          <br />
+          <p>Srdačan pozdrav,<br />Kliksy tim</p>
+        </div>
+      `
+      : `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+          <h1 style="color: #4f46e5;">Dobrodošli pri Kliksy!</h1>
+          <p>Pozdravljeni ${displayName || ''},</p>
+          <p>Hvala, ker ste se registrirali pri Kliksy. Veseli smo, da ste se nam pridružili!</p>
+          <p>Z našo aplikacijo lahko preprosto ustvarite unikatne QR kode za vaše dogodke in zbirate fotografije vaših gostov na enem mestu.</p>
+          <p>Če imate kakršna koli vprašanja, nam preprosto odgovorite na ta email.</p>
+          <br />
+          <p>Lep pozdrav,<br />Ekipa Kliksy</p>
+        </div>
+      `;
 
     const smtpHost = process.env.SMTP_HOST;
     const smtpPort = Number(process.env.SMTP_PORT) || 587;
@@ -140,19 +171,9 @@ async function startServer() {
           from: "Kliksy Podpora <info@kliksy.si>",
           replyTo: "info@kliksy.si",
           to: email,
-          subject: "Dobrodošli pri Kliksy!",
-          text: `Dobrodošli pri Kliksy!\n\nPozdravljeni ${displayName || ''},\n\nHvala, ker ste se registrirali pri Kliksy. Veseli smo, da ste se nam pridružili!\n\nZ našo aplikacijo lahko preprosto ustvarite unikatne QR kode za vaše dogodke in zbirate fotografije vaših gostov na enem mestu.\n\nČe imate kakršna koli vprašanja, nam preprosto odgovorite na ta email.\n\nLep pozdrav,\nEkipa Kliksy`,
-          html: `
-            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-              <h1 style="color: #4f46e5;">Dobrodošli pri Kliksy!</h1>
-              <p>Pozdravljeni ${displayName || ''},</p>
-              <p>Hvala, ker ste se registrirali pri Kliksy. Veseli smo, da ste se nam pridružili!</p>
-              <p>Z našo aplikacijo lahko preprosto ustvarite unikatne QR kode za vaše dogodke in zbirate fotografije vaših gostov na enem mestu.</p>
-              <p>Če imate kakršna koli vprašanja, nam preprosto odgovorite na ta email.</p>
-              <br />
-              <p>Lep pozdrav,<br />Ekipa Kliksy</p>
-            </div>
-          `,
+          subject: subjectContent,
+          text: textContent,
+          html: htmlContent,
         });
         if (error) {
           console.error("Resend API Error:", error);
@@ -173,19 +194,9 @@ async function startServer() {
           from: `"Kliksy" <${smtpUser}>`,
           replyTo: `"Kliksy Podpora" <info@kliksy.si>`,
           to: email,
-          subject: "Dobrodošli pri Kliksy!",
-          text: `Dobrodošli pri Kliksy!\n\nPozdravljeni ${displayName || ''},\n\nHvala, ker ste se registrirali pri Kliksy. Veseli smo, da ste se nam pridružili!\n\nZ našo aplikacijo lahko preprosto ustvarite unikatne QR kode za vaše dogodke in zbirate fotografije vaših gostov na enem mestu.\n\nČe imate kakršna koli vprašanja, nam preprosto odgovorite na ta email.\n\nLep pozdrav,\nEkipa Kliksy`,
-          html: `
-            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-              <h1 style="color: #4f46e5;">Dobrodošli pri Kliksy!</h1>
-              <p>Pozdravljeni ${displayName || ''},</p>
-              <p>Hvala, ker ste se registrirali pri Kliksy. Veseli smo, da ste se nam pridružili!</p>
-              <p>Z našo aplikacijo lahko preprosto ustvarite unikatne QR kode za vaše dogodke in zbirate fotografije vaših gostov na enem mestu.</p>
-              <p>Če imate kakršna koli vprašanja, nam preprosto odgovorite na ta email.</p>
-              <br />
-              <p>Lep pozdrav,<br />Ekipa Kliksy</p>
-            </div>
-          `,
+          subject: subjectContent,
+          text: textContent,
+          html: htmlContent,
         };
 
         await transporter.sendMail(mailOptions);
@@ -202,11 +213,38 @@ async function startServer() {
   });
 
   app.post("/api/send-event-created-email", async (req, res) => {
-    const { email, eventName } = req.body;
+    const { email, eventName, lang } = req.body;
     
     if (!email) {
       return res.status(400).json({ error: "Email is required" });
     }
+
+    const isHr = lang === 'hr';
+    const subjectContent = isHr ? "Vaš događaj na Kliksyju je uspješno stvoren!" : "Vaš dogodek pri Kliksy je uspešno ustvarjen!";
+    
+    const textContent = isHr
+      ? `Vaš događaj je stvoren!\n\nDogađaj: ${eventName || 'bez imena'}\n\nVaš demo događaj je uspješno stvoren. Sada ga možete početi uređivati i dijeliti sa svojim gostima.\n\nSrdačan pozdrav,\nVaš Kliksy tim`
+      : `Vaš dogodek je ustvarjen!\n\nDogodek: ${eventName || 'brez imena'}\n\nVaš demo dogodek je uspešno ustvarjen. Zdaj ga lahko pričnete urejati in deliti s svojimi gosti.\n\nLep pozdrav,\nVaša ekipa Kliksy`;
+
+    const htmlContent = isHr
+      ? `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+          <h1 style="color: #4f46e5;">Vaš događaj je stvoren!</h1>
+          <p>Događaj: <strong>${eventName || 'bez imena'}</strong> smo uspješno pripremili.</p>
+          <p>Vaš demo događaj je uspješno stvoren. Sada ga možete početi uređivati i dijeliti sa svojim gostima putem nadzorne ploče.</p>
+          <br />
+          <p>Srdačan pozdrav,<br />Vaš Kliksy tim</p>
+        </div>
+      `
+      : `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+          <h1 style="color: #4f46e5;">Vaš dogodek je ustvarjen!</h1>
+          <p>Dogodek: <strong>${eventName || 'brez imena'}</strong> smo uspešno pripravili.</p>
+          <p>Vaš demo dogodek je uspešno ustvarjen. Zdaj ga lahko pričnete urejati in deliti s svojimi gosti preko nadzorne plošče.</p>
+          <br />
+          <p>Z lepimi pozdravi,<br />Vaša ekipa Kliksy</p>
+        </div>
+      `;
 
     const smtpHost = process.env.SMTP_HOST;
     const smtpPort = Number(process.env.SMTP_PORT) || 587;
@@ -227,17 +265,9 @@ async function startServer() {
           from: "Kliksy Podpora <info@kliksy.si>",
           replyTo: "info@kliksy.si",
           to: email,
-          subject: "Vaš dogodek pri Kliksy je uspešno ustvarjen!",
-          text: `Vaš dogodek je ustvarjen!\n\nDogodek: ${eventName || 'brez imena'}\n\nVaš demo dogodek je uspešno ustvarjen. Zdaj ga lahko pričnete urejati in deliti s svojimi gosti.\n\nLep pozdrav,\nVaša ekipa Kliksy`,
-          html: `
-            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
-              <h1 style="color: #4f46e5;">Vaš dogodek je ustvarjen!</h1>
-              <p>Dogodek: <strong>${eventName || 'brez imena'}</strong> smo uspešno pripravili.</p>
-              <p>Vaš demo dogodek je uspešno ustvarjen. Zdaj ga lahko pričnete urejati in deliti s svojimi gosti preko nadzorne plošče.</p>
-              <br />
-              <p>Z lepimi pozdravi,<br />Vaša ekipa Kliksy</p>
-            </div>
-          `,
+          subject: subjectContent,
+          text: textContent,
+          html: htmlContent,
         });
         if (error) {
           console.error("Resend API Error:", error);
@@ -258,17 +288,9 @@ async function startServer() {
           from: `"Kliksy" <${smtpUser}>`,
           replyTo: `"Kliksy Podpora" <info@kliksy.si>`,
           to: email,
-          subject: "Vaš dogodek pri Kliksy je uspešno ustvarjen!",
-          text: `Vaš dogodek je ustvarjen!\n\nDogodek: ${eventName || 'brez imena'}\n\nVaš demo dogodek je uspešno ustvarjen. Zdaj ga lahko pričnete urejati in deliti s svojimi gosti.\n\nLep pozdrav,\nVaša ekipa Kliksy`,
-          html: `
-            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
-              <h1 style="color: #4f46e5;">Vaš dogodek je ustvarjen!</h1>
-              <p>Dogodek: <strong>${eventName || 'brez imena'}</strong> smo uspešno pripravili.</p>
-              <p>Vaš demo dogodek je uspešno ustvarjen. Zdaj ga lahko pričnete urejati in deliti s svojimi gosti preko nadzorne plošče.</p>
-              <br />
-              <p>Z lepimi pozdravi,<br />Vaša ekipa Kliksy</p>
-            </div>
-          `,
+          subject: subjectContent,
+          text: textContent,
+          html: htmlContent,
         };
 
         await transporter.sendMail(mailOptions);
@@ -281,7 +303,7 @@ async function startServer() {
   });
 
   app.post("/api/send-order-summary", async (req, res) => {
-    const { email, eventName, plan, amountPaid, standsQuantity, printedQrQuantity, deliveryMode } = req.body;
+    const { email, eventName, plan, amountPaid, standsQuantity, printedQrQuantity, deliveryMode, lang } = req.body;
     
     if (!email) {
       return res.status(400).json({ error: "Email is required" });
@@ -299,9 +321,22 @@ async function startServer() {
     }
 
     try {
+      const isHr = lang === 'hr';
       const hasExtras = standsQuantity > 0;
-      let extrasHtml = '';
-      if (hasExtras) {
+
+    
+    const subjectContent = isHr ? "Sažetak vaše narudžbe na Kliksyju" : "Povzetek vašega naročila pri Kliksy";
+    
+    let extrasHtml = '';
+    if (hasExtras) {
+      if (isHr) {
+        extrasHtml = `
+          <h3>Dodaci</h3>
+          <ul>
+            ${standsQuantity > 0 ? `<li>Podmetači za stol: ${standsQuantity} komada</li>` : ''}
+          </ul>
+        `;
+      } else {
         extrasHtml = `
           <h3>Dodatki</h3>
           <ul>
@@ -309,6 +344,49 @@ async function startServer() {
           </ul>
         `;
       }
+    }
+    
+    const textContent = isHr
+      ? `Uspješna narudžba!\n\nHvala na kupnji! Vaš događaj ${eventName || 'bez imena'} smo uspješno pripremili.\n\nPojedinosti narudžbe:\nPaket: ${plan ? plan.toUpperCase() : 'Nepoznato'}\nUkupno plaćeno: €${Number(amountPaid || 0).toFixed(2)}\n\nNadzornoj ploči i uređivanju vašeg događaja možete pristupiti na našoj web stranici.\n\nSrdačan pozdrav,\nVaš Kliksy tim`
+      : `Uspešno naročilo!\n\nHvala za vaš nakup! Vaš dogodek ${eventName || 'brez imena'} smo uspešno pripravili.\n\nPodrobnosti naročila:\nPaket: ${plan ? plan.toUpperCase() : 'Neznano'}\nSkupaj plačano: €${Number(amountPaid || 0).toFixed(2)}\n\nDo nadzorne plošče in urejanja vašega dogodka lahko dostopate na naši spletni strani.\n\nZ lepimi pozdravi,\nVaša ekipa Kliksy`;
+
+    const htmlContent = isHr
+      ? `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+          <h1 style="color: #4f46e5;">Uspješna narudžba!</h1>
+          <p>Hvala na kupnji! Vaš događaj <strong>${eventName || 'bez imena'}</strong> smo uspješno pripremili.</p>
+          
+          <div style="background-color: #f9fafb; padding: 20px; border-radius: 12px; margin: 20px 0;">
+            <h2 style="margin-top: 0;">Pojedinosti narudžbe</h2>
+            <p><strong>Paket:</strong> ${plan ? plan.toUpperCase() : 'Nepoznato'}</p>
+            ${extrasHtml}
+            <hr style="border: 1px solid #e5e7eb; margin: 15px 0;"/>
+            <p style="font-size: 1.1em;"><strong>Ukupno plaćeno:</strong> €${Number(amountPaid || 0).toFixed(2)}</p>
+          </div>
+          
+          <p>Nadzornoj ploči i uređivanju vašeg događaja možete pristupiti na našoj web stranici.</p>
+          <br />
+          <p>Srdačan pozdrav,<br />Vaš Kliksy tim</p>
+        </div>
+      `
+      : `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+          <h1 style="color: #4f46e5;">Uspešno naročilo!</h1>
+          <p>Hvala za vaš nakup! Vaš dogodek <strong>${eventName || 'brez imena'}</strong> smo uspešno pripravili.</p>
+          
+          <div style="background-color: #f9fafb; padding: 20px; border-radius: 12px; margin: 20px 0;">
+            <h2 style="margin-top: 0;">Podrobnosti naročila</h2>
+            <p><strong>Paket:</strong> ${plan ? plan.toUpperCase() : 'Neznano'}</p>
+            ${extrasHtml}
+            <hr style="border: 1px solid #e5e7eb; margin: 15px 0;"/>
+            <p style="font-size: 1.1em;"><strong>Skupaj plačano:</strong> €${Number(amountPaid || 0).toFixed(2)}</p>
+          </div>
+          
+          <p>Do nadzorne plošče in urejanja vašega dogodka lahko dostopate na naši spletni strani.</p>
+          <br />
+          <p>Z lepimi pozdravi,<br />Vaša ekipa Kliksy</p>
+        </div>
+      `;
 
       if (resendApiKey) {
         const { Resend } = await import('resend');
@@ -318,26 +396,9 @@ async function startServer() {
           replyTo: "info@kliksy.si",
           to: email,
           bcc: "info@kliksy.si",
-          subject: "Povzetek vašega naročila pri Kliksy",
-          text: `Uspešno naročilo!\n\nHvala za vaš nakup! Vaš dogodek ${eventName || 'brez imena'} smo uspešno pripravili.\n\nPodrobnosti naročila:\nPaket: ${plan ? plan.toUpperCase() : 'Neznano'}\nSkupaj plačano: €${Number(amountPaid || 0).toFixed(2)}\n\nDo nadzorne plošče in urejanja vašega dogodka lahko dostopate na naši spletni strani.\n\nZ lepimi pozdravi,\nVaša ekipa Kliksy`,
-          html: `
-            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
-              <h1 style="color: #4f46e5;">Uspešno naročilo!</h1>
-              <p>Hvala za vaš nakup! Vaš dogodek <strong>${eventName || 'brez imena'}</strong> smo uspešno pripravili.</p>
-              
-              <div style="background-color: #f9fafb; padding: 20px; border-radius: 12px; margin: 20px 0;">
-                <h2 style="margin-top: 0;">Podrobnosti naročila</h2>
-                <p><strong>Paket:</strong> ${plan ? plan.toUpperCase() : 'Neznano'}</p>
-                ${extrasHtml}
-                <hr style="border: 1px solid #e5e7eb; margin: 15px 0;"/>
-                <p style="font-size: 1.1em;"><strong>Skupaj plačano:</strong> €${Number(amountPaid || 0).toFixed(2)}</p>
-              </div>
-              
-              <p>Do nadzorne plošče in urejanja vašega dogodka lahko dostopate na naši spletni strani.</p>
-              <br />
-              <p>Z lepimi pozdravi,<br />Vaša ekipa Kliksy</p>
-            </div>
-          `,
+          subject: subjectContent,
+          text: textContent,
+          html: htmlContent,
         });
         if (error) {
           console.error("Resend API Error:", error);
@@ -359,26 +420,9 @@ async function startServer() {
           replyTo: `"Kliksy Podpora" <info@kliksy.si>`,
           to: email,
           bcc: "info@kliksy.si",
-          subject: "Povzetek vašega naročila pri Kliksy",
-          text: `Uspešno naročilo!\n\nHvala za vaš nakup! Vaš dogodek ${eventName || 'brez imena'} smo uspešno pripravili.\n\nPodrobnosti naročila:\nPaket: ${plan ? plan.toUpperCase() : 'Neznano'}\nSkupaj plačano: €${Number(amountPaid || 0).toFixed(2)}\n\nDo nadzorne plošče in urejanja vašega dogodka lahko dostopate na naši spletni strani.\n\nZ lepimi pozdravi,\nVaša ekipa Kliksy`,
-          html: `
-            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
-              <h1 style="color: #4f46e5;">Uspešno naročilo!</h1>
-              <p>Hvala za vaš nakup! Vaš dogodek <strong>${eventName || 'brez imena'}</strong> smo uspešno pripravili.</p>
-              
-              <div style="background-color: #f9fafb; padding: 20px; border-radius: 12px; margin: 20px 0;">
-                <h2 style="margin-top: 0;">Podrobnosti naročila</h2>
-                <p><strong>Paket:</strong> ${plan ? plan.toUpperCase() : 'Neznano'}</p>
-                ${extrasHtml}
-                <hr style="border: 1px solid #e5e7eb; margin: 15px 0;"/>
-                <p style="font-size: 1.1em;"><strong>Skupaj plačano:</strong> €${Number(amountPaid || 0).toFixed(2)}</p>
-              </div>
-              
-              <p>Do nadzorne plošče in urejanja vašega dogodka lahko dostopate na naši spletni strani.</p>
-              <br />
-              <p>Z lepimi pozdravi,<br />Vaša ekipa Kliksy</p>
-            </div>
-          `,
+          subject: subjectContent,
+          text: textContent,
+          html: htmlContent,
         };
 
         await transporter.sendMail(mailOptions);
