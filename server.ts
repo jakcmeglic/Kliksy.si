@@ -547,6 +547,17 @@ async function startServer() {
     }
   });
 
+  app.get("/api/trigger-cron", async (req, res) => {
+    try {
+      // Temporarily import dynamically to avoid top-level issues if any
+      const { checkAbandonedProfiles } = await import("./src/cronService.js");
+      await checkAbandonedProfiles();
+      res.json({ success: true, message: "Cron check completed" });
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
   // API routes FIRST
   app.post("/api/create-upgrade-session", async (req, res) => {
     try {

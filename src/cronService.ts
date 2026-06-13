@@ -5,7 +5,7 @@ import * as path from 'path';
 
 let db: any = null;
 
-function initFirebase() {
+export function initFirebase() {
   if (db) return db;
   const configPath = path.join(process.cwd(), 'firebase-applet-config.json');
   if (fs.existsSync(configPath)) {
@@ -17,20 +17,26 @@ function initFirebase() {
 }
 
 export function startCronService() {
+  console.log('--- startCronService triggered ---');
   initFirebase();
   if (!db) {
-    console.log('Skipping cron service: Firebase not configured.');
+    console.log('Skipping cron service: Firebase not configured. Did not detect config or initialization failed.');
     return;
   }
+  
+  console.log('Firebase initialized. Setting up cron intervals...');
   
   // Run check every 5 minutes
   setInterval(checkAbandonedProfiles, 5 * 60 * 1000);
   
   // Also run once on startup, after a short delay
-  setTimeout(checkAbandonedProfiles, 10 * 1000);
+  setTimeout(() => {
+    console.log('Running immediate cron check after startup...');
+    checkAbandonedProfiles();
+  }, 10 * 1000);
 }
 
-async function checkAbandonedProfiles() {
+export async function checkAbandonedProfiles() {
   if (!db) return;
   try {
     const now = Date.now();
@@ -45,22 +51,21 @@ async function checkAbandonedProfiles() {
 
     // Check for 2-day abandoned profiles
     const candidates2Days = users.filter((u: any) => {
-      if (u.abandonedEmailSent) return false;
-      if (!u.createdAt) return false;
-      
-      let createdTime: number;
-      if (typeof u.createdAt.toMillis === 'function') {
-        createdTime = u.createdAt.toMillis();
-      } else if (u.createdAt.seconds) {
-        createdTime = u.createdAt.seconds * 1000;
-      } else if (typeof u.createdAt === 'number') {
-        createdTime = u.createdAt;
-      } else {
-        createdTime = new Date(u.createdAt).getTime();
+      let createdTime = 0;
+      if (u.createdAt) {
+        if (typeof u.createdAt.toMillis === 'function') createdTime = u.createdAt.toMillis();
+        else if (u.createdAt.seconds) createdTime = u.createdAt.seconds * 1000;
+        else if (typeof u.createdAt === 'number') createdTime = u.createdAt;
+        else createdTime = new Date(u.createdAt).getTime();
       }
-      
-      // Between 2 days ago and 7 days ago
-      return createdTime <= twoDaysAgo && createdTime > sevenDaysAgo && createdTime >= cutoffDate;
+
+      if (createdTime >= cutoffDate) {
+        if (u.abandonedEmailSent) return false;
+        if (!createdTime) return false;
+
+        return createdTime <= twoDaysAgo && createdTime > sevenDaysAgo && createdTime >= cutoffDate;
+      }
+      return false;
     });
 
     for (const user of candidates2Days) {
@@ -75,8 +80,6 @@ async function checkAbandonedProfiles() {
       if (eventsSnap.empty) {
         await sendTwoDaysFollowUpEmail(user.email);
         console.log(`Sent 2-day abandoned follow-up to ${user.email}`);
-      } else {
-        console.log(`Skipped 2-day follow-up for ${user.email} (has paid events)`);
       }
 
       await updateDoc(user.ref, { abandonedEmailSent: true }).catch((e) => {
@@ -86,21 +89,21 @@ async function checkAbandonedProfiles() {
 
     // Check for 7-day abandoned profiles
     const candidates7Days = users.filter((u: any) => {
-      if (u.abandonedTwoDaysEmailSent) return false;
-      if (!u.createdAt) return false;
-      
-      let createdTime: number;
-      if (typeof u.createdAt.toMillis === 'function') {
-        createdTime = u.createdAt.toMillis();
-      } else if (u.createdAt.seconds) {
-        createdTime = u.createdAt.seconds * 1000;
-      } else if (typeof u.createdAt === 'number') {
-        createdTime = u.createdAt;
-      } else {
-        createdTime = new Date(u.createdAt).getTime();
+      let createdTime = 0;
+      if (u.createdAt) {
+        if (typeof u.createdAt.toMillis === 'function') createdTime = u.createdAt.toMillis();
+        else if (u.createdAt.seconds) createdTime = u.createdAt.seconds * 1000;
+        else if (typeof u.createdAt === 'number') createdTime = u.createdAt;
+        else createdTime = new Date(u.createdAt).getTime();
       }
-      
-      return createdTime <= sevenDaysAgo && createdTime >= cutoffDate;
+
+      if (createdTime >= cutoffDate) {
+        if (u.abandonedTwoDaysEmailSent) return false;
+        if (!createdTime) return false;
+
+        return createdTime <= sevenDaysAgo && createdTime >= cutoffDate;
+      }
+      return false;
     });
 
     for (const user of candidates7Days) {
@@ -115,8 +118,6 @@ async function checkAbandonedProfiles() {
       if (eventsSnap.empty) {
         await sendSevenDaysFollowUpEmail(user.email);
         console.log(`Sent 7-day abandoned follow-up to ${user.email}`);
-      } else {
-        console.log(`Skipped 7-day follow-up for ${user.email} (has paid events)`);
       }
 
       await updateDoc(user.ref, { abandonedTwoDaysEmailSent: true }).catch((e) => {
