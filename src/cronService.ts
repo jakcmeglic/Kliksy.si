@@ -34,16 +34,17 @@ async function checkAbandonedProfiles() {
   if (!db) return;
   try {
     const now = Date.now();
-    const twoHoursAgo = now - (2 * 60 * 60 * 1000);
-    const twentyFourHoursAgo = now - (24 * 60 * 60 * 1000);
-    const fortyEightHoursAgo = now - (48 * 60 * 60 * 1000);
-    const seventyTwoHoursAgo = now - (72 * 60 * 60 * 1000);
+    const twoDaysAgo = now - (2 * 24 * 60 * 60 * 1000);
+    const sevenDaysAgo = now - (7 * 24 * 60 * 60 * 1000);
+    
+    // Explicit cutoff: May 29th, 2026 (as requested)
+    const cutoffDate = new Date('2026-05-29T00:00:00Z').getTime();
 
     const usersSnap = await getDocs(collection(db, 'users'));
     const users = usersSnap.docs.map(d => ({ id: d.id, ref: d.ref, ...d.data() })) as any[];
 
-    // Check for 2-hour abandoned profiles
-    const candidates2h = users.filter((u: any) => {
+    // Check for 2-day abandoned profiles
+    const candidates2Days = users.filter((u: any) => {
       if (u.abandonedEmailSent) return false;
       if (!u.createdAt) return false;
       
@@ -57,12 +58,12 @@ async function checkAbandonedProfiles() {
       } else {
         createdTime = new Date(u.createdAt).getTime();
       }
-      // Between 2 hours and 24 hours ago
-      // meaning: created at least 2 hours ago, but not older than 24 hours
-      return createdTime <= twoHoursAgo && createdTime >= twentyFourHoursAgo;
+      
+      // Between 2 days ago and 7 days ago
+      return createdTime <= twoDaysAgo && createdTime > sevenDaysAgo && createdTime >= cutoffDate;
     });
 
-    for (const user of candidates2h) {
+    for (const user of candidates2Days) {
       if (!user.email) continue;
 
       const eventsSnap = await getDocs(query(
@@ -72,10 +73,10 @@ async function checkAbandonedProfiles() {
       ));
 
       if (eventsSnap.empty) {
-        await sendFollowUpEmail(user.email);
-        console.log(`Sent 2h abandoned follow-up to ${user.email}`);
+        await sendTwoDaysFollowUpEmail(user.email);
+        console.log(`Sent 2-day abandoned follow-up to ${user.email}`);
       } else {
-        console.log(`Skipped 2h follow-up for ${user.email} (has paid events)`);
+        console.log(`Skipped 2-day follow-up for ${user.email} (has paid events)`);
       }
 
       await updateDoc(user.ref, { abandonedEmailSent: true }).catch((e) => {
@@ -83,8 +84,8 @@ async function checkAbandonedProfiles() {
       });
     }
 
-    // Check for 48-hour abandoned profiles
-    const candidates48h = users.filter((u: any) => {
+    // Check for 7-day abandoned profiles
+    const candidates7Days = users.filter((u: any) => {
       if (u.abandonedTwoDaysEmailSent) return false;
       if (!u.createdAt) return false;
       
@@ -98,12 +99,11 @@ async function checkAbandonedProfiles() {
       } else {
         createdTime = new Date(u.createdAt).getTime();
       }
-      // Between 48 hours and 72 hours ago
-      // meaning: created at least 48 hours ago, but not older than 72 hours
-      return createdTime <= fortyEightHoursAgo && createdTime >= seventyTwoHoursAgo;
+      
+      return createdTime <= sevenDaysAgo && createdTime >= cutoffDate;
     });
 
-    for (const user of candidates48h) {
+    for (const user of candidates7Days) {
       if (!user.email) continue;
 
       const eventsSnap = await getDocs(query(
@@ -113,10 +113,10 @@ async function checkAbandonedProfiles() {
       ));
 
       if (eventsSnap.empty) {
-        await sendTwoDaysFollowUpEmail(user.email);
-        console.log(`Sent 48h abandoned follow-up to ${user.email}`);
+        await sendSevenDaysFollowUpEmail(user.email);
+        console.log(`Sent 7-day abandoned follow-up to ${user.email}`);
       } else {
-        console.log(`Skipped 48h follow-up for ${user.email} (has paid events)`);
+        console.log(`Skipped 7-day follow-up for ${user.email} (has paid events)`);
       }
 
       await updateDoc(user.ref, { abandonedTwoDaysEmailSent: true }).catch((e) => {
@@ -127,40 +127,6 @@ async function checkAbandonedProfiles() {
   } catch (error) {
     console.error('Error in abandoned profile cron:', error);
   }
-}
-
-export async function sendFollowUpEmail(email: string) {
-  const resendApiKey = process.env.RESEND_API_KEY;
-  if (!resendApiKey) {
-    console.warn("No Resend API key to send follow up email.");
-    return;
-  }
-  
-  const { Resend } = await import('resend');
-  const resend = new Resend(resendApiKey);
-
-  await resend.emails.send({
-    from: "Kliksy Podpora <info@kliksy.si>",
-    replyTo: "info@kliksy.si",
-    to: email,
-    subject: "Kako vam lahko pomagamo?",
-    text: `Živjo 😊\n\nOpazili smo, da ste si na Kliksy ustvarili profil oziroma začeli ustvarjati dogodek, vendar ga še niste zaključili.\n\nKer smo še nova slovenska platforma, nam vsak feedback res veliko pomeni 😊\nZato nas zanima, se je morda kje zataknilo ali pa vam manjka kakšna informacija?\n\nZ veseljem pomagamo pri:\n• izbiri paketa\n• pripravi QR kode\n• razlagi, kako vse skupaj deluje\n• ali kateremkoli drugem vprašanju 😊\n\nNa voljo smo vam in z veseljem pomagamo 💛\n\nLep pozdrav,\nJaka iz Kliksy.si`,
-    html: `
-      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333; line-height: 1.6;">
-        <p>Živjo 😊</p>
-        <p>Opazili smo, da ste si na Kliksy ustvarili profil oziroma začeli ustvarjati dogodek, vendar ga še niste zaključili.</p>
-        <p>Ker smo še nova slovenska platforma, nam vsak feedback res veliko pomeni 😊<br />
-        Zato nas zanima, se je morda kje zataknilo ali pa vam manjka kakšna informacija?</p>
-        <p>Z veseljem pomagamo pri:<br />
-        • izbiri paketa<br />
-        • pripravi QR kode<br />
-        • razlagi, kako vse skupaj deluje<br />
-        • ali kateremkoli drugem vprašanju 😊</p>
-        <p>Na voljo smo vam in z veseljem pomagamo 💛</p>
-        <p>Lep pozdrav,<br />Jaka iz Kliksy.si</p>
-      </div>
-    `,
-  });
 }
 
 export async function sendTwoDaysFollowUpEmail(email: string) {
@@ -174,19 +140,47 @@ export async function sendTwoDaysFollowUpEmail(email: string) {
   const resend = new Resend(resendApiKey);
 
   await resend.emails.send({
-    from: "Kliksy Podpora <info@kliksy.si>",
+    from: "Kliksy <info@kliksy.si>",
     replyTo: "info@kliksy.si",
     to: email,
-    subject: "Ste uspeli preizkusiti svoj demo dogodek? 😊",
-    text: `Živjo 😊\n\nPred nekaj dnevi ste si na Kliksy.si ustvarili profil, vendar svojega dogodka še niste dokončali.\n\nZa vas smo pripravili demo galerijo, kjer lahko preizkusite, kako bo Kliksy izgledal na vašem dogodku. Dodate lahko nekaj testnih slik in vidite celotno izkušnjo 😊\n\nVeliko uporabnikov šele takrat zares dobi občutek, kako lepo je imeti vse spontane trenutke zbrane na enem mestu 💛\n\nČe imate kakršnokoli vprašanje ali pa se je kje zataknilo, nam brez zadržkov odgovorite na ta mail. Z veseljem pomagamo 😊\n\nLep pozdrav,\nJaka\nKliksy.si`,
+    subject: "Ali ste pozabili kaj dokončati na Kliksy? 📸",
     html: `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333; line-height: 1.6;">
-        <p>Živjo 😊</p>
-        <p>Pred nekaj dnevi ste si na Kliksy.si ustvarili profil, vendar svojega dogodka še niste dokončali.</p>
-        <p>Za vas smo pripravili demo galerijo, kjer lahko preizkusite, kako bo Kliksy izgledal na vašem dogodku. Dodate lahko nekaj testnih slik in vidite celotno izkušnjo 😊</p>
-        <p>Veliko uporabnikov šele takrat zares dobi občutek, kako lepo je imeti vse spontane trenutke zbrane na enem mestu 💛</p>
-        <p>Če imate kakršnokoli vprašanje ali pa se je kje zataknilo, nam brez zadržkov odgovorite na ta mail. Z veseljem pomagamo 😊</p>
-        <p>Lep pozdrav,<br />Jaka<br />Kliksy.si</p>
+        <p>Pozdravljeni!</p>
+        <p>Opazili smo, da se že nekaj časa niste prijavili v svoj Kliksy račun in ustvarili svoje galerije za vaš poseben dogodek.</p>
+        <p>Zbiranje spominov še nikoli ni bilo tako enostavno. Če potrebujete kakršnokoli pomoč, nas enostavno kontaktirajte.</p>
+        <p>Pojdite nazaj na <a href="https://kliksy.si" style="color: #4f46e5; text-decoration: none; font-weight: bold;">Kliksy</a> in nadaljujte, kjer ste ostali!</p>
+        <br />
+        <p>Vaša Kliksy ekipa</p>
+      </div>
+    `,
+  });
+}
+
+export async function sendSevenDaysFollowUpEmail(email: string) {
+  const resendApiKey = process.env.RESEND_API_KEY;
+  if (!resendApiKey) {
+    console.warn("No Resend API key to send follow up email.");
+    return;
+  }
+  
+  const { Resend } = await import('resend');
+  const resend = new Resend(resendApiKey);
+
+  await resend.emails.send({
+    from: "Kliksy <info@kliksy.si>",
+    replyTo: "info@kliksy.si",
+    to: email,
+    subject: "Še vedno ste pravočasni! Rešite svoje spomine z nami ⏱️",
+    html: `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333; line-height: 1.6;">
+        <p>Živjo ponovno!</p>
+        <p>Minil je že en teden, odkar ste se registrirali na Kliksy. Ne dovolite, da vaši spomini ostanejo skriti na telefonih vaših gostov!</p>
+        <p>Ustvarjanje galerije vzame le nekaj trenutkov, vaši gosti pa bodo z veseljem delili svoje fotografije preko QR kode – brez nalaganja aplikacije.</p>
+        <p>Preverite, kako enostavno je, in dokončajte svojo prvo galerijo na <a href="https://kliksy.si" style="color: #4f46e5; text-decoration: none; font-weight: bold;">Kliksy</a>.</p>
+        <p>Če imate dodatna vprašanja, z veseljem prisluhnemo.</p>
+        <br />
+        <p>Vaša Kliksy ekipa</p>
       </div>
     `,
   });
