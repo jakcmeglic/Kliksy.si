@@ -1,6 +1,7 @@
 import express from "express";
 import Stripe from "stripe";
 import path from "path";
+import { generateInvoicePdfBuffer } from "./src/pdfService.js";
 
 // Globani handlerji za preprečevanje sesutja aplikacije (pomagajo pri stabilnosti na Hostingerju)
 process.on('uncaughtException', (err) => {
@@ -452,6 +453,57 @@ async function startServer() {
     } catch (error: any) {
       console.error("Error sending order summary email:", error);
       res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/send-invoice-pdf", async (req, res) => {
+    try {
+      const { invoiceData } = req.body;
+      if (!invoiceData || !invoiceData.email) {
+        return res.status(400).json({ success: false, message: "Manjkajo podatki o računu." });
+      }
+
+      // Generate PDF
+      const pdfBuffer = await generateInvoicePdfBuffer(invoiceData);
+
+      // Send email using Resend
+      const { Resend } = await import('resend');
+      const resendApiKey = process.env.RESEND_API_KEY;
+      
+      if (!resendApiKey) {
+         console.warn("Resend API ključ manjka. Preskakujem pošiljanje emaila.");
+         return res.json({ success: true, message: "PDF zgeneriran, vendar email ni poslan (ni ključa)." });
+      }
+
+      const resend = new Resend(resendApiKey);
+      const emailHtml = `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333; line-height: 1.6;">
+          <p>Pozdravljeni,</p>
+          <p>V priponki vam pošiljamo račun za naročeni Kliksy paket (${invoiceData.plan}).</p>
+          <br />
+          <p>Hvala za zaupanje in prijetno uporabo aplikacije!</p>
+          <p>Vaša Kliksy ekipa</p>
+        </div>
+      `;
+
+      await resend.emails.send({
+        from: 'info@kliksy.si',
+        replyTo: 'info@kliksy.si',
+        to: invoiceData.email,
+        subject: `Račun ${invoiceData.invoiceNumber} - Kliksy`,
+        html: emailHtml,
+        attachments: [
+          {
+            filename: `Racun_${invoiceData.invoiceNumber}.pdf`,
+            content: pdfBuffer,
+          }
+        ]
+      });
+
+      res.json({ success: true, message: "Račun uspešno zgeneriran in poslan!" });
+    } catch (error: any) {
+      console.error("Error creating/sending invoice:", error);
+      res.status(500).json({ success: false, message: error.message });
     }
   });
 

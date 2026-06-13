@@ -8,7 +8,7 @@ import {
 } from 'recharts';
 import { format, subDays, isAfter, startOfDay, isSameDay } from 'date-fns';
 import { sl } from 'date-fns/locale';
-import { QrCode, Package, CreditCard, Users, Calendar, ArrowLeft, LogOut, Download } from 'lucide-react';
+import { QrCode, Package, CreditCard, Users, Calendar, ArrowLeft, LogOut, Download, FileText, BarChart } from 'lucide-react';
 import QRModal from '../components/QRModal';
 
 class QRErrorBoundary extends React.Component<{children: React.ReactNode, onClose: () => void}, {hasError: boolean, errorText: string}> {
@@ -109,7 +109,24 @@ export default function Admin() {
   
   const [events, setEvents] = useState<EventData[]>([]);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'stats' | 'orders' | 'promo' | 'abandoned' | 'expired' | 'export'>('stats');
+  const [activeTab, setActiveTab] = useState<'stats' | 'orders' | 'promo' | 'abandoned' | 'expired' | 'export' | 'invoices'>('stats');
+  const [invoices, setInvoices] = useState<any[]>([]);
+
+  const fetchInvoices = async () => {
+    try {
+      const q = query(collection(db, 'invoices'));
+      const snapshot = await getDocs(q);
+      const data = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      // sort by date descending
+      data.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      setInvoices(data);
+    } catch (error) {
+      console.error('Error fetching invoices:', error);
+    }
+  };
   
   const [promoCodes, setPromoCodes] = useState<any[]>([]);
   const [newPromo, setNewPromo] = useState({
@@ -137,18 +154,48 @@ export default function Admin() {
     if (!invoicePreview) return;
     try {
       setIsUpdating(true);
-      const res = await fetch('/api/create-cebelca-invoice', {
+      
+      const invoicesSnap = await getDocs(query(collection(db, 'invoices')));
+      const year = new Date().getFullYear().toString().slice(-2); // e.g. "26"
+      // Generate something like "K-26-001"
+      const currentYearInvoices = invoicesSnap.docs.filter(d => (d.data().invoiceNumber || '').includes(`-${year}-`));
+      const nextNum = (currentYearInvoices.length + 1).toString().padStart(3, '0');
+      const invoiceNumber = `K-${year}-${nextNum}`;
+      
+      const invoiceData = {
+        invoiceNumber,
+        date: new Date().toISOString(),
+        eventId: invoicePreview.event.id || '',
+        customerName: invoicePreview.event.isCompanyInvoice 
+          ? invoicePreview.event.companyName 
+          : (invoicePreview.event.deliveryName ? `${invoicePreview.event.deliveryName} ${invoicePreview.event.deliverySurname || ''}`.trim() : invoicePreview.event.email),
+        customerAddress: invoicePreview.event.isCompanyInvoice 
+          ? invoicePreview.event.companyAddress 
+          : (invoicePreview.event.deliveryAddress ? `${invoicePreview.event.deliveryAddress}, ${invoicePreview.event.deliveryPostcode} ${invoicePreview.event.deliveryCity}` : "Ni naslova"),
+        customerTaxId: invoicePreview.event.isCompanyInvoice ? invoicePreview.event.companyTaxId : "",
+        isCompanyInvoice: invoicePreview.event.isCompanyInvoice || false,
+        email: invoicePreview.event.email,
+        plan: invoicePreview.event.plan ? invoicePreview.event.plan.toUpperCase() : 'NEZNANO',
+        total: invoicePreview.total,
+        status: 'sending'
+      };
+
+      const docRef = await addDoc(collection(db, 'invoices'), invoiceData);
+
+      const res = await fetch('/api/send-invoice-pdf', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ eventData: invoicePreview.event, totalAmount: invoicePreview.total })
+        body: JSON.stringify({ invoiceData })
       });
       const data = await res.json();
       if (data.success) {
-        alert("Račun je bil uspešno izdan!");
+        await updateDoc(docRef, { status: 'sent' });
+        alert("Račun je bil uspešno izdan in poslan!");
         setInvoicePreview(null);
       } else {
+        await updateDoc(docRef, { status: 'error_sending' });
         alert("Napaka pri izdaji računa:\n" + data.message);
       }
     } catch (e: any) {
@@ -163,6 +210,7 @@ export default function Admin() {
     if (auth === 'true') {
       setIsAuthenticated(true);
       fetchEvents();
+      fetchInvoices();
     }
   }, []);
 
@@ -228,6 +276,7 @@ export default function Admin() {
       setIsAuthenticated(true);
       sessionStorage.setItem('adminAuth', 'true');
       fetchEvents();
+      fetchInvoices();
     } else {
       setError('Napačno uporabniško ime ali geslo.');
     }
@@ -595,9 +644,10 @@ export default function Admin() {
           {[
             { id: 'stats', label: 'Statistika', icon: BarChart },
             { id: 'orders', label: 'Naročila', icon: CreditCard },
+            { id: 'invoices', label: 'Računi', icon: FileText },
             { id: 'expired', label: 'Potekli dogodki', icon: Calendar },
             { id: 'abandoned', label: 'Zapuščene košarice', icon: Users },
-            { id: 'promo', label: 'Promocijske kode', icon: LogOut }, // Using LogOut as placeholder icon for Tag/Promo
+            { id: 'promo', label: 'Promocijske kode', icon: LogOut },
             { id: 'export', label: 'Izvoz stikov', icon: Download },
           ].map(tab => (
             <button
@@ -814,7 +864,7 @@ export default function Admin() {
                                   onClick={() => setInvoicePreview({ event, total })}
                                   className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#f5a623] bg-opacity-10 text-[#e08e0b] hover:bg-opacity-20 rounded-lg text-xs font-medium transition-colors"
                                 >
-                                  Izdaj račun (Čebelca)
+                                  Izdaj račun
                                 </button>
                                 <button
                                   title="Ponovno pošlji potrditev naročila kupcu in obvestilo adminu"
@@ -871,6 +921,63 @@ export default function Admin() {
                   <tr>
                     <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
                       Ni najdenih naročil.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'invoices' && (
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-6">
+          <div className="p-6 border-b border-gray-100">
+            <h3 className="text-lg font-bold text-gray-900">Izdani Računi ({invoices.length})</h3>
+            <p className="text-sm text-gray-500 mt-1">Pregled vseh ustvarjenih in poslanih računov.</p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-gray-50 text-gray-500">
+                <tr>
+                  <th className="px-6 py-4 font-medium">Številka</th>
+                  <th className="px-6 py-4 font-medium">Datum</th>
+                  <th className="px-6 py-4 font-medium">Stranka</th>
+                  <th className="px-6 py-4 font-medium">Email</th>
+                  <th className="px-6 py-4 font-medium">Znesek</th>
+                  <th className="px-6 py-4 font-medium text-right">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {invoices.map((invoice, i) => (
+                  <tr key={invoice.id || i} className="hover:bg-gray-50/50 transition-colors">
+                    <td className="px-6 py-4 font-medium text-gray-900">
+                      {invoice.invoiceNumber}
+                    </td>
+                    <td className="px-6 py-4 text-gray-500">
+                      {format(new Date(invoice.date), 'dd.MM.yyyy HH:mm', { locale: sl })}
+                    </td>
+                    <td className="px-6 py-4 text-gray-900">
+                      {invoice.isCompanyInvoice && <span className="inline-block px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded text-[10px] uppercase font-bold mr-2">Podjetje</span>}
+                      {invoice.customerName}
+                    </td>
+                    <td className="px-6 py-4 text-gray-500">
+                      {invoice.email}
+                    </td>
+                    <td className="px-6 py-4 font-medium text-gray-900">
+                      {invoice.total?.toFixed(2)} €
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      {invoice.status === 'sent' && <span className="px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">Poslano</span>}
+                      {invoice.status === 'sending' && <span className="px-2.5 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium">Pošiljam...</span>}
+                      {invoice.status === 'error_sending' && <span className="px-2.5 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">Napaka</span>}
+                    </td>
+                  </tr>
+                ))}
+                {invoices.length === 0 && !loading && (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                      Trenutno ni izdanih računov.
                     </td>
                   </tr>
                 )}
@@ -1274,8 +1381,8 @@ export default function Admin() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div className="p-6 border-b border-gray-100 flex-shrink-0">
-              <h3 className="text-xl font-bold text-gray-900">Predogled Računa (Čebelca)</h3>
-              <p className="text-sm text-gray-500 mt-1">Preglejte podatke preden se račun uradno izda v sistem Čebelca.</p>
+              <h3 className="text-xl font-bold text-gray-900">Predogled Računa</h3>
+              <p className="text-sm text-gray-500 mt-1">Preglejte in uredite podatke preden se račun uradno izda in pošlje stranki.</p>
             </div>
             
             <div className="p-6 overflow-y-auto flex-1 bg-gray-50/50 space-y-6">
@@ -1345,7 +1452,7 @@ export default function Admin() {
                 disabled={isUpdating}
                 className="flex-1 px-4 py-3 bg-gradient-to-r from-[#f5a623] to-[#e08e0b] text-white rounded-xl font-medium shadow hover:shadow-lg transition-all disabled:opacity-50"
               >
-                {isUpdating ? 'Izdajam...' : 'Potrdi in izdaj račun'}
+                {isUpdating ? 'Izdajam in pošiljam...' : 'Ustvari in pošlji račun'}
               </button>
             </div>
           </div>
