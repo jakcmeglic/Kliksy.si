@@ -378,10 +378,11 @@ export default function Admin() {
 
   useEffect(() => {
     async function calculateAbandoned() {
-      // Calculate abandoned carts (users who have no events with paymentStatus === 'paid')
+      // Calculate abandoned carts (users who have NO paid events OR have at least one UNPAID event)
       const calculatedAbandoned = users.filter(u => {
         const userPaidEvents = events.filter(e => e.ownerId === u.uid && e.paymentStatus === 'paid');
-        return userPaidEvents.length === 0;
+        const userPendingEvents = events.filter(e => e.ownerId === u.uid && e.paymentStatus !== 'paid');
+        return userPaidEvents.length === 0 || userPendingEvents.length > 0;
       }).map(u => {
         // Find if they have any pending orders
         const userPendingEvents = events.filter(e => e.ownerId === u.uid && e.paymentStatus !== 'paid');
