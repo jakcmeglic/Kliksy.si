@@ -150,7 +150,7 @@ export default function Admin() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [invoicePreview, setInvoicePreview] = useState<{event: EventData, total: number} | null>(null);
   
-  const confirmCreateInvoice = async () => {
+  const confirmCreateInvoice = async (sendEmail: boolean = true) => {
     if (!invoicePreview) return;
     try {
       setIsUpdating(true);
@@ -177,7 +177,7 @@ export default function Admin() {
         email: invoicePreview.event.email,
         plan: invoicePreview.event.plan ? invoicePreview.event.plan.toUpperCase() : 'NEZNANO',
         total: invoicePreview.total,
-        status: 'sending'
+        status: sendEmail ? 'sending' : 'generated'
       };
 
       const docRef = await addDoc(collection(db, 'invoices'), invoiceData);
@@ -187,13 +187,14 @@ export default function Admin() {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ invoiceData })
+        body: JSON.stringify({ invoiceData, sendEmail })
       });
       const data = await res.json();
       if (data.success) {
-        await updateDoc(docRef, { status: 'sent' });
-        alert("Račun je bil uspešno izdan in poslan!");
+        await updateDoc(docRef, { status: sendEmail ? 'sent' : 'generated' });
+        alert(sendEmail ? "Račun je bil uspešno izdan in poslan stranki!" : "Račun je bil uspešno izdan (stranki pa ni bil poslan).");
         setInvoicePreview(null);
+        fetchInvoices();
       } else {
         await updateDoc(docRef, { status: 'error_sending' });
         alert("Napaka pri izdaji računa:\n" + data.message);
@@ -955,7 +956,8 @@ export default function Admin() {
                   <th className="px-6 py-4 font-medium">Stranka</th>
                   <th className="px-6 py-4 font-medium">Email</th>
                   <th className="px-6 py-4 font-medium">Znesek</th>
-                  <th className="px-6 py-4 font-medium text-right">Status</th>
+                  <th className="px-6 py-4 font-medium text-center">Status</th>
+                  <th className="px-6 py-4 font-medium text-right">Akcija</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -977,16 +979,51 @@ export default function Admin() {
                     <td className="px-6 py-4 font-medium text-gray-900">
                       {invoice.total?.toFixed(2)} €
                     </td>
-                    <td className="px-6 py-4 text-right">
+                    <td className="px-6 py-4 text-center">
                       {invoice.status === 'sent' && <span className="px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">Poslano</span>}
                       {invoice.status === 'sending' && <span className="px-2.5 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium">Pošiljam...</span>}
                       {invoice.status === 'error_sending' && <span className="px-2.5 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">Napaka</span>}
+                      {invoice.status === 'generated' && <span className="px-2.5 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">Izdano (ne poslano)</span>}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <button
+                        onClick={async () => {
+                          try {
+                            const res = await fetch('/api/download-invoice-pdf', {
+                              method: 'POST',
+                              headers: {
+                                'Content-Type': 'application/json'
+                              },
+                              body: JSON.stringify({ invoiceData: invoice })
+                            });
+                            if (res.ok) {
+                              const blob = await res.blob();
+                              const url = window.URL.createObjectURL(blob);
+                              const a = document.createElement('a');
+                              a.href = url;
+                              a.download = `Racun_${invoice.invoiceNumber}.pdf`;
+                              document.body.appendChild(a);
+                              a.click();
+                              a.remove();
+                              window.URL.revokeObjectURL(url);
+                            } else {
+                              alert('Napaka pri prenosu PDFja.');
+                            }
+                          } catch (e: any) {
+                            alert('Napaka: ' + e.message);
+                          }
+                        }}
+                        className="p-2 text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 rounded-lg transition-colors"
+                        title="Prenesi PDF"
+                      >
+                        <Download className="w-5 h-5" />
+                      </button>
                     </td>
                   </tr>
                 ))}
                 {invoices.length === 0 && !loading && (
                   <tr>
-                    <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                    <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
                       Trenutno ni izdanih računov.
                     </td>
                   </tr>
@@ -1451,18 +1488,26 @@ export default function Admin() {
               <button
                 type="button"
                 onClick={() => setInvoicePreview(null)}
-                className="flex-1 px-4 py-3 border border-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors"
+                className="flex-1 px-3 py-3 border border-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors"
                 disabled={isUpdating}
               >
                 Prekliči
               </button>
               <button
                 type="button"
-                onClick={confirmCreateInvoice}
+                onClick={() => confirmCreateInvoice(false)}
                 disabled={isUpdating}
-                className="flex-1 px-4 py-3 bg-gradient-to-r from-[#f5a623] to-[#e08e0b] text-white rounded-xl font-medium shadow hover:shadow-lg transition-all disabled:opacity-50"
+                className="flex-1 px-3 py-3 bg-gray-100 text-gray-800 hover:bg-gray-200 rounded-xl font-medium transition-colors disabled:opacity-50"
               >
-                {isUpdating ? 'Izdajam in pošiljam...' : 'Ustvari in pošlji račun'}
+                Samo izdaj (ne pošlji)
+              </button>
+              <button
+                type="button"
+                onClick={() => confirmCreateInvoice(true)}
+                disabled={isUpdating}
+                className="flex-1 px-3 py-3 bg-gradient-to-r from-[#f5a623] to-[#e08e0b] text-white rounded-xl font-medium shadow hover:shadow-lg transition-all disabled:opacity-50"
+              >
+                {isUpdating ? 'Izdajam...' : 'Ustvari in pošlji stranki'}
               </button>
             </div>
           </div>

@@ -456,15 +456,37 @@ async function startServer() {
     }
   });
 
-  app.post("/api/send-invoice-pdf", async (req, res) => {
+  app.post("/api/download-invoice-pdf", async (req, res) => {
     try {
       const { invoiceData } = req.body;
+      if (!invoiceData) {
+        return res.status(400).json({ success: false, message: "Manjkajo podatki o računu." });
+      }
+
+      const pdfBuffer = await generateInvoicePdfBuffer(invoiceData);
+      
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="Racun_${invoiceData.invoiceNumber}.pdf"`);
+      res.send(Buffer.from(pdfBuffer));
+    } catch (error: any) {
+      console.error("Error creating invoice PDF:", error);
+      res.status(500).json({ success: false, message: error.message });
+    }
+  });
+
+  app.post("/api/send-invoice-pdf", async (req, res) => {
+    try {
+      const { invoiceData, sendEmail } = req.body;
       if (!invoiceData || !invoiceData.email) {
         return res.status(400).json({ success: false, message: "Manjkajo podatki o računu." });
       }
 
-      // Generate PDF
+      // Generate PDF to ensure the logic doesn't crash on this data
       const pdfBuffer = await generateInvoicePdfBuffer(invoiceData);
+
+      if (sendEmail === false) {
+        return res.json({ success: true, message: "Račun uspešno zgeneriran (ne poslan)." });
+      }
 
       // Send email using Resend
       const { Resend } = await import('resend');
