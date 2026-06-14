@@ -424,10 +424,11 @@ export default function Admin() {
     const l30d = subDays(today, 30);
 
     return events.filter(event => {
-      // Allow events without createdAt to show up, default to 'today' for comparison
-      // If we completely hide them, they disappear from the dashboard
+      // Use paidAt if available, otherwise fallback to createdAt
       let eventDate = today;
-      if (event.createdAt?.toDate) {
+      if (event.paymentStatus === 'paid' && event.paidAt) {
+        eventDate = new Date(event.paidAt);
+      } else if (event.createdAt?.toDate) {
         eventDate = event.createdAt.toDate();
       }
       
@@ -509,8 +510,16 @@ export default function Admin() {
 
     filteredEvents.forEach(event => {
       const isPaid = event.paymentStatus === 'paid';
-      if (isPaid && event.createdAt) {
-        const dateStr = format(event.createdAt.toDate(), 'dd. MM.');
+      
+      let eventDate: Date | null = null;
+      if (isPaid && event.paidAt) {
+        eventDate = new Date(event.paidAt);
+      } else if (event.createdAt?.toDate) {
+        eventDate = event.createdAt.toDate();
+      }
+
+      if (isPaid && eventDate) {
+        const dateStr = format(eventDate, 'dd. MM.');
         
         let basePrice = 0;
         let upsellPrice = 0;
