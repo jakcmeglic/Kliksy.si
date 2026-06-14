@@ -404,10 +404,14 @@ export default function Admin() {
         user.totalPhotos = totalPhotos;
       }
 
-      // Sort by createdAt descending
+      // Sort by the most recent pending event's createdAt descending
       calculatedAbandoned.sort((a, b) => {
-        const timeA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
-        const timeB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+        const getLatestEventTime = (user: any) => {
+          if (!user.pendingEvents || user.pendingEvents.length === 0) return 0;
+          return Math.max(...user.pendingEvents.map((e: any) => e.createdAt?.toMillis ? e.createdAt.toMillis() : (e.createdAt?.seconds ? e.createdAt.seconds * 1000 : 0)));
+        };
+        const timeA = getLatestEventTime(a) || (a.createdAt?.toMillis ? a.createdAt.toMillis() : 0);
+        const timeB = getLatestEventTime(b) || (b.createdAt?.toMillis ? b.createdAt.toMillis() : 0);
         return timeB - timeA;
       });
 
@@ -1048,14 +1052,19 @@ export default function Admin() {
                 <tr>
                   <th className="px-6 py-4 font-medium">Uporabnik</th>
                   <th className="px-6 py-4 font-medium">Email</th>
-                  <th className="px-6 py-4 font-medium">Registracija</th>
+                  <th className="px-6 py-4 font-medium">Zadnji dogodek</th>
                   <th className="px-6 py-4 font-medium">Neplačani dogodki</th>
                   <th className="px-6 py-4 font-medium">Slike (Demo)</th>
                   <th className="px-6 py-4 font-medium text-right">Akcija</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {abandonedCarts.map((user) => (
+                {abandonedCarts.map((user) => {
+                  let latestEventTime = user.createdAt?.toMillis ? user.createdAt.toMillis() : 0;
+                  if (user.pendingEvents && user.pendingEvents.length > 0) {
+                    latestEventTime = Math.max(...user.pendingEvents.map((e: any) => e.createdAt?.toMillis ? e.createdAt.toMillis() : (e.createdAt?.seconds ? e.createdAt.seconds * 1000 : 0)));
+                  }
+                  return (
                   <tr key={user.uid} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="font-medium text-gray-900">{user.displayName || 'Brez imena'}</div>
@@ -1064,7 +1073,7 @@ export default function Admin() {
                       {user.email || 'Ni emaila'}
                     </td>
                     <td className="px-6 py-4 text-gray-500">
-                      {user.createdAt ? format(user.createdAt.toDate(), 'dd. MM. yyyy HH:mm') : 'Neznano'}
+                      {latestEventTime ? format(new Date(latestEventTime), 'dd. MM. yyyy HH:mm') : 'Neznano'}
                     </td>
                     <td className="px-6 py-4 text-gray-500">
                       {user.pendingEvents && user.pendingEvents.length > 0 ? (
@@ -1101,7 +1110,8 @@ export default function Admin() {
                       )}
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
                 {abandonedCarts.length === 0 && !loading && (
                   <tr>
                     <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
