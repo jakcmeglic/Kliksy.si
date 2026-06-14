@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { collection, getDocs, query, orderBy, doc, updateDoc, where, getCountFromServer } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, doc, updateDoc, where, getCountFromServer, addDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
@@ -8,7 +8,7 @@ import {
 } from 'recharts';
 import { format, subDays, isAfter, startOfDay, isSameDay } from 'date-fns';
 import { sl } from 'date-fns/locale';
-import { QrCode, Package, CreditCard, Users, Calendar, ArrowLeft, LogOut, Download, FileText, BarChart } from 'lucide-react';
+import { QrCode, Package, CreditCard, Users, Calendar, ArrowLeft, LogOut, Download, FileText, BarChart as BarChartIcon } from 'lucide-react';
 import QRModal from '../components/QRModal';
 
 class QRErrorBoundary extends React.Component<{children: React.ReactNode, onClose: () => void}, {hasError: boolean, errorText: string}> {
@@ -652,7 +652,7 @@ export default function Admin() {
         {/* Tabs */}
         <div className="flex border-b border-gray-200 mb-8 overflow-x-auto">
           {[
-            { id: 'stats', label: 'Statistika', icon: BarChart },
+            { id: 'stats', label: 'Statistika', icon: BarChartIcon },
             { id: 'orders', label: 'Naročila', icon: CreditCard },
             { id: 'invoices', label: 'Računi', icon: FileText },
             { id: 'expired', label: 'Potekli dogodki', icon: Calendar },
