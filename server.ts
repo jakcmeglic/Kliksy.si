@@ -12,21 +12,34 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 // Pricing and Discount Helper
-async function calculatePrice(plan: string, discountCode: string | undefined, deliveryMode: string, standsQuantity: number, printedQrQuantity: number) {
-  const plans = {
+async function calculatePrice(plan: string, discountCode: string | undefined, deliveryMode: string, standsQuantity: number, printedQrQuantity: number, currency: string = 'eur') {
+  const isPln = currency === 'pln';
+
+  const plans = isPln ? {
+    basic: 16900,
+    plus: 21900,
+    premium: 34900
+  } : {
     basic: 3900, // in cents
     plus: 4900,
     premium: 7900
   };
 
-  const originalPrice = plans[plan as keyof typeof plans] || 4900;
+  const originalPrice = plans[plan as keyof typeof plans] || (isPln ? 21900 : 4900);
   
   let upsellPrice = 0;
   // Always use self_print logic since home_delivery is removed
-  if (standsQuantity === 5) upsellPrice += 1999;
-  else if (standsQuantity === 10) upsellPrice += 2499;
-  else if (standsQuantity === 20) upsellPrice += 2999;
-  else if (standsQuantity === 30) upsellPrice += 3499;
+  if (isPln) {
+    if (standsQuantity === 5) upsellPrice += 8900;
+    else if (standsQuantity === 10) upsellPrice += 10900;
+    else if (standsQuantity === 20) upsellPrice += 12900;
+    else if (standsQuantity === 30) upsellPrice += 14900;
+  } else {
+    if (standsQuantity === 5) upsellPrice += 1999;
+    else if (standsQuantity === 10) upsellPrice += 2499;
+    else if (standsQuantity === 20) upsellPrice += 2999;
+    else if (standsQuantity === 30) upsellPrice += 3499;
+  }
 
   let finalPrice = originalPrice + upsellPrice;
 
@@ -123,13 +136,28 @@ async function startServer() {
     }
 
     const isHr = lang === 'hr';
-    const subjectContent = isHr ? "Dobrodošli u Kliksy!" : "Dobrodošli pri Kliksy!";
+    const isPl = lang === 'pl';
+    const subjectContent = isPl ? "Witamy w Kliksy!" : isHr ? "Dobrodošli u Kliksy!" : "Dobrodošli pri Kliksy!";
     
-    const textContent = isHr 
+    const textContent = isPl
+      ? `Witamy w Kliksy!\n\nSzanowny ${displayName || 'Kliencie'},\n\nDziękujemy za rejestrację w Kliksy. Bardzo nam miło, że dołączyłeś!\n\nDzięki naszej aplikacji możesz łatwo generować kody QR i zbierać wszystkie zdjęcia w jednym miejscu.\n\nJeśli masz jakiekolwiek pytania, po prostu odpowiedz na tę wiadomość.\n\nPozdrawiamy,\nZespół Kliksy`
+      : isHr 
       ? `Dobrodošli u Kliksy!\n\nPoštovani ${displayName || ''},\n\nHvala vam što ste se registrirali u Kliksy. Drago nam je da ste nam se pridružili!\n\nS našom aplikacijom možete jednostavno stvoriti jedinstvene QR kodove za vaše događaje i prikupljati fotografije vaših gostiju na jednom mjestu.\n\nAko imate bilo kakvih pitanja, jednostavno odgovorite na ovaj e-mail.\n\nSrdačan pozdrav,\nKliksy tim`
       : `Dobrodošli pri Kliksy!\n\nPozdravljeni ${displayName || ''},\n\nHvala, ker ste se registrirali pri Kliksy. Veseli smo, da ste se nam pridružili!\n\nZ našo aplikacijo lahko preprosto ustvarite unikatne QR kode za vaše dogodke in zbirate fotografije vaših gostov na enem mestu.\n\nČe imate kakršna koli vprašanja, nam preprosto odgovorite na ta email.\n\nLep pozdrav,\nEkipa Kliksy`;
 
-    const htmlContent = isHr
+    const htmlContent = isPl
+      ? `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+          <h1 style="color: #4f46e5;">Witamy w Kliksy!</h1>
+          <p>Szanowny ${displayName || 'Kliencie'},</p>
+          <p>Dziękujemy za rejestrację w Kliksy. Bardzo nam miło, że dołączyłeś!</p>
+          <p>Dzięki naszej aplikacji możesz łatwo generować kody QR i zbierać wszystkie zdjęcia w jednym miejscu.</p>
+          <p>Jeśli masz jakiekolwiek pytania, po prostu odpowiedz na tę wiadomość.</p>
+          <br />
+          <p>Pozdrawiamy,<br />Zespół Kliksy</p>
+        </div>
+      `
+      : isHr
       ? `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
           <h1 style="color: #4f46e5;">Dobrodošli u Kliksy!</h1>
@@ -694,9 +722,9 @@ async function startServer() {
 
   app.post("/api/create-checkout-session", async (req, res) => {
     try {
-      const { plan, discountCode, standsQuantity, eventId, successUrl, cancelUrl } = req.body;
+      const { plan, discountCode, standsQuantity, eventId, successUrl, cancelUrl, currency = 'eur' } = req.body;
       
-      const amount = await calculatePrice(plan, discountCode, 'self_print', standsQuantity, 0);
+      const amount = await calculatePrice(plan, discountCode, 'self_print', standsQuantity, 0, currency);
 
       if (amount === 0) {
         return res.json({ url: successUrl, free: true });
@@ -714,7 +742,7 @@ async function startServer() {
         line_items: [
           {
             price_data: {
-              currency: 'eur',
+              currency: currency,
               product_data: {
                 name: `Paket ${plan.toUpperCase()}`,
                 description: `Dodatki: ${standsQuantity} stojal`,
@@ -739,9 +767,9 @@ async function startServer() {
 
   app.post("/api/create-payment-intent", async (req, res) => {
     try {
-      const { plan, discountCode, standsQuantity } = req.body;
+      const { plan, discountCode, standsQuantity, currency = 'eur' } = req.body;
       
-      const amount = await calculatePrice(plan, discountCode, 'self_print', standsQuantity, 0);
+      const amount = await calculatePrice(plan, discountCode, 'self_print', standsQuantity, 0, currency);
 
       if (amount === 0) {
         return res.json({ clientSecret: null, free: true });
@@ -756,7 +784,7 @@ async function startServer() {
 
       const paymentIntent = await stripe.paymentIntents.create({
         amount,
-        currency: "eur",
+        currency: currency,
         payment_method_types: ['card'],
       });
 

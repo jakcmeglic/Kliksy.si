@@ -26,13 +26,15 @@ export const createUserProfile = async (user: any) => {
       // Send welcome email via API
       try {
         const isHr = window.location.hostname.includes('hr.getkliksy.com');
+        const isPl = window.location.hostname.includes('pl.getkliksy.com');
+        const lang = isPl ? 'pl' : isHr ? 'hr' : 'sl';
         fetch('/api/send-welcome-email', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
             email: user.email, 
             displayName: user.displayName || '',
-            lang: isHr ? 'hr' : 'sl'
+            lang: lang
           })
         }).catch(err => console.error("Failed to trigger welcome email:", err));
       } catch (e) {

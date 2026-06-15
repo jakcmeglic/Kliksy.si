@@ -12,12 +12,20 @@ const resources = {
     translation: {
       "hello": "Bok"
     }
+  },
+  pl: {
+    translation: {
+      "hello": "Cześć"
+    }
   }
 };
 
 const getLanguageFromHostname = () => {
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname;
+    if (hostname.includes('pl.getkliksy.com')) {
+      return 'pl';
+    }
     // Check if the current hostname includes 'hr.' or is exactly a croatian domain.
     if (hostname.includes('hr.getkliksy.com')) {
       return 'hr';
