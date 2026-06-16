@@ -198,28 +198,28 @@ export default function LandingHr() {
             <div className="relative w-[110%] -ml-[5%] sm:ml-0 sm:w-full max-w-[420px] h-[280px] sm:h-[350px] mb-12 mt-6 mx-auto md:mx-0 shrink-0">
               {/* Top-left: Dancing (1) */}
               <img 
-                src="https://i.postimg.cc/7hvnkh7X/hf-20260424-062805-2a04f02c-aa0e-4117-8b31-73864659076b.webp" 
+                src="https://i.postimg.cc/ZKMw64t8/hf-20260424-062805-2a04f02c-aa0e-4117-8b31-73864659076b.webp" 
                 className="absolute left-0 top-[2%] w-[55%] aspect-[4/3] object-cover rounded shadow-md border-4 sm:border-[6px] border-white transform -rotate-6 z-10 hover:scale-105 hover:z-50 transition-all duration-300" 
                 alt="Zabawa" 
               />
               
               {/* Top-right: QR on table (2) */}
               <img 
-                src="https://i.postimg.cc/J0bc48cg/hf-20260424-062820-195d1677-9456-4936-a48d-ba136c48a79a.webp" 
+                src="https://i.postimg.cc/PrRS1Ts6/hf-20260424-062820-195d1677-9456-4936-a48d-ba136c48a79a.webp" 
                 className="absolute right-0 top-[8%] w-[52%] aspect-[4/3] object-cover rounded shadow-lg border-4 sm:border-[6px] border-white transform rotate-6 z-20 hover:scale-105 hover:z-50 transition-all duration-300" 
                 alt="Kod QR na stole" 
               />
               
               {/* Bottom-right: Photobooth (4) */}
               <img 
-                src="https://i.postimg.cc/ZnrFKmFX/hf-20260429-125252-5fda138d-9fbe-41ec-bb70-16fb08cf8414.webp" 
+                src="https://i.postimg.cc/qM5124VD/hf-20260429-125252-5fda138d-9fbe-41ec-bb70-16fb08cf8414.webp" 
                 className="absolute right-[5%] bottom-[5%] w-[58%] aspect-[4/3] object-cover rounded shadow-xl border-4 sm:border-[6px] border-white transform -rotate-3 z-30 hover:scale-105 hover:z-50 transition-all duration-300" 
                 alt="Rekwizyty do fotobudki" 
               />
               
               {/* Bottom-left: Flyer (3) */}
               <img 
-                src="https://i.postimg.cc/prDYXvY6/hf-20260424-062820-a905e0f9-16e9-4c55-be91-4cde92a15ea0.webp" 
+                src="https://i.postimg.cc/QxyfchG4/hf-20260424-062820-a905e0f9-16e9-4c55-be91-4cde92a15ea0.webp" 
                 className="absolute left-[5%] bottom-0 w-[45%] aspect-[3/4] object-cover rounded shadow-2xl border-4 sm:border-[6px] border-white transform rotate-[-8deg] z-40 hover:scale-105 hover:z-50 transition-all duration-300" 
                 alt="Ulotka Kliksy" 
               />
@@ -241,7 +241,7 @@ export default function LandingHr() {
              <div className="relative w-full max-w-[600px] right-0 lg:-mr-16">
                 <div className="rounded-[2.5rem] overflow-hidden shadow-2xl relative border-[6px] border-white" style={{boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'}}>
                    {LANDING_IMAGES.heroPhoneMockup ? (
-                     <img src={LANDING_IMAGES.heroPhoneMockup} alt="Grupowe selfie weselne" className="w-full h-auto object-cover aspect-[4/3] relative z-10" />
+                     <img src="https://i.postimg.cc/fRW0W0gr/hf-20260616-183622-74c192a4-ed20-474a-90a7-2a4c106b37ff.webp" alt="Grupowe selfie weselne" className="w-full h-auto object-cover aspect-[4/3] relative z-10" />
                    ) : (
                      <div className="w-full aspect-[4/3] bg-gray-200"></div>
                    )}
@@ -388,7 +388,7 @@ export default function LandingHr() {
                </p>
                <div className="mt-auto w-full max-w-[280px] bg-[#F8F9FA] rounded-[2rem] overflow-hidden shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] mx-auto relative border-[8px] border-white">
                  {LANDING_IMAGES.printQrCode ? (
-                   <img src={LANDING_IMAGES.printQrCode} alt="Wydrukuj kod" className="w-full h-[360px] object-cover" />
+                   <img src="https://i.postimg.cc/RZCnCnDr/hf-20260616-183707-975ea573-2879-401c-8311-eedb66657769.webp" alt="Wydrukuj kod" className="w-full h-[360px] object-cover" />
                  ) : (
                    <div className="w-full h-[360px] bg-gray-200"></div>
                  )}
@@ -410,7 +410,7 @@ export default function LandingHr() {
                </p>
                <div className="mt-auto w-full max-w-[280px] bg-white rounded-[2.5rem] overflow-hidden shadow-[0_20px_40px_-15px_rgba(0,0,0,0.2)] mx-auto border-[10px] border-gray-900 relative">
                  {LANDING_IMAGES.guestTakingPhoto ? (
-                   <img src={LANDING_IMAGES.guestTakingPhoto} alt="Gość robiący zdjęcie" className="w-full h-[360px] object-cover" />
+                   <img src="https://i.postimg.cc/529F9Fkh/hf-20260616-193608-e0222a1a-b6bd-4411-9b17-57e984c8fa84.webp" alt="Gość robiący zdjęcie" className="w-full h-[360px] object-cover" />
                  ) : (
                    <div className="w-full h-[360px] p-6 pt-12 flex flex-col bg-white">
                     <p className="text-center font-bold text-lg mb-8">Dodaj swoje zdjęcie</p>
@@ -447,7 +447,7 @@ export default function LandingHr() {
                    </div>
                  </div>
                  {LANDING_IMAGES.galleryGrid1 ? (
-                   <img src={LANDING_IMAGES.galleryGrid1} alt="Siatka galerii" className="rounded-2xl w-full h-full object-cover"/>
+                   <img src="https://i.postimg.cc/529F9Fkh/hf-20260616-193608-e0222a1a-b6bd-4411-9b17-57e984c8fa84.webp" alt="Siatka galerii" className="rounded-2xl w-full h-full object-cover"/>
                  ) : (
                    <div className="flex-1 rounded-2xl overflow-hidden relative grid grid-cols-2 gap-2 pb-2">
                       <div className="bg-gray-100 rounded-lg overflow-hidden h-32"></div>

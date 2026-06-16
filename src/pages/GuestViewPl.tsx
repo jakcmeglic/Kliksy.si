@@ -166,24 +166,40 @@ export default function GuestViewHr() {
   useEffect(() => {
     if (!id) return;
 
-    const q = query(
-      collection(db, "events", id, "photos"),
-      orderBy("createdAt", "desc"),
-      limit(6)
-    );
+    let q;
+    if (event?.guestViewSettings === 'own') {
+      q = query(
+        collection(db, "events", id, "photos"),
+        where("deviceId", "==", deviceId)
+      );
+    } else {
+      q = query(
+        collection(db, "events", id, "photos"),
+        orderBy("createdAt", "desc"),
+        limit(6)
+      );
+    }
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const newPhotos = snapshot.docs.map(doc => ({
+      let newPhotos = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       }));
+      if (event?.guestViewSettings === 'own') {
+        newPhotos.sort((a: any, b: any) => {
+          const tA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+          const tB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+          return tB - tA;
+        });
+        newPhotos = newPhotos.slice(0, 6);
+      }
       setRecentPhotos(newPhotos);
     }, (error) => {
       handleFirestoreError(error, OperationType.LIST, `events/${id}/photos`);
     });
 
     return () => unsubscribe();
-  }, [id]);
+  }, [id, event?.guestViewSettings, deviceId]);
 
   const [hasOpenedModal, setHasOpenedModal] = useState(false);
 
@@ -197,23 +213,38 @@ export default function GuestViewHr() {
   useEffect(() => {
     if (!id || !hasOpenedModal) return;
 
-    const q = query(
-      collection(db, "events", id, "photos"),
-      orderBy("createdAt", "desc")
-    );
+    let q;
+    if (event?.guestViewSettings === 'own') {
+      q = query(
+        collection(db, "events", id, "photos"),
+        where("deviceId", "==", deviceId)
+      );
+    } else {
+      q = query(
+        collection(db, "events", id, "photos"),
+        orderBy("createdAt", "desc")
+      );
+    }
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const newPhotos = snapshot.docs.map(doc => ({
+      let newPhotos = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       }));
+      if (event?.guestViewSettings === 'own') {
+        newPhotos.sort((a: any, b: any) => {
+          const tA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+          const tB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+          return tB - tA;
+        });
+      }
       setAllPhotos(newPhotos);
     }, (error) => {
       handleFirestoreError(error, OperationType.LIST, `events/${id}/photos_gallery`);
     });
 
     return () => unsubscribe();
-  }, [id, hasOpenedModal]);
+  }, [id, hasOpenedModal, event?.guestViewSettings, deviceId]);
 
   const handleToggleLike = async (photoId: string) => {
     if (!id || !deviceId) return;
@@ -496,7 +527,7 @@ export default function GuestViewHr() {
           >
             <div className="flex items-center justify-between mb-4 px-2">
               <div className="flex items-center gap-2">
-                <h3 className="font-bold text-lg text-gray-900">Ostatnie wspomnienia</h3>
+                <h3 className="font-bold text-lg text-gray-900">{event?.guestViewSettings === 'own' ? 'Moje zdjęcia' : 'Ostatnie wspomnienia'}</h3>
                 <span className="text-xs font-medium bg-indigo-50 px-2 py-1 rounded-full text-indigo-600">Na żywo</span>
               </div>
               {(recentPhotos.length > 0) && (

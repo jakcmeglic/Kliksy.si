@@ -34,11 +34,13 @@ export default function DashboardHr() {
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const [imageToDelete, setImageToDelete] = useState<string | null>(null);
   const [welcomeMessage, setWelcomeMessage] = useState("");
+  const [guestViewSettings, setGuestViewSettings] = useState<'all' | 'own'>('all');
   const [isSavingSettings, setIsSavingSettings] = useState(false);
 
   useEffect(() => {
     if (event) {
       setWelcomeMessage(event.welcomeMessage || (event.eventType === 'poroka' || !event.eventType ? "Dziękujemy za dzielenie się z nami wspomnieniami." : "Dziękujemy za dzielenie się z nami wspomnieniami."));
+      setGuestViewSettings(event.guestViewSettings || 'all');
     }
   }, [event]);
 
@@ -511,73 +513,17 @@ export default function DashboardHr() {
           {event.paymentStatus !== 'paid' && (
             <div className="mb-8 bg-indigo-50 border border-indigo-100 rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-sm">
               <div>
-                <h3 className="text-lg font-bold text-indigo-900 mb-2">Pakiet Demo (ograniczony do 5 zdjęć)</h3>
-                <p className="text-indigo-700">Obecnie testujesz pakiet demo. Aby goście mogli przesyłać więcej zdjęć i korzystać ze wszystkich funkcji, odblokuj swoje wydarzenie.</p>
-              </div>
-              <button 
-                onClick={() => navigate(`/create?eventId=${event.id}`)}
-                className="shrink-0 bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-indigo-700 transition md:ml-auto shadow-md shadow-indigo-200"
-              >
-                Odblokuj moje wydarzenie
-              </button>
-            </div>
-          )}
-
-          {/* Header Actions */}
-          <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-12">
-            <div className="flex items-center gap-4">
-              <button 
-                onClick={() => navigate(-1)}
-                className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors border border-transparent"
-              >
-                <ArrowLeft className="w-5 h-5 text-gray-900" />
-              </button>
-              <div>
-                <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 mb-1">
-                  {activeTab === 'overview' && 'Przegląd wydarzenia'}
-                  {activeTab === 'gallery' && 'Wszystkie zdjęcia'}
-                  {activeTab === 'settings' && 'Ustawienia'}
-                </h1>
-                <p className="text-gray-500">
-                  {event.eventType === 'poroka' || !event.eventType ? 'Zarządzaj swoimi wspomnieniami ze ślubu.' : 
-                   event.eventType === 'rojstni_dan' ? 'Zarządzaj swoimi wspomnieniami z urodzin.' : 
-                   event.eventType === 'poslovni_događaj' ? 'Zarządzaj wspomnieniami z wydarzenia firmowego.' : 
-                   event.eventType === 'teambuilding' ? 'Zarządzaj swoimi wspomnieniami z wyjazdu integracyjnego.' : 
-                   'Zarządzaj wspomnieniami z wydarzenia.'}
+                <h3 className="font-bold text-lg text-gray-900 mb-1">To jest podgląd Demo</h3>
+                <p className="text-gray-600 text-sm max-w-xl">
+                  Twoje wydarzenie jest w trybie demo i ograniczone do 5 zdjęć. Zaktualizuj pakiet, aby uzyskać pełne wrażenia.
                 </p>
               </div>
-            </div>
-            
-            <div className="flex flex-wrap items-center gap-3">
-              <a 
-                href={eventUrl} 
-                target="_blank" 
-                rel="noreferrer"
-                className="flex items-center justify-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-full text-sm font-medium hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm flex-1 md:flex-none text-gray-700"
-              >
-                <ExternalLink className="w-4 h-4" />
-                <span className="hidden sm:inline">Zobacz jako gość</span>
-                <span className="sm:hidden">Gość</span>
-              </a>
               <button 
-                onClick={handleDownloadAll}
-                disabled={isDownloading || photos.length === 0}
-                className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-full text-sm font-medium hover:bg-gray-800 transition-all shadow-sm disabled:opacity-50 flex-1 md:flex-none"
+                onClick={() => navigate(`/checkout/${event.id}`)} 
+                className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition-colors whitespace-nowrap shadow-sm"
               >
-                {isDownloading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Download className="w-4 h-4" />
-                )}
-                <span className="hidden sm:inline">{isDownloading ? "Przygotowuję ZIP..." : "Pobierz wszystko (ZIP)"}</span>
-                <span className="sm:hidden">{isDownloading ? "..." : "Pobierz wszystko"}</span>
+                Zaktualizuj teraz
               </button>
-            </div>
-          </header>
-
-          {downloadError && (
-            <div className="mb-8 p-4 bg-red-50 text-red-600 rounded-xl border border-red-100 text-sm">
-              {downloadError}
             </div>
           )}
 
@@ -585,179 +531,145 @@ export default function DashboardHr() {
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="space-y-8"
+              className="space-y-6"
             >
-              {/* Stats Grid */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {stats.map((stat, i) => (
-                  <div key={i} className="bg-white p-6 rounded-3xl border border-gray-200 shadow-sm flex items-center gap-4">
-                    <div className="w-12 h-12 bg-indigo-50 rounded-full flex items-center justify-center">
+                  <div key={i} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex items-center gap-4">
+                    <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center shrink-0">
                       <stat.icon className="w-6 h-6 text-indigo-600" />
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500 font-medium mb-1">{stat.label}</p>
-                      <p className="text-2xl font-bold tracking-tight text-gray-900">{stat.value}</p>
+                      <p className="text-sm font-medium text-gray-500 mb-1">{stat.label}</p>
+                      <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
                     </div>
                   </div>
                 ))}
               </div>
 
-              <div className="grid md:grid-cols-3 gap-8">
-                {/* QR Code Card */}
-                <div className="md:col-span-1 bg-white p-8 rounded-3xl border border-gray-200 shadow-sm text-center flex flex-col items-center relative overflow-hidden">
-                  <h3 className="font-bold tracking-tight text-xl mb-2 text-gray-900">Twój kod QR</h3>
-                  <p className="text-sm text-gray-500 mb-6">Wydrukuj ten kod i umieść go na stołach.</p>
-                  
-                  {event && event.paymentStatus !== 'paid' && (
-                    <motion.div 
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="flex flex-col items-center justify-center mb-4 text-indigo-600"
-                    >
-                      <div className="bg-indigo-50 border border-indigo-100 px-4 py-2 rounded-2xl shadow-sm mb-2 max-w-[220px]">
-                        <p className="text-sm font-bold leading-snug">
-                          Zeskanuj ten kod QR i sprawdź jak to działa
-                        </p>
-                      </div>
-                      <svg className="w-8 h-8 animate-bounce text-indigo-500 drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                      </svg>
-                    </motion.div>
-                  )}
+              <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm flex flex-col md:flex-row items-center gap-8">
+                 <div className="shrink-0 bg-white p-4 rounded-3xl shadow-sm border border-gray-100">
+                    <div className="w-[180px] h-[180px] relative" id="raw-qr-code-svg-container">
+                       <QRCodeSVG 
+                         id="raw-qr-code-svg"
+                         value={eventUrl}
+                         size={180}
+                         level="H"
+                         includeMargin={true}
+                       />
+                    </div>
+                 </div>
+                 <div className="flex-1 text-center md:text-left">
+                    <h3 className="font-bold text-2xl text-gray-900 mb-2">Kod QR wydarzenia</h3>
+                    <p className="text-gray-500 mb-6 max-w-md mx-auto md:mx-0">
+                      Wydrukuj i połóż na stołach. Goście skanują go aplikacją aparatu na swoich telefonach.
+                    </p>
+                    <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
+                       <button
+                         onClick={() => setIsQRModalOpen(true)}
+                         className="px-6 py-3 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 transition-colors shadow-sm flex items-center gap-2"
+                       >
+                         Drukuj projekty
+                       </button>
+                       <button
+                         onClick={handleDownloadRawQR}
+                         className="px-6 py-3 bg-white border border-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors flex items-center gap-2"
+                       >
+                         <Download className="w-5 h-5" />
+                         Pobierz tylko kod
+                       </button>
+                    </div>
+                 </div>
+              </div>
 
-                  <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 mb-6 flex justify-center">
-                    <QRCodeSVG 
-                      id="raw-qr-code-svg"
-                      value={eventUrl} 
-                      size={180}
-                      bgColor={"#ffffff"}
-                      fgColor={"#111827"}
-                      level={"Q"}
-                      includeMargin={false}
-                    />
-                  </div>
-                  
-                  <button 
-                    onClick={() => setIsQRModalOpen(true)}
-                    className="w-full py-3 px-4 mb-2 bg-gray-100 text-gray-900 rounded-xl text-sm font-medium hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
-                  >
-                    <Download className="w-4 h-4" /> Pobierz kod QR z projektem
-                  </button>
-                  <button 
-                    onClick={handleDownloadRawQR}
-                    className="w-full py-3 px-4 bg-white border border-gray-200 text-gray-900 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
-                  >
-                    <Download className="w-4 h-4" /> Pobierz sam kod QR
-                  </button>
-                </div>
-
-                {/* Recent Photos Preview */}
-                <div className="md:col-span-2 bg-white p-8 rounded-3xl border border-gray-200 shadow-sm">
-                  <div className="flex items-center justify-between mb-6">
-                    <h3 className="font-bold tracking-tight text-xl text-gray-900">Ostatnio przesłane</h3>
-                    <button onClick={() => setActiveTab('gallery')} className="text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors">
-                      Zobacz wszystkie
-                    </button>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                    {photos.slice(0, 6).map((photo, i) => (
-                      <div key={photo.id} className="aspect-square rounded-xl overflow-hidden bg-gray-100 group relative cursor-pointer" onClick={() => setSelectedImageIndex(i)}>
-                        {photo.type === 'video' ? (
-                          <>
-                            <video src={`${photo.url}#t=0.001`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" muted playsInline preload="metadata" />
-                            <div className="absolute top-2 left-2 bg-black/40 backdrop-blur-sm rounded-full p-1 border border-white/10 shadow-sm pointer-events-none">
-                              <Play className="w-3 h-3 text-white fill-white" />
-                            </div>
-                          </>
-                        ) : (
-                          <img src={photo.url} alt="Wedding moment" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" />
-                        )}
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-                          <button onClick={(e) => { e.stopPropagation(); handleDownloadSingle(photo.url, i); }} className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg transform scale-90 group-hover:scale-100 transition-transform">
-                            <Download className="w-5 h-5 text-gray-900" />
-                          </button>
-                        </div>
-                        {/* Thumb Like Indicator */}
-                        {photo.likes > 0 && (
-                          <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-black/50 backdrop-blur-md px-2 py-1 rounded-full pointer-events-none">
-                            <Heart className="w-3 h-3 text-red-500 fill-red-500" />
-                            <span className="text-white text-xs font-bold">{photo.likes}</span>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                    {photos.length === 0 && (
-                      <div className="col-span-full py-12 text-center text-gray-500">
-                        Brak przesłanych zdjęć.
-                      </div>
-                    )}
-                  </div>
-                </div>
+              <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm text-center">
+                 <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                   <ExternalLink className="w-8 h-8 text-blue-600" />
+                 </div>
+                 <h3 className="font-bold text-xl text-gray-900 mb-2">Link do galerii</h3>
+                 <p className="text-gray-500 mb-6">Możesz wysłać link tym, którzy nie mogą zeskanować kodu.</p>
+                 <div className="flex bg-gray-50 p-2 border border-gray-200 rounded-xl max-w-md mx-auto">
+                   <input type="text" readOnly value={eventUrl} className="bg-transparent flex-1 px-3 text-gray-600 outline-none truncate" />
+                   <button 
+                     onClick={() => {
+                        navigator.clipboard.writeText(eventUrl);
+                        alert("Link skopiowany!");
+                     }}
+                     className="px-4 py-2 bg-white rounded-lg shadow-sm font-medium text-indigo-600 hover:text-indigo-700 transition"
+                   >
+                     Kopiuj
+                   </button>
+                 </div>
               </div>
             </motion.div>
           )}
 
           {activeTab === 'gallery' && (
             <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="space-y-6"
+               initial={{ opacity: 0, y: 20 }}
+               animate={{ opacity: 1, y: 0 }}
+               className="space-y-6"
             >
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                {photos.map((photo, i) => (
-                  <div key={photo.id} className="aspect-square rounded-xl overflow-hidden bg-gray-100 group relative cursor-pointer" onClick={() => setSelectedImageIndex(i)}>
-                    {photo.type === 'video' ? (
-                      <>
-                        <video src={`${photo.url}#t=0.001`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" muted playsInline preload="metadata" />
-                        <div className="absolute top-2 left-2 bg-black/40 backdrop-blur-sm rounded-full p-1 border border-white/10 shadow-sm pointer-events-none">
-                          <Play className="w-3 h-3 text-white fill-white" />
-                        </div>
-                      </>
-                    ) : (
-                      <img src={photo.url} alt="Wedding moment" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" />
-                    )}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors pointer-events-none"></div>
-                    
-                    {/* Action buttons (always visible on mobile, hover on desktop) */}
-                    <div className="absolute top-2 right-2 flex gap-2 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity z-10 duration-300">
-                      <button 
-                        onPointerDown={(e) => { e.stopPropagation(); }}
-                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDeleteImage(photo.id); }} 
-                        className="w-9 h-9 md:w-10 md:h-10 bg-white/95 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-red-50 group/delete transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4 md:w-5 md:h-5 text-red-500 group-hover/delete:text-red-600" />
-                      </button>
-                    </div>
-                    <div className="absolute top-2 left-2 flex gap-2 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity z-10 duration-300">
-                      <button 
-                        onPointerDown={(e) => { e.stopPropagation(); }}
-                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDownloadSingle(photo.url, i); }} 
-                        className="w-9 h-9 md:w-10 md:h-10 bg-white/95 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-gray-50 transition-colors"
-                      >
-                        <Download className="w-4 h-4 md:w-5 md:h-5 text-gray-900" />
-                      </button>
-                    </div>
-                    {/* Thumb Like Indicator */}
-                    {photo.likes > 0 && (
-                      <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-black/50 backdrop-blur-md px-2 py-1 rounded-full pointer-events-none">
+               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                 <div>
+                   <h3 className="font-bold text-xl text-gray-900">Wszystkie zdjęcia wydarzenia</h3>
+                   <p className="text-gray-500 text-sm">Oglądasz {photos.length} zdjęć</p>
+                 </div>
+                 <button
+                   onClick={handleDownloadAll}
+                   disabled={isDownloading || photos.length === 0}
+                   className="px-6 py-3 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 transition shadow-sm disabled:opacity-50 flex items-center gap-2"
+                 >
+                   {isDownloading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Download className="w-5 h-5" />}
+                   Pobierz wszystko (ZIP)
+                 </button>
+               </div>
+               
+               {downloadError && (
+                 <div className="p-4 bg-red-50 text-red-600 rounded-xl border border-red-100 text-sm">
+                   {downloadError}
+                 </div>
+               )}
+
+               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                 {photos.map((photo, i) => (
+                   <motion.div
+                     key={photo.id}
+                     initial={{ opacity: 0, scale: 0.9 }}
+                     animate={{ opacity: 1, scale: 1 }}
+                     transition={{ delay: i * 0.05 }}
+                     className="aspect-square bg-gray-100 rounded-2xl overflow-hidden relative cursor-pointer group"
+                     onClick={() => setSelectedImageIndex(i)}
+                   >
+                     {photo.type === 'video' ? (
+                        <>
+                          <video src={`${photo.url}#t=0.001`} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" muted playsInline preload="metadata" />
+                          <div className="absolute top-2 left-2 bg-black/40 backdrop-blur-sm rounded-full p-2">
+                            <Play className="w-4 h-4 text-white fill-white" />
+                          </div>
+                        </>
+                     ) : (
+                        <img 
+                          src={photo.url} 
+                          alt="Moment" 
+                          referrerPolicy="no-referrer"
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                          loading="lazy" 
+                        />
+                     )}
+                     <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-black/50 backdrop-blur-md px-2 py-1 rounded-full pointer-events-none">
                         <Heart className="w-3 h-3 text-red-500 fill-red-500" />
-                        <span className="text-white text-xs font-bold">{photo.likes}</span>
-                      </div>
-                    )}
-                  </div>
-                ))}
-                {photos.length === 0 && (
-                  <div className="col-span-full py-20 text-center text-gray-500">
-                    Brak przesłanych zdjęć.
-                  </div>
-                )}
-              </div>
-              <div className="text-center pt-8">
-                <button className="px-8 py-3 bg-white border border-gray-200 rounded-full text-sm font-medium hover:bg-gray-50 text-gray-700 transition-colors shadow-sm">
-                  Załaduj więcej
-                </button>
-              </div>
+                        <span className="text-white text-xs font-bold">{photo.likes || 0}</span>
+                     </div>
+                   </motion.div>
+                 ))}
+                 
+                 {photos.length === 0 && (
+                   <div className="col-span-full py-12 text-center text-gray-500 bg-white rounded-3xl border border-gray-100 border-dashed">
+                     Še ni zdjęć. Delite QR kodo z gosti!
+                   </div>
+                 )}
+               </div>
             </motion.div>
           )}
 
@@ -765,7 +677,7 @@ export default function DashboardHr() {
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white p-8 rounded-3xl border border-gray-200 shadow-sm max-w-2xl"
+              className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm max-w-2xl"
             >
               <h3 className="font-bold tracking-tight text-xl mb-6 text-gray-900">Ustawienia wydarzenia</h3>
               
@@ -775,7 +687,7 @@ export default function DashboardHr() {
                   <input 
                     type="text" 
                     defaultValue={event.eventType === 'poroka' || !event.eventType ? `${event.partner1} & ${event.partner2}` : event.eventName}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all text-gray-900 bg-gray-50"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 text-gray-500 bg-gray-50 cursor-not-allowed"
                     disabled
                   />
                 </div>
@@ -784,7 +696,7 @@ export default function DashboardHr() {
                   <input 
                     type="date" 
                     defaultValue={event.date}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all text-gray-900 bg-gray-50"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 text-gray-500 bg-gray-50 cursor-not-allowed"
                     disabled
                   />
                 </div>
@@ -797,6 +709,34 @@ export default function DashboardHr() {
                     className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all resize-none text-gray-900"
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">Jakie zdjęcia mogą zobaczyć Twoi goście?</label>
+                  <div className="flex gap-4">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input 
+                        type="radio" 
+                        name="guestViewSettings" 
+                        value="all" 
+                        checked={guestViewSettings === 'all'} 
+                        onChange={() => setGuestViewSettings('all')}
+                        className="w-4 h-4 text-indigo-600 focus:ring-indigo-500"
+                      />
+                      <span className="text-gray-700">Vse zdjęće</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input 
+                        type="radio" 
+                        name="guestViewSettings" 
+                        value="own" 
+                        checked={guestViewSettings === 'own'} 
+                        onChange={() => setGuestViewSettings('own')}
+                        className="w-4 h-4 text-indigo-600 focus:ring-indigo-500"
+                      />
+                      <span className="text-gray-700">Samo svoje zdjęće</span>
+                    </label>
+                  </div>
+                  <p className="mt-2 text-sm text-gray-500">Če izberete "Samo svoje zdjęće", gostje v galeriji (ko skenirajo kodo) ne bodo videli zdjęć drugih gostov, ampak samo tiste, ki so jih sami naložili.</p>
+                </div>
                 
                 <div className="pt-6 border-t border-gray-100">
                   <button 
@@ -805,8 +745,8 @@ export default function DashboardHr() {
                       setIsSavingSettings(true);
                       try {
                         const eventDocRef = doc(db, "events", event.id);
-                        await updateDoc(eventDocRef, { welcomeMessage });
-                        setEvent({ ...event, welcomeMessage });
+                        await updateDoc(eventDocRef, { welcomeMessage, guestViewSettings });
+                        setEvent({ ...event, welcomeMessage, guestViewSettings });
                         alert('Zmiany zostały pomyślnie zapisane!');
                       } catch (err) {
                         console.error("Error saving settings:", err);
