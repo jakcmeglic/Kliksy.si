@@ -9,7 +9,7 @@ import { db } from '../firebase';
 
 import { DESIGNS } from './QRDesignsPl';
 
-const CATEGORIES = ['Vjenčani', 'Neutralni', 'Poslovni', 'Rođendanski'];
+const CATEGORIES = ['Ślubne', 'Uniwersalne', 'Firmowe', 'Urodzinowe'];
 
 interface QRModalProps {
   isOpen: boolean;
@@ -79,7 +79,7 @@ export default function QRModalPl({ isOpen, onClose, event, eventUrl, initialDes
       });
 
       if (!imgData || imgData === 'data:,') {
-        throw new Error("Slika je prazna (pogreška pri iscrtavanju)");
+        throw new Error("Obraz jest pusty (błąd renderowania)");
       }
       
       // Create A4 PDF (210 x 297 mm)
@@ -110,16 +110,16 @@ export default function QRModalPl({ isOpen, onClose, event, eventUrl, initialDes
       // Bottom-right
       pdf.addImage(imgData, 'JPEG', startX + cardW + gapX, startY + cardH + gapY, cardW, cardH);
 
-      const eventNameStr = event.eventType === 'poroka' ? `${event.partner1 || 'Događaj'}-${event.partner2 || ''}` : (event.eventName || 'Događaj');
-      const filename = `QR-Listici-${eventNameStr.replace(/\s+/g, '-')}.pdf`;
+      const eventNameStr = event.eventType === 'poroka' ? `${event.partner1 || 'Wydarzenie'}-${event.partner2 || ''}` : (event.eventName || 'Wydarzenie');
+      const filename = `Kody-QR-${eventNameStr.replace(/\s+/g, '-')}.pdf`;
       const pdfBlob = pdf.output('blob');
       
       const url = URL.createObjectURL(pdfBlob);
       setGeneratedPdfUrl({ url, filename });
       
     } catch (error: any) {
-      console.error("Pogreška pri generiranju PDF-a:", error);
-      alert(`Došlo je do pogreške pri generiranju PDF-a: ${error?.message || 'Nepoznata pogreška'}. Pokušajte ponovno ili koristite drugi preglednik.`);
+      console.error("Błąd podczas generowania pliku PDF:", error);
+      alert(`Wystąpił błąd podczas generowania pliku PDF: ${error?.message || 'Nieznany błąd'}. Spróbuj ponownie lub użyj innej przeglądarki.`);
     } finally {
       setIsGenerating(false);
     }
@@ -136,7 +136,7 @@ export default function QRModalPl({ isOpen, onClose, event, eventUrl, initialDes
         >
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-gray-100">
-            <h2 className="text-2xl font-bold">Preuzmi QR listiće</h2>
+            <h2 className="text-2xl font-bold">Pobierz kody QR</h2>
             <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
               <X className="w-5 h-5" />
             </button>
@@ -145,7 +145,7 @@ export default function QRModalPl({ isOpen, onClose, event, eventUrl, initialDes
           {/* Content */}
           <div className="flex-1 overflow-y-auto p-6">
             <p className="text-gray-600 mb-6">
-              Odaberite dizajn za vaše QR listiće. Preuzet će se PDF dokument formata A4 na kojem će biti 4 listića (svaki formata A6), spremni za ispis.
+              Wybierz projekt kodów QR. Zostanie pobrany dokument PDF w formacie A4 z 4 kodami (każdy w formacie A6), gotowy do druku.
             </p>
 
             {/* Categories */}
@@ -188,7 +188,7 @@ export default function QRModalPl({ isOpen, onClose, event, eventUrl, initialDes
                         ...event,
                         partner1: event.partner1 || 'Partner 1',
                         partner2: event.partner2 || 'Partner 2',
-                        eventName: event.eventName || 'Događaj',
+                        eventName: event.eventName || 'Wydarzenie',
                         date: event.date || new Date().toISOString()
                       },
                       eventUrl,
@@ -211,13 +211,13 @@ export default function QRModalPl({ isOpen, onClose, event, eventUrl, initialDes
             <div>
               {generatedPdfUrl && (
                 <p className="text-sm text-green-600 font-medium animate-pulse">
-                  PDF je spreman! Kliknite 'Preuzmi sada'.
+                  PDF jest gotowy! Kliknij 'Pobierz teraz'.
                 </p>
               )}
             </div>
             <div className="flex gap-3">
               <button onClick={onClose} className="px-6 py-2 rounded-xl font-medium text-gray-600 hover:bg-gray-200 transition-colors">
-                Odustani
+                Anuluj
               </button>
               
               {generatedPdfUrl ? (
@@ -227,7 +227,7 @@ export default function QRModalPl({ isOpen, onClose, event, eventUrl, initialDes
                   className="px-6 py-2 rounded-xl font-medium bg-green-600 text-white hover:bg-green-700 transition-colors flex items-center gap-2"
                 >
                   <Download className="w-5 h-5" />
-                  Preuzmi sada
+                  Pobierz teraz
                 </a>
               ) : (
                 <button
@@ -238,12 +238,12 @@ export default function QRModalPl({ isOpen, onClose, event, eventUrl, initialDes
                   {isGenerating ? (
                     <>
                       <Loader2 className="w-5 h-5 animate-spin" />
-                      Pripremam PDF...
+                      Przygotowywanie pliku PDF...
                     </>
                   ) : (
                     <>
                       <Download className="w-5 h-5" />
-                      Generiraj PDF (A4)
+                      Generuj PDF (A4)
                     </>
                   )}
                 </button>
@@ -264,7 +264,7 @@ export default function QRModalPl({ isOpen, onClose, event, eventUrl, initialDes
                 ...event,
                 partner1: event.partner1 || 'Partner 1',
                 partner2: event.partner2 || 'Partner 2',
-                eventName: event.eventName || 'Događaj',
+                eventName: event.eventName || 'Wydarzenie',
                 date: event.date || new Date().toISOString()
               },
               eventUrl,

@@ -13,12 +13,12 @@ const EVENT_TYPES = [
 
 const REVIEWS = [
   { 
-    name: "Tina & Luka", date: "Kwiecień 2026", 
+    name: "Kasia & Tomek", date: "Kwiecień 2026", 
     text: "Szalenie dobry pomysł! Otrzymaliśmy tyle spontanicznych zdjęć, których inaczej nigdy byśmy nie zobaczyli. Goście są zachwyceni tym, jakie to było proste.",
-    initials: "TL", gender: "couple"
+    initials: "KT", gender: "couple"
   },
   {
-    name: "Marko", date: "Marzec 2026",
+    name: "Maciej", date: "Marzec 2026",
     text: "Na moje 30. urodziny użyliśmy Kliksy. Szaleństwo, ile zabawnych zdjęć dostałem następnego dnia. Znajomi od razu zaczęli dodawać zdjęcia!",
     initials: "M", gender: "male"
   },
@@ -28,39 +28,39 @@ const REVIEWS = [
     initials: "IT", gender: "couple"
   },
   { 
-    name: "Maja & David", date: "Sierpień 2025", 
+    name: "Anna & Piotr", date: "Sierpień 2025", 
     text: "Wszystkie zdjęcia zebrane w jednym miejscu, bez stresu i pobierania. Gorąco polecamy każdej parze!",
-    initials: "MD", gender: "couple"
+    initials: "AP", gender: "couple"
   },
   {
-    name: "Špela", date: "Czerwiec 2025",
+    name: "Agnieszka", date: "Czerwiec 2025",
     text: "Świetna sprawa! Umieściłam kody QR na stołach i rano przywitała mnie idealna galeria wszystkich chwil z mojej obrony dyplomu, które przegapiłam.",
-    initials: "Š", gender: "female"
+    initials: "A", gender: "female"
   },
   { 
-    name: "Nina & Rok", date: "Wrzesień 2025", 
+    name: "Natalia & Kamil", date: "Wrzesień 2025", 
     text: "Najlepszy dodatek do naszego wesela! Każdy gość dodał przynajmniej kilka zdjęć. Wspomnienia, których nigdy inaczej byśmy nie mieli.",
-    initials: "NR", gender: "couple"
+    initials: "NK", gender: "couple"
   },
   {
-    name: "Tomaž", date: "Listopad 2025",
+    name: "Tomasz", date: "Listopad 2025",
     text: "Coroczny teambuilding w jednym miejscu uwieczniony przez wszystkich współpracowników. W końcu nie musimy prosić o udostępnianie zdjęć na różnych grupach i platformach.",
     initials: "T", gender: "male"
   },
   {
-    name: "Ana & Peter", date: "Sierpień 2025",
+    name: "Zofia & Jan", date: "Sierpień 2025",
     text: "Bardzo praktyczne! Wspaniale było oglądać wydarzenie oczami naszych przyjaciół. Gorąco polecam.",
-    initials: "AP", gender: "couple"
+    initials: "ZJ", gender: "couple"
   },
   {
-    name: "Sara & Matej", date: "Wrzesień 2025",
+    name: "Karolina & Michał", date: "Wrzesień 2025",
     text: "Proste dla starszych gości! Moja babcia bez problemu dodała swoje zdjęcia. Jakość zdjęć jest taka, jaka powinna być.",
-    initials: "SM", gender: "couple"
+    initials: "KM", gender: "couple"
   },
   {
-    name: "Tjaša & Miha", date: "Kwiecień 2026",
+    name: "Aleksandra & Jakub", date: "Kwiecień 2026",
     text: "Fotograf będzie potrzebował miesiąca na zdjęcia, a my mieliśmy ponad 500 szalonych i spontanicznych zdjęć już tego samego wieczoru!",
-    initials: "TM", gender: "couple"
+    initials: "AJ", gender: "couple"
   }
 ];
 
