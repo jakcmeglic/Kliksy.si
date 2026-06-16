@@ -447,7 +447,7 @@ export default function LandingHr() {
                    </div>
                  </div>
                  {LANDING_IMAGES.galleryGrid1 ? (
-                   <img src="https://i.postimg.cc/529F9Fkh/hf-20260616-193608-e0222a1a-b6bd-4411-9b17-57e984c8fa84.webp" alt="Siatka galerii" className="rounded-2xl w-full h-full object-cover"/>
+                   <img src="https://i.postimg.cc/CxMfMfQp/hf-20260616-183845-adf4324d-b7cf-493e-be96-a66273da4301.webp" alt="Siatka galerii" className="rounded-2xl w-full h-full object-cover"/>
                  ) : (
                    <div className="flex-1 rounded-2xl overflow-hidden relative grid grid-cols-2 gap-2 pb-2">
                       <div className="bg-gray-100 rounded-lg overflow-hidden h-32"></div>
