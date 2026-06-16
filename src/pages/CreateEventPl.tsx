@@ -8,32 +8,32 @@ import { collection, addDoc, doc, getDoc, updateDoc, serverTimestamp } from "fir
 import ImageViewer from '../components/ImageViewer';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import { DESIGNS } from '../components/QRDesignsPl';
+import { DESIGNS } from '../components/QRDesignsHr';
 import { QRCodeSVG } from 'qrcode.react';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
 
 const TESTIMONIALS = [
   { 
-    text: "Najbolja odluka za vjenčanje! Dobili smo toliko spontanih trenutaka koje fotograf uopće nije uhvatio.", 
+    text: "Najlepsza decyzja na wesele! Zyskaliśmy tyle spontanicznych chwil, których fotograf w ogóle nie uchwycił.", 
     names: "Ana & Luka", 
-    subtitle: "Vjenčani 2026"
+    subtitle: "Ślub 2026"
   },
   { 
-    text: "Gosti su bili oduševljeni, a mi smo imali sve slike okupljene na jednom mjestu! Preporučujemo svima.", 
+    text: "Goście byli zachwyceni, a my mieliśmy wszystkie zdjęcia zebrane w jednym miejscu! Polecamy wszystkim.", 
     names: "Maja & Tadej", 
-    subtitle: "Vjenčani 2026"
+    subtitle: "Ślub 2026"
   },
   { 
-    text: "Jednostavno za korištenje i potpuna transparentnost. Najljepše uspomene ostaju uvijek s vama.", 
+    text: "Łatwe w użyciu i pełna przejrzystość. Najpiękniejsze wspomnienia zostają z wami na zawsze.", 
     names: "Nika & Jure", 
-    subtitle: "Vjenčani 2026"
+    subtitle: "Ślub 2026"
   }
 ];
 
 type Plan = 'basic' | 'plus' | 'premium';
 
-export default function CreateEventPl() {
+export default function CreateEventHr() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const initialPlan = (searchParams.get('plan') as Plan) || 'plus';
@@ -97,18 +97,18 @@ export default function CreateEventPl() {
   const plans = {
     basic: { 
       name: 'Basic', 
-      price: 169,
-      features: ['Jedinstveni QR kod', 'Do 50 gostiju', 'Do 200 fotografija', 'Pristup galeriji 1 mjesec', 'Preuzimanje svih slika (ZIP)']
+      price: 39,
+      features: ['Unikalny kod QR', 'Do 50 gości', 'Do 200 zdjęć', 'Dostęp do galerii 1 miesiąc', 'Pobieranie wszystkich zdjęć (ZIP)']
     },
     plus: { 
       name: 'Plus', 
-      price: 219,
-      features: ['Jedinstveni QR kod', 'Neograničen broj gostiju', 'Neograničeno fotografija', 'Pristup galeriji 1 godina', 'Preuzimanje svih slika (ZIP)', 'Live galerija (projekcija)', 'Personalizirana stranica s imenima']
+      price: 49,
+      features: ['Unikalny kod QR', 'Nieograniczona liczba gości', 'Nieograniczona liczba zdjęć', 'Dostęp do galerii 1 rok', 'Pobieranie wszystkich zdjęć (ZIP)', 'Galeria na żywo (projekcja)', 'Spersonalizowana strona z imionami']
     },
     premium: { 
       name: 'Premium', 
-      price: 349,
-      features: ['Jedinstveni QR kod', 'Neograničen broj gostiju', 'Neograničeno fotografija', 'Do 100 videozapisa', 'Pristup galeriji 2 godine', 'Preuzimanje svih slika (ZIP)', 'Live galerija (projekcija)', 'Personalizirana stranica s imenima', 'Premium predlošci dizajna', 'Prioritetna podrška']
+      price: 79,
+      features: ['Unikalny kod QR', 'Nieograniczona liczba gości', 'Nieograniczona liczba zdjęć', 'Do 100 filmów', 'Dostęp do galerii 2 lata', 'Pobieranie wszystkich zdjęć (ZIP)', 'Galeria na żywo (projekcja)', 'Spersonalizowana strona z imionami', 'Szablony Premium', 'Priorytetowe wsparcie']
     }
   };
 
@@ -183,10 +183,10 @@ export default function CreateEventPl() {
         fetch('/api/send-event-created-email', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ currency: 'pln',
+          body: JSON.stringify({
             email: user.email,
-            eventName: formData.eventName || (formData.partner1 ? `${formData.partner1} & ${formData.partner2}` : 'Vaš događaj'),
-            lang: 'hr'
+            eventName: formData.eventName || (formData.partner1 ? `${formData.partner1} & ${formData.partner2}` : 'Twoje wydarzenie'),
+            lang: 'pl'
           })
         }).catch(err => console.error("Failed to trigger event created email:", err));
       } catch (e) {
@@ -194,7 +194,7 @@ export default function CreateEventPl() {
       }
     } catch (err: any) {
       console.error(err);
-      setAuthError('Došlo je do pogreške pri stvaranju događaja: ' + err.message);
+      setAuthError('Wystąpił błąd podczas tworzenia wydarzenia: ' + err.message);
     } finally {
       setIsProcessing(false);
     }
@@ -254,7 +254,7 @@ export default function CreateEventPl() {
       if (authMode === 'forgot_password') {
         const { resetPassword } = await import('../firebase');
         await resetPassword(authEmail);
-        setAuthSuccess("Poveznica za ponovno postavljanje lozinke poslana je na vašu e-mail adresu.");
+        setAuthSuccess("Link do resetowania hasła został wysłany na Twój adres e-mail.");
         setAuthMode('login');
       } else if (authMode === 'register') {
         await signUpWithEmail(authEmail, authPassword);
@@ -263,9 +263,9 @@ export default function CreateEventPl() {
       }
     } catch (error: any) {
       if (authMode === 'forgot_password') {
-        setAuthError("Pogreška pri slanju poveznice. Provjerite e-mail u.");
+        setAuthError("Błąd podczas wysyłania linku. Sprawdź adres e-mail.");
       } else {
-        setAuthError(error.message || 'Došlo je do pogreške pri prijavi.');
+        setAuthError(error.message || 'Wystąpił błąd podczas logowania.');
       }
     }
   };
@@ -293,7 +293,7 @@ export default function CreateEventPl() {
       setActiveDiscount({ code: 'TEST99', value: 100, discountType: 'percentage', appliesTo: 'packages_only' });
       setDiscountError('');
     } else {
-      setDiscountError('Neveljavna koda.');
+      setDiscountError('Nieprawidłowy kod.');
       setDiscountApplied(false);
       setActiveDiscount(null);
     }
@@ -345,7 +345,7 @@ export default function CreateEventPl() {
           const res = await fetch('/api/create-payment-intent', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ currency: 'pln', 
+            body: JSON.stringify({ 
               plan: formData.plan, 
               discountCode: discountApplied ? discountCode : '',
               deliveryMode: 'self_print',
@@ -370,12 +370,12 @@ export default function CreateEventPl() {
           } else {
             const text = await res.text();
             console.error("Server returned non-JSON response:", text.substring(0, 200));
-            setStripeError(`Napaka strežnika: API zahtevki ne pridejo do Node.js zaledja. Hostinger (Apache/Nginx) verjetno prestreza zahtevek in vrača HTML. Preverite .htaccess ali nastavitve usmerjanja na Hostingerju.`);
+            setStripeError(`Błąd serwera: API nie odpowiada poprawnie.`);
           }
         } catch (err: any) {
           if (!isSubscribed) return;
           console.error(err);
-          setStripeError(err.message || 'Pogreška u povezivanju s poslužiteljem.');
+          setStripeError(err.message || 'Błąd połączenia z serwerem.');
         } finally {
           if (isSubscribed) {
             setIsUpdatingPrice(false);
@@ -397,7 +397,7 @@ export default function CreateEventPl() {
 
   const handleCheckoutFree = async () => {
     if (!user || user.isAnonymous) {
-      setAuthError("Prosimo, prijavite se za nadaljevanje.");
+      setAuthError("Proszę, zaloguj się, aby kontynuować.");
       return;
     }
     
@@ -405,7 +405,7 @@ export default function CreateEventPl() {
       standsQuantity > 0 &&
       (!formData.deliveryName || !formData.deliverySurname || !formData.deliveryAddress || !formData.deliveryPostcode || !formData.deliveryCity)
     ) {
-      setStripeError('Za dostavu podmetača morate ispuniti sve podatke o primatelju i adresi za dostavu!');
+      setStripeError('Aby otrzymać podstawki, musisz wypełnić wszystkie dane dostawy!');
       return;
     }
     
@@ -461,7 +461,7 @@ export default function CreateEventPl() {
         navigate(`/dashboard?eventId=${docId}&success=true`);
       }, 3000);
     } catch (error: any) {
-      setStripeError(error.message || 'Došlo je do pogreške.');
+      setStripeError(error.message || 'Wystąpił błąd.');
       setIsProcessing(false);
     }
   };
@@ -489,7 +489,7 @@ export default function CreateEventPl() {
             </Link>
           </div>
           <div className="text-sm font-medium text-gray-500">
-            Korak {step} od 4
+            Krok {step} z 4
           </div>
         </div>
       </header>
@@ -507,8 +507,8 @@ export default function CreateEventPl() {
                 className="bg-white p-8 md:p-12 rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100"
               >
                 <div className="mb-8">
-                  <h2 className="text-3xl font-bold mb-2">Vrsta događaja</h2>
-                  <p className="text-gray-600">Odaberite vrstu vašeg događaja.</p>
+                  <h2 className="text-3xl font-bold mb-2">Rodzaj wydarzenia</h2>
+                  <p className="text-gray-600">Wybierz rodzaj swojego wydarzenia.</p>
                 </div>
 
                 <div className="space-y-4">
@@ -521,7 +521,7 @@ export default function CreateEventPl() {
                       }`}
                     >
                       <span className="font-bold text-lg">
-                        {type === 'poroka' ? 'Vjenčanje' : type === 'poslovni_dogodek' ? 'Poslovni događaj' : type === 'rojstni_dan' ? 'Rođendan' : type === 'baby_shower' ? 'Baby shower' : type === 'teambuilding' ? 'Teambuilding' : 'Drugo'}
+                        {type === 'poroka' ? 'Wesele' : type === 'poslovni_dogodek' ? 'Wydarzenie firmowe' : type === 'rojstni_dan' ? 'Urodziny' : type === 'baby_shower' ? 'Baby shower' : type === 'teambuilding' ? 'Teambuilding' : 'Inne'}
                       </span>
                     </button>
                   ))}
@@ -531,7 +531,7 @@ export default function CreateEventPl() {
                     disabled={!formData.eventType}
                     className="w-full bg-gray-900 text-white py-4 rounded-xl font-medium hover:bg-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-8"
                   >
-                    Nastavi <ArrowRight className="w-5 h-5" />
+                    Dalej <ArrowRight className="w-5 h-5" />
                   </button>
                 </div>
               </motion.div>
@@ -546,15 +546,15 @@ export default function CreateEventPl() {
                 className="bg-white p-8 md:p-12 rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100"
               >
                 <button onClick={handleBack} className="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-black mb-6 transition-colors">
-                  <ArrowLeft className="w-4 h-4" /> Natrag
+                  <ArrowLeft className="w-4 h-4" /> Wstecz
                 </button>
 
                 <div className="mb-8">
                   <h2 className="text-3xl font-bold mb-2">
-                    {formData.eventType === 'poroka' ? 'Vaš veliki dan' : 'Pojedinosti događaja'}
+                    {formData.eventType === 'poroka' ? 'Twój wielki dzień' : 'Szczegóły wydarzenia'}
                   </h2>
                   <p className="text-gray-600">
-                    {formData.eventType === 'poroka' ? 'Unesite osnovne podatke o vašem vjenčanju.' : 'Unesite osnovne podatke o događaju.'}
+                    {formData.eventType === 'poroka' ? 'Wprowadź podstawowe dane o swoim weselu.' : 'Wprowadź podstawowe dane o wydarzeniu.'}
                   </p>
                 </div>
 
@@ -562,7 +562,7 @@ export default function CreateEventPl() {
                   {formData.eventType === 'poroka' ? (
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium mb-2">Ime (Partner 1)</label>
+                        <label className="block text-sm font-medium mb-2">Imię (Partner 1)</label>
                         <div className="relative">
                           <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                           <input 
@@ -575,7 +575,7 @@ export default function CreateEventPl() {
                         </div>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium mb-2">Ime (Partner 2)</label>
+                        <label className="block text-sm font-medium mb-2">Imię (Partner 2)</label>
                         <div className="relative">
                           <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                           <input 
@@ -590,7 +590,7 @@ export default function CreateEventPl() {
                     </div>
                   ) : (
                     <div>
-                      <label className="block text-sm font-medium mb-2">Ime događaja</label>
+                      <label className="block text-sm font-medium mb-2">Nazwa wydarzenia</label>
                       <div className="relative">
                         <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                         <input 
@@ -598,14 +598,14 @@ export default function CreateEventPl() {
                           value={formData.eventName}
                           onChange={e => setFormData({...formData, eventName: e.target.value})}
                           className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-all"
-                          placeholder="Ime vašeg događaja"
+                          placeholder="Nazwa Twojego wydarzenia"
                         />
                       </div>
                     </div>
                   )}
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">Datum događaja</label>
+                    <label className="block text-sm font-medium mb-2">Data wydarzenia</label>
                     <div className="relative">
                       <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                       <input 
@@ -625,7 +625,7 @@ export default function CreateEventPl() {
                     }
                     className="w-full bg-gray-900 text-white py-4 rounded-xl font-medium hover:bg-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-8"
                   >
-                    Nastavi <ArrowRight className="w-5 h-5" />
+                    Dalej <ArrowRight className="w-5 h-5" />
                   </button>
                 </div>
               </motion.div>
@@ -640,12 +640,12 @@ export default function CreateEventPl() {
                 className="bg-white p-8 md:p-12 rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100"
               >
                 <button onClick={handleBack} className="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-black mb-6 transition-colors">
-                  <ArrowLeft className="w-4 h-4" /> Natrag
+                  <ArrowLeft className="w-4 h-4" /> Wstecz
                 </button>
 
                 <div className="mb-8 text-center">
-                  <h2 className="text-3xl font-bold mb-2">Napravite račun</h2>
-                  <p className="text-gray-600">Za upravljanje vašim događajem potreban nam je vaš račun.</p>
+                  <h2 className="text-3xl font-bold mb-2">Utwórz konto</h2>
+                  <p className="text-gray-600">Aby zarządzać swoim wydarzeniem, potrzebujemy Twojego konta.</p>
                 </div>
 
                 <div className="bg-white border border-gray-200 p-6 rounded-2xl">
@@ -656,20 +656,20 @@ export default function CreateEventPl() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
                       </div>
-                      <h3 className="text-xl font-bold mb-2">Uspješno prijavljeni</h3>
-                      <p className="text-gray-600 mb-6">Prijavljeni ste kao <span className="font-medium text-gray-900">{user.email || 'korisnik'}</span>.</p>
+                      <h3 className="text-xl font-bold mb-2">Zalogowano pomyślnie</h3>
+                      <p className="text-gray-600 mb-6">Jesteś zalogowany jako <span className="font-medium text-gray-900">{user.email || 'użytkownik'}</span>.</p>
                       
                       <button 
                         onClick={handleNext}
                         className="w-full bg-black text-white py-3 rounded-xl font-medium hover:bg-gray-800 transition-colors mb-3"
                       >
-                        Napravi moj događaj
+                        Utwórz moje wydarzenie
                       </button>
                       <button 
                         onClick={() => signOut()}
                         className="w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-medium hover:bg-gray-200 transition-colors"
                       >
-                        Odjava
+                        Wyloguj
                       </button>
                     </div>
                   ) : (
@@ -680,13 +680,13 @@ export default function CreateEventPl() {
                             onClick={() => { setAuthMode('register'); setAuthError(''); setAuthSuccess(''); }}
                             className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${authMode === 'register' ? 'bg-white shadow-sm text-black' : 'text-gray-500 hover:text-black'}`}
                           >
-                            Registracija
+                            Rejestracja
                           </button>
                           <button 
                             onClick={() => { setAuthMode('login'); setAuthError(''); setAuthSuccess(''); }}
                             className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${authMode === 'login' ? 'bg-white shadow-sm text-black' : 'text-gray-500 hover:text-black'}`}
                           >
-                            Prijava
+                            Logowanie
                           </button>
                         </div>
                       )}
@@ -707,7 +707,7 @@ export default function CreateEventPl() {
                         <div>
                           <input 
                             type="email" 
-                            placeholder="Email adresa"
+                            placeholder="Adres e-mail"
                             value={authEmail}
                             onChange={e => setAuthEmail(e.target.value)}
                             className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-all"
@@ -719,7 +719,7 @@ export default function CreateEventPl() {
                           <div>
                             <input 
                               type="password" 
-                              placeholder="Lozinka"
+                              placeholder="Hasło"
                               value={authPassword}
                               onChange={e => setAuthPassword(e.target.value)}
                               className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-all"
@@ -735,7 +735,7 @@ export default function CreateEventPl() {
                               onClick={() => { setAuthMode('forgot_password'); setAuthError(''); setAuthSuccess(''); }}
                               className="text-sm text-gray-500 hover:text-gray-900 transition-colors -mt-2"
                             >
-                              Pozabil sem geslo
+                              Zapomniałem hasła
                             </button>
                           </div>
                         )}
@@ -744,7 +744,7 @@ export default function CreateEventPl() {
                           type="submit"
                           className="w-full bg-black text-white py-3 rounded-xl font-medium hover:bg-gray-800 transition-colors"
                         >
-                          {authMode === 'register' ? 'Napravi račun' : authMode === 'forgot_password' ? 'Pošalji poveznicu' : 'Prijavi se'}
+                          {authMode === 'register' ? 'Utwórz konto' : authMode === 'forgot_password' ? 'Wyślij link' : 'Zaloguj się'}
                         </button>
                       </form>
 
@@ -754,7 +754,7 @@ export default function CreateEventPl() {
                             onClick={() => { setAuthMode('login'); setAuthError(''); setAuthSuccess(''); }}
                             className="text-gray-500 font-medium hover:text-gray-900"
                           >
-                            Natrag na prijavo
+                            Wróć do logowania
                           </button>
                         </div>
                       ) : (
@@ -764,7 +764,7 @@ export default function CreateEventPl() {
                               <div className="w-full border-t border-gray-200"></div>
                             </div>
                             <div className="relative flex justify-center text-sm">
-                              <span className="px-2 bg-white text-gray-500">ali nadaljujte z</span>
+                              <span className="px-2 bg-white text-gray-500">lub kontynuuj przez</span>
                             </div>
                           </div>
 
@@ -776,7 +776,7 @@ export default function CreateEventPl() {
                                   setAuthError('');
                                   await signIn();
                                 } catch (error: any) {
-                                  setAuthError(error.message || 'Došlo je do pogreške pri prijavi z Google.');
+                                  setAuthError(error.message || 'Wystąpił błąd podczas logowania przez Google.');
                                 }
                               }}
                               className="flex items-center justify-center gap-2 border border-gray-200 bg-white text-black px-4 py-3 rounded-xl font-medium hover:bg-gray-50 transition-colors"
@@ -808,18 +808,18 @@ export default function CreateEventPl() {
                 <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                   <Check className="w-10 h-10 text-green-500" />
                 </div>
-                <h2 className="text-3xl font-bold mb-4">Vaš događaj je stvoren! 🎉</h2>
+                <h2 className="text-3xl font-bold mb-4">Twoje wydarzenie zostało utworzone! 🎉</h2>
                 <div className="text-left bg-gray-50 rounded-2xl p-6 mb-8 max-w-sm mx-auto">
-                  <p className="font-semibold text-gray-900 mb-4">Tukaj lahko:</p>
+                  <p className="font-semibold text-gray-900 mb-4">Tutaj możesz:</p>
                   <ul className="space-y-3">
                     <li className="flex items-center gap-3 text-gray-700">
-                      <span className="text-green-500">✅</span> preizkusite galerijo
+                      <span className="text-green-500">✅</span> przetestować galerię
                     </li>
                     <li className="flex items-center gap-3 text-gray-700">
-                      <span className="text-green-500">✅</span> naložite do 5 slik
+                      <span className="text-green-500">✅</span> przesłać do 5 zdjęć
                     </li>
                     <li className="flex items-center gap-3 text-gray-700">
-                      <span className="text-green-500">✅</span> vidite, kako bo Kliksy izgledal na vašem dogodku 😊
+                      <span className="text-green-500">✅</span> zobaczyć, jak Kliksy będzie wyglądać na Twoim wydarzeniu 😊
                     </li>
                   </ul>
                 </div>
@@ -827,7 +827,7 @@ export default function CreateEventPl() {
                   onClick={() => navigate(`/dashboard?eventId=${demoEventId}`)}
                   className="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-indigo-700 transition-colors shadow-md shadow-indigo-200"
                 >
-                  Otvori moj događaj
+                  Otwórz moje wydarzenie
                 </button>
               </motion.div>
             )}
@@ -841,15 +841,15 @@ export default function CreateEventPl() {
                 className="bg-white p-8 md:p-12 rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100"
               >
                 <button onClick={handleBack} className="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-black mb-6 transition-colors">
-                  <ArrowLeft className="w-4 h-4" /> Natrag
+                  <ArrowLeft className="w-4 h-4" /> Wstecz
                 </button>
 
                 <div className="mb-8 relative">
                   <div className="inline-block bg-[#F3F1FF] text-[#5B45FF] px-4 py-1.5 rounded-full text-[12px] font-bold tracking-wider uppercase mb-3 border border-[#5B45FF]/10 shadow-sm">
-                    -30% Samo još danas!
+                    -30% Tylko dzisiaj!
                   </div>
-                  <h2 className="text-3xl font-bold mb-2">Odabir paketa i plaćanje</h2>
-                  <p className="text-gray-600">Odaberite paket i dovršite kupnju.</p>
+                  <h2 className="text-3xl font-bold mb-2">Wybór pakietu i płatność</h2>
+                  <p className="text-gray-600">Wybierz pakiet i dokończ zakup.</p>
                 </div>
 
                 <div className="space-y-4 mb-8">
@@ -878,18 +878,18 @@ export default function CreateEventPl() {
                           <div>
                             <h3 className="font-bold text-lg uppercase">{plans[planKey].name}</h3>
                             <p className="text-sm text-gray-500">
-                              {planKey === 'basic' && 'Osnovne funkcionalnosti'}
-                              {planKey === 'plus' && 'Live galerija + personalizacija'}
-                              {planKey === 'premium' && 'Sve + premium podrška'}
+                              {planKey === 'basic' && 'Podstawowe funkcje'}
+                              {planKey === 'plus' && 'Galeria na żywo + personalizacja'}
+                              {planKey === 'premium' && 'Wszystko + wsparcie premium'}
                             </p>
                           </div>
                         </div>
                         <div className="flex items-center gap-4">
                           <div className="flex flex-col items-end">
                             <div className="flex items-baseline gap-2">
-                              <span className="text-2xl font-bold">{plans[planKey].price} zł</span>
+                              <span className="text-2xl font-bold">{plans[planKey].price}€</span>
                               <span className="text-sm font-bold text-gray-400 line-through">
-                                {planKey === 'basic' ? '239 zł' : planKey === 'plus' ? '299 zł' : '459 zł'}
+                                {planKey === 'basic' ? '55€' : planKey === 'plus' ? '69€' : '109€'}
                               </span>
                             </div>
                           </div>
@@ -929,8 +929,8 @@ export default function CreateEventPl() {
                       <div className="w-12 h-12 rounded-full bg-indigo-100 border-2 border-white shadow-sm flex items-center justify-center text-[20px] z-0">🎉</div>
                     </div>
                     <div>
-                      <p className="font-bold text-[#5B45FF] text-[16px] leading-tight uppercase tracking-wide">200+ događaja</p>
-                      <p className="text-[14px] text-gray-600 font-medium mt-1">je već stvoreno ove godine 💜</p>
+                      <p className="font-bold text-[#5B45FF] text-[16px] leading-tight uppercase tracking-wide">200+ wydarzeń</p>
+                      <p className="text-[14px] text-gray-600 font-medium mt-1">zostało już stworzonych w tym roku 💜</p>
                     </div>
                   </div>
 
@@ -941,8 +941,8 @@ export default function CreateEventPl() {
                         <ShieldCheck className="w-5 h-5 text-indigo-500" />
                       </div>
                       <div>
-                        <p className="font-bold text-gray-900 text-[13px] leading-tight mb-1">30-dnevno<br/>jamstvo</p>
-                        <p className="text-[11px] text-gray-500 font-medium leading-tight">Povrat novca,<br/>bez pitanja</p>
+                        <p className="font-bold text-gray-900 text-[13px] leading-tight mb-1">30-dniowa<br/>gwarancja</p>
+                        <p className="text-[11px] text-gray-500 font-medium leading-tight">Zwrot pieniędzy,<br/>bez pytań</p>
                       </div>
                     </div>
 
@@ -952,8 +952,8 @@ export default function CreateEventPl() {
                         <Lock className="w-5 h-5 text-indigo-500" />
                       </div>
                       <div>
-                        <p className="font-bold text-gray-900 text-[13px] leading-tight mb-1">100% sigurno<br/>plaćanje</p>
-                        <p className="text-[11px] text-gray-500 font-medium leading-tight">Osigurano<br/>Stripe zaštitom</p>
+                        <p className="font-bold text-gray-900 text-[13px] leading-tight mb-1">100% bezpieczna<br/>płatność</p>
+                        <p className="text-[11px] text-gray-500 font-medium leading-tight">Zabezpieczona<br/>przez Stripe</p>
                       </div>
                     </div>
                   </div>
@@ -961,7 +961,7 @@ export default function CreateEventPl() {
 
                 {/* Testimonial Slider */}
                 <div className="bg-white border border-gray-100 rounded-2xl p-6 md:p-8 shadow-sm text-center relative mb-12">
-                   <p className="font-bold text-gray-900 mb-4 text-[15px]">Što kažu naši korisnici? 💜</p>
+                   <p className="font-bold text-gray-900 mb-4 text-[15px]">Co mówią nasi użytkownicy? 💜</p>
                    
                    <div className="flex justify-center gap-1 mb-6">
                      {[1,2,3,4,5].map(star => <Star key={star} className="w-4 h-4 text-[#5B45FF] fill-[#5B45FF]" />)}
@@ -1029,11 +1029,11 @@ export default function CreateEventPl() {
                 </div>
 
                 <div className="space-y-4 mb-8">
-                  <h3 className="text-xl font-bold mb-4">Možda trebate i ovo?</h3>
+                  <h3 className="text-xl font-bold mb-4">Może potrzebujesz też tego?</h3>
                   
                   <div className="mt-8 p-6 bg-gray-50 rounded-2xl border border-gray-200">
-                    <h4 className="font-bold mb-2">Podmetači za stol (opcionalno)</h4>
-                    <p className="text-sm text-gray-600 mb-4">Odaberite količinu podmetača za vaše QR kodove.</p>
+                    <h4 className="font-bold mb-2">Podstawki na stół (opcjonalnie)</h4>
+                    <p className="text-sm text-gray-600 mb-4">Wybierz liczbę podstawek na swoje kody QR.</p>
                     
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                       {standImages.map((img, idx) => (
@@ -1045,7 +1045,7 @@ export default function CreateEventPl() {
                             className="w-full aspect-square relative cursor-pointer group"
                             onClick={() => setViewingImage(idx)}
                           >
-                            <img src={img} alt={`Podmetač ${idx + 1}`} className="w-full h-full object-cover" />
+                            <img src={img} alt={`Podstawka ${idx + 1}`} className="w-full h-full object-cover" />
                             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
                               <div className="bg-white/90 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity transform scale-90 group-hover:scale-100 shadow-sm">
                                 <Maximize2 className="w-5 h-5 text-gray-700" />
@@ -1057,7 +1057,7 @@ export default function CreateEventPl() {
                             className="p-3 bg-white border-t border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50"
                             onClick={() => setSelectedStand(idx)}
                           >
-                            <span className="text-sm font-medium text-gray-700">Podmetač {idx + 1}</span>
+                            <span className="text-sm font-medium text-gray-700">Podstawka {idx + 1}</span>
                             <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
                               selectedStand === idx ? 'border-indigo-600' : 'border-gray-300'
                             }`}>
@@ -1088,8 +1088,8 @@ export default function CreateEventPl() {
                               standsQuantity === qty ? 'bg-black text-white border-black' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
                             }`}
                           >
-                            <span>{qty} komada</span>
-                            <span className={standsQuantity === qty ? 'text-gray-300 text-xs' : 'text-gray-500 text-xs'}>+{price} zł</span>
+                            <span>{qty} sztuk</span>
+                            <span className={standsQuantity === qty ? 'text-gray-300 text-xs' : 'text-gray-500 text-xs'}>+{price}€</span>
                           </button>
                         );
                       })}
@@ -1105,19 +1105,19 @@ export default function CreateEventPl() {
                         className="mt-8 overflow-hidden"
                       >
                         <div className="p-6 bg-indigo-50 border border-indigo-100 rounded-2xl">
-                          <h4 className="font-bold mb-4 text-indigo-900">Primatelj i adresa za dostavu</h4>
+                          <h4 className="font-bold mb-4 text-indigo-900">Odbiorca i adres dostawy</h4>
                           <div className="space-y-3">
                             <div className="grid grid-cols-2 gap-3">
                               <input
                                 type="text"
-                                placeholder="Ime"
+                                placeholder="Imię"
                                 value={formData.deliveryName}
                                 onChange={(e) => setFormData({...formData, deliveryName: e.target.value})}
                                 className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none transition-all text-sm"
                               />
                               <input
                                 type="text"
-                                placeholder="Prezime"
+                                placeholder="Nazwisko"
                                 value={formData.deliverySurname}
                                 onChange={(e) => setFormData({...formData, deliverySurname: e.target.value})}
                                 className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none transition-all text-sm"
@@ -1126,7 +1126,7 @@ export default function CreateEventPl() {
                             <div>
                               <input
                                 type="text"
-                                placeholder="Ulica i kućni broj"
+                                placeholder="Ulica i numer domu"
                                 value={formData.deliveryAddress}
                                 onChange={(e) => setFormData({...formData, deliveryAddress: e.target.value})}
                                 className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none transition-all text-sm"
@@ -1135,14 +1135,14 @@ export default function CreateEventPl() {
                             <div className="grid grid-cols-2 gap-3">
                               <input
                                 type="text"
-                                placeholder="Poštanski broj"
+                                placeholder="Kod pocztowy"
                                 value={formData.deliveryPostcode}
                                 onChange={(e) => setFormData({...formData, deliveryPostcode: e.target.value})}
                                 className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none transition-all text-sm"
                               />
                               <input
                                 type="text"
-                                placeholder="Grad"
+                                placeholder="Miasto"
                                 value={formData.deliveryCity}
                                 onChange={(e) => setFormData({...formData, deliveryCity: e.target.value})}
                                 className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none transition-all text-sm"
@@ -1157,19 +1157,19 @@ export default function CreateEventPl() {
 
                 <div className="bg-gray-50 p-6 rounded-2xl mb-8">
                   <div className="flex justify-between items-center mb-4 pb-4 border-b border-gray-200">
-                    <span className="font-medium">Paket {plans[formData.plan].name}</span>
-                    <span className="font-medium">{originalPrice} zł</span>
+                    <span className="font-medium">Pakiet {plans[formData.plan].name}</span>
+                    <span className="font-medium">{originalPrice}€</span>
                   </div>
                   
                   {upsellPrice > 0 && (
                     <div className="flex justify-between items-center mb-4 pb-4 border-b border-gray-200">
-                      <span className="font-medium text-gray-600">Dodatne storitve</span>
-                      <span className="font-medium">+{upsellPrice.toFixed(2)} zł</span>
+                      <span className="font-medium text-gray-600">Dodatkowe usługi</span>
+                      <span className="font-medium">+{upsellPrice.toFixed(2)}€</span>
                     </div>
                   )}
 
                   <div className="mb-4 pb-4 border-b border-gray-200">
-                    <label className="block text-sm font-medium mb-2">Koda za popust</label>
+                    <label className="block text-sm font-medium mb-2">Kod rabatowy</label>
                     <div className="flex flex-col sm:flex-row gap-2">
                       <input 
                         type="text" 
@@ -1179,7 +1179,7 @@ export default function CreateEventPl() {
                           setDiscountError('');
                         }}
                         disabled={discountApplied}
-                        placeholder="Unesite kod"
+                        placeholder="Wpisz kod"
                         className="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-all uppercase"
                       />
                       <button 
@@ -1196,13 +1196,13 @@ export default function CreateEventPl() {
                         disabled={isUpdatingPrice}
                         className={`px-6 py-3 rounded-xl font-medium transition-colors whitespace-nowrap w-full sm:w-auto ${discountApplied ? 'bg-red-100 text-red-600 hover:bg-red-200' : 'bg-gray-900 text-white hover:bg-black disabled:opacity-50'}`}
                       >
-                        {isUpdatingPrice ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : (discountApplied ? 'Ukloni' : 'Primijeni')}
+                        {isUpdatingPrice ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : (discountApplied ? 'Usuń' : 'Zastosuj')}
                       </button>
                     </div>
                     {discountError && <p className="text-red-500 text-sm mt-2">{discountError}</p>}
                     {discountApplied && activeDiscount && (
                       <p className="text-green-600 text-sm mt-2">
-                        Koda {activeDiscount.code} uspešno unovčena! (-{activeDiscount.value}{activeDiscount.discountType === 'percentage' ? '%' : 'zł'} {activeDiscount.appliesTo === 'packages_only' ? 'na paket' : 'na celoten znesek'})
+                        Kod {activeDiscount.code} został pomyślnie użyty! (-{activeDiscount.value}{activeDiscount.discountType === 'percentage' ? '%' : '€'} {activeDiscount.appliesTo === 'packages_only' ? 'na pakiet' : 'na całą kwotę'})
                       </p>
                     )}
                   </div>
@@ -1215,7 +1215,7 @@ export default function CreateEventPl() {
                         onChange={(e) => setFormData({...formData, isCompanyInvoice: e.target.checked})}
                         className="w-5 h-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
                       />
-                      <span className="font-medium text-gray-900">Trebam račun na tvrtku</span>
+                      <span className="font-medium text-gray-900">Potrzebuję faktury na firmę</span>
                     </label>
 
                     <AnimatePresence>
@@ -1227,33 +1227,33 @@ export default function CreateEventPl() {
                           className="space-y-4 overflow-hidden"
                         >
                           <div>
-                            <label className="block text-sm font-medium mb-1">Ime tvrtke</label>
+                            <label className="block text-sm font-medium mb-1">Nazwa firmy</label>
                             <input 
                               type="text" 
                               value={formData.companyName}
                               onChange={e => setFormData({...formData, companyName: e.target.value})}
                               className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-all"
-                              placeholder="Podjetje d.o.o."
+                              placeholder="Firma sp. z o.o."
                             />
                           </div>
                           <div>
-                            <label className="block text-sm font-medium mb-1">Adresa tvrtke</label>
+                            <label className="block text-sm font-medium mb-1">Adres firmy</label>
                             <input 
                               type="text" 
                               value={formData.companyAddress}
                               onChange={e => setFormData({...formData, companyAddress: e.target.value})}
                               className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-all"
-                              placeholder="Slovenska cesta 1, 1000 Ljubljana"
+                              placeholder="ul. Przykładowa 1, 00-000 Warszawa"
                             />
                           </div>
                           <div>
-                            <label className="block text-sm font-medium mb-1">Porezni broj</label>
+                            <label className="block text-sm font-medium mb-1">NIP</label>
                             <input 
                               type="text" 
                               value={formData.companyTaxId}
                               onChange={e => setFormData({...formData, companyTaxId: e.target.value})}
                               className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-all"
-                              placeholder="SI12345678"
+                              placeholder="1234567890"
                             />
                           </div>
                         </motion.div>
@@ -1262,10 +1262,10 @@ export default function CreateEventPl() {
                   </div>
 
                   <div className="flex justify-between items-center text-sm text-gray-500">
-                    <span>Ukupno za plaćanje</span>
+                    <span>Suma do zapłaty</span>
                     <div className="text-right">
-                      {discountApplied && <span className="text-gray-400 line-through mr-2">{(originalPrice + upsellPrice).toFixed(2)} zł</span>}
-                      <span className="text-xl font-bold text-black">{finalPrice.toFixed(2)} zł</span>
+                      {discountApplied && <span className="text-gray-400 line-through mr-2">{(originalPrice + upsellPrice).toFixed(2)}€</span>}
+                      <span className="text-xl font-bold text-black">{finalPrice.toFixed(2)}€</span>
                     </div>
                   </div>
                 </div>
@@ -1279,8 +1279,8 @@ export default function CreateEventPl() {
                     <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6">
                       <Check className="w-10 h-10 text-green-600" />
                     </div>
-                    <h3 className="text-2xl font-bold mb-2">Plaćanje uspešno!</h3>
-                    <p className="text-gray-600">Priprema vašeg događaja...</p>
+                    <h3 className="text-2xl font-bold mb-2">Płatność udana!</h3>
+                    <p className="text-gray-600">Przygotowuję Twoje wydarzenie...</p>
                   </motion.div>
                 ) : (
                   <>
@@ -1311,18 +1311,18 @@ export default function CreateEventPl() {
                         </Elements>
                       ) : stripeError ? (
                         <div className="flex flex-col items-center justify-center p-8 border border-red-200 rounded-xl bg-red-50">
-                          <p className="text-sm text-red-600 font-medium mb-2">Ploča za plaćanje nije se mogla učitati</p>
+                          <p className="text-sm text-red-600 font-medium mb-2">Nie udało się załadować panelu płatności</p>
                           <button 
                             onClick={() => setStep(3)}
                             className="px-4 py-2 bg-white border border-red-200 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 transition-colors"
                           >
-                            Natrag na izbiro paketa
+                            Wróć do wyboru pakietu
                           </button>
                         </div>
                       ) : (
                         <div className="flex flex-col items-center justify-center p-8 border border-gray-200 rounded-xl bg-gray-50">
                           <Loader2 className="w-8 h-8 animate-spin text-gray-400 mb-4" />
-                          <p className="text-sm text-gray-500">Priprema sigurnog plaćanja...</p>
+                          <p className="text-sm text-gray-500">Przygotowywanie bezpiecznej płatności...</p>
                         </div>
                       )
                     ) : (
@@ -1336,7 +1336,7 @@ export default function CreateEventPl() {
                             className="mt-1 w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 cursor-pointer"
                           />
                           <label htmlFor="terms_free" className="text-sm text-gray-700 cursor-pointer">
-                            Slažem se sa <button type="button" onClick={() => setIsTermsModalOpen(true)} className="text-indigo-600 hover:text-indigo-800 hover:underline">općim uvjetima</button>*
+                            Akceptuję <button type="button" onClick={() => setIsTermsModalOpen(true)} className="text-indigo-600 hover:text-indigo-800 hover:underline">regulamin</button>*
                           </label>
                         </div>
                         <button 
@@ -1347,11 +1347,11 @@ export default function CreateEventPl() {
                           {isProcessing ? (
                             <span className="flex items-center gap-2">
                               <Loader2 className="w-5 h-5 animate-spin" />
-                              Obrađujem...
+                              Przetwarzanie...
                             </span>
                           ) : (
                             <span className="flex items-center gap-2">
-                              Napravi događaj besplatno <Check className="w-5 h-5" />
+                              Utwórz wydarzenie za darmo <Check className="w-5 h-5" />
                             </span>
                           )}
                         </button>
@@ -1359,7 +1359,7 @@ export default function CreateEventPl() {
                     )}
                     {finalPrice > 0 && (
                       <p className="text-center text-xs text-gray-400 mt-3 flex items-center justify-center gap-1">
-                        Sigurno plaćanje osigurava Stripe
+                        Bezpieczna płatność przez Stripe
                       </p>
                     )}
                   </>
@@ -1387,7 +1387,7 @@ export default function CreateEventPl() {
             className="bg-white rounded-t-3xl sm:rounded-2xl p-6 md:p-8 w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-xl relative"
           >
             <div className="sticky top-0 bg-white/90 backdrop-blur-md pb-4 pt-2 -mt-4 border-b border-gray-100 flex justify-between items-center z-10">
-              <h2 className="text-2xl font-bold text-gray-900">Splošni pogoji uporabe</h2>
+              <h2 className="text-2xl font-bold text-gray-900">Regulamin</h2>
               <button 
                 onClick={() => setIsTermsModalOpen(false)}
                 className="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors text-gray-600"
@@ -1397,33 +1397,33 @@ export default function CreateEventPl() {
             </div>
             
             <div className="prose prose-sm md:prose-base text-gray-600 mt-6 pb-8">
-              <p className="mb-4">Opći uvjeti poslovanja i korištenja web stranice kliksy.si sastavljeni su u skladu sa Zakonom o zaštiti potrošača (ZVPot), Zakonom o zaštiti osobnih podataka (ZVOP-1), Općom uredbom o zaštiti podataka (GDPR) i Zakonom o elektroničkim komunikacijama (ZEKom-1).</p>
+              <p className="mb-4">Regulamin serwisu kliksy.si został sporządzony zgodnie z obowiązującymi przepisami prawa.</p>
               
-              <h3 className="text-xl font-bold text-gray-900 mt-6 mb-2">1. Opće odredbe</h3>
-              <p className="mb-4">Korištenjem web stranice kliksy.si potvrđujete da ste upoznati s navedenim uvjetima korištenja i da se s njima slažete. Usluga omogućuje stvaranje virtualnih galerija za pohranu i dijeljenje fotografija s događaja.</p>
+              <h3 className="text-xl font-bold text-gray-900 mt-6 mb-2">1. Postanowienia ogólne</h3>
+              <p className="mb-4">Korzystając z serwisu kliksy.si, potwierdzasz, że zapoznałeś się z regulaminem i akceptujesz jego warunki. Usługa umożliwia tworzenie wirtualnych galerii do przechowywania i udostępniania zdjęć z wydarzeń.</p>
 
-              <h3 className="text-xl font-bold text-gray-900 mt-6 mb-2">2. Korištenje usluge i stvaranje događaja</h3>
-              <p className="mb-4">Stvaranjem događaja na našoj platformi kupujete pristup virtualnoj galeriji gdje vaši klijenti/gosti mogu učitavati fotografije. Korisnik je dužan koristiti platformu u skladu s propisima.</p>
+              <h3 className="text-xl font-bold text-gray-900 mt-6 mb-2">2. Korzystanie z usługi</h3>
+              <p className="mb-4">Tworząc wydarzenie na naszej platformie, kupujesz dostęp do wirtualnej galerii, w której Twoi goście mogą przesyłać zdjęcia. Użytkownik jest zobowiązany do korzystania z platformy zgodnie z prawem.</p>
 
-              <h3 className="text-xl font-bold text-gray-900 mt-6 mb-2 bg-yellow-100 px-3 py-1 rounded-md inline-block">3. Odgovornost za učitani sadržaj (Važno)</h3>
+              <h3 className="text-xl font-bold text-gray-900 mt-6 mb-2 bg-yellow-100 px-3 py-1 rounded-md inline-block">3. Odpowiedzialność za treści (Ważne)</h3>
               <p className="mb-4 font-medium text-gray-800">
-                Organizatori, odnosno pružatelji usluga (korisnici) koji na našoj platformi kreiraju i otvore događaj, preuzimaju potpunu i isključivu odgovornost za sve fotografije, videozapise i ostale sadržaje koje oni ili njihovi gosti uspješno učitavaju u spomenutu virtualnu galeriju.
+                Organizatorzy wydarzeń ponoszą pełną i wyłączną odpowiedzialność za wszystkie zdjęcia i filmy przesyłane do galerii.
               </p>
               <p className="mb-4">
-                Kliksy.si (upravitelj platforme) djeluje isključivo kao pružatelj tehnološkog rješenja ili informacijske infrastrukture za lakše prikupljanje slika te pri tome ručno ne pregledava svaku učitanu fotografiju. Ukoliko se u galeriji nađu neprimjereni, autorski sporni ili nezakoniti sadržaji (npr. golotinja, nasilje, protupravni sadržaji), dužnost je i odgovornost kreatora događaja redovito pregledavati te slike i uz pomoć dostupnih alata (koji se nalaze na nadzornoj ploči) odmah ih izbrisati.
+                Kliksy.si działa wyłącznie jako dostawca rozwiązania technologicznego i nie przegląda ręcznie każdej przesłanej treści. W przypadku znalezienia nieodpowiednich treści, obowiązkiem organizatora jest ich niezwłoczne usunięcie za pomocą dostępnych narzędzi.
               </p>
 
-              <h3 className="text-xl font-bold text-gray-900 mt-6 mb-2">4. Cijene i plaćanje</h3>
-              <p className="mb-4">Sve cijene na web stranici izražene su u eurima. Plaćanja se vrše preko sigurne veze (Stripe). Za sva plaćanja izdajemo odgovarajuće račune koji su u skladu sa zakonodavstvom.</p>
+              <h3 className="text-xl font-bold text-gray-900 mt-6 mb-2">4. Ceny i płatności</h3>
+              <p className="mb-4">Wszystkie ceny podane są w euro. Płatności realizowane są przez bezpieczne łącze (Stripe).</p>
               
-              <h3 className="text-xl font-bold text-gray-900 mt-6 mb-2">5. Pravo na odustajanje od ugovora i reklamacije</h3>
-              <p className="mb-4">U skladu s propisima, korisnik ima pravo obavijestiti nas u roku od 14 dana ako odustaje od ugovora i zatražiti povrat novca unutar naše politike reklamacija i garancije nezadovoljstva u trajanju od 30 dana. Povrat sredstava bit će izvršen na isto sredstvo plaćanja.</p>
+              <h3 className="text-xl font-bold text-gray-900 mt-6 mb-2">5. Prawo do odstąpienia od umowy</h3>
+              <p className="mb-4">Zgodnie z przepisami, użytkownik ma prawo do odstąpienia od umowy w ciągu 14 dni. Oferujemy również 30-dniową gwarancję satysfakcji.</p>
 
-              <h3 className="text-xl font-bold text-gray-900 mt-6 mb-2">6. Ograničenje odgovornosti operatera</h3>
-              <p className="mb-4">Platforma osigurava visoku pouzdanost pristupa podacima, no upravitelj ne preuzima odgovornost za eventualne zastoje u radu servera izvan svoje kontrole.</p>
+              <h3 className="text-xl font-bold text-gray-900 mt-6 mb-2">6. Ograniczenie odpowiedzialności</h3>
+              <p className="mb-4">Platforma zapewnia wysoką niezawodność, jednak operator nie ponosi odpowiedzialności za przerwy w działaniu serwerów niezależne od niego.</p>
 
-              <h3 className="text-xl font-bold text-gray-900 mt-6 mb-2">7. Završne odredbe</h3>
-              <p className="mb-4">Uvjeti korištenja stupaju na snagu danom objave. Upravitelj zadržava pravo izmjene uvjeta, o čemu se korisnici pravovremeno obavještavaju.</p>
+              <h3 className="text-xl font-bold text-gray-900 mt-6 mb-2">7. Postanowienia końcowe</h3>
+              <p className="mb-4">Regulamin wchodzi w życie z dniem publikacji. Operator zastrzega sobie prawo do jego zmiany.</p>
             </div>
             
             <div className="sticky bottom-0 bg-white/90 backdrop-blur-md pt-4 pb-2 border-t border-gray-100 flex gap-3">
@@ -1431,7 +1431,7 @@ export default function CreateEventPl() {
                 onClick={() => setIsTermsModalOpen(false)}
                 className="w-full bg-gray-900 text-white font-bold py-3 px-6 rounded-xl hover:bg-black transition-colors"
               >
-                Zatvori i nastavi
+                Zamknij i kontynuuj
               </button>
             </div>
           </motion.div>
@@ -1469,7 +1469,7 @@ function StripePaymentForm({
       standsQuantity > 0 &&
       (!formData.deliveryName || !formData.deliverySurname || !formData.deliveryAddress || !formData.deliveryPostcode || !formData.deliveryCity)
     ) {
-      onError('Za dostavu podmetača morate ispuniti sve podatke o primatelju i adresi za dostavu!');
+      onError('Aby otrzymać podstawki, musisz wypełnić wszystkie dane dostawy!');
       return;
     }
 
@@ -1533,11 +1533,11 @@ function StripePaymentForm({
       });
 
       if (stripeErr) {
-        onError(stripeErr.message || 'Plaćanje ni uspelo.');
+        onError(stripeErr.message || 'Płatność nie powiodła się.');
         setIsProcessing(false);
       }
     } catch (err: any) {
-      onError(err.message || 'Došlo je do pogreške.');
+      onError(err.message || 'Wystąpił błąd.');
       setIsProcessing(false);
     }
   };
@@ -1545,14 +1545,14 @@ function StripePaymentForm({
   return (
     <form onSubmit={handleSubmit} className="w-full">
       <div className="mb-6 p-5 border border-gray-200 rounded-xl bg-gray-50 space-y-4">
-        <h4 className="font-medium text-gray-900 mb-2">Podaci za plaćanje</h4>
+        <h4 className="font-medium text-gray-900 mb-2">Dane do płatności</h4>
         <div className="bg-white p-3 rounded-lg border border-gray-300">
           <PaymentElement options={{ 
             layout: 'accordion',
             defaultValues: {
               billingDetails: {
                 address: {
-                  country: 'HR'
+                  country: 'PL'
                 }
               }
             },
@@ -1570,21 +1570,21 @@ function StripePaymentForm({
           <Lock className="w-6 h-6 text-gray-400 shrink-0" />
           <div className="text-left">
             <p className="text-[11px] font-bold text-gray-900 leading-none">SSL</p>
-            <p className="text-[11px] text-gray-500 font-medium leading-tight">zaštita</p>
+            <p className="text-[11px] text-gray-500 font-medium leading-tight">ochrona</p>
           </div>
         </div>
         <div className="flex items-center justify-center gap-2">
           <ShieldCheck className="w-6 h-6 text-indigo-500 shrink-0" />
           <div className="text-left">
             <p className="text-[11px] font-bold text-gray-900 leading-none">Stripe</p>
-            <p className="text-[11px] text-gray-500 font-medium leading-tight">sigurno plaćanje</p>
+            <p className="text-[11px] text-gray-500 font-medium leading-tight">bezpieczna płatność</p>
           </div>
         </div>
         <div className="flex items-center justify-center gap-2">
           <Shield className="w-6 h-6 text-gray-400 shrink-0" />
           <div className="text-left">
             <p className="text-[11px] font-bold text-gray-900 leading-none">PCI DSS</p>
-            <p className="text-[11px] text-gray-500 font-medium leading-tight">certificirano</p>
+            <p className="text-[11px] text-gray-500 font-medium leading-tight">certyfikowane</p>
           </div>
         </div>
       </div>
@@ -1598,7 +1598,7 @@ function StripePaymentForm({
           className="mt-1 w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 cursor-pointer"
         />
         <label htmlFor="terms_stripe" className="text-sm text-gray-700 cursor-pointer">
-          Slažem se sa <button type="button" onClick={onOpenTerms} className="text-indigo-600 hover:text-indigo-800 hover:underline">općim uvjetima</button>*
+          Akceptuję <button type="button" onClick={onOpenTerms} className="text-indigo-600 hover:text-indigo-800 hover:underline">regulamin</button>*
         </label>
       </div>
 
@@ -1610,11 +1610,11 @@ function StripePaymentForm({
         {isProcessing || isUpdatingPrice ? (
           <span className="flex items-center gap-2">
             <Loader2 className="w-5 h-5 animate-spin" />
-            {isUpdatingPrice ? 'Osvježavam cijenu...' : 'Obrađujem...'}
+            {isUpdatingPrice ? 'Odświeżam cenę...' : 'Przetwarzanie...'}
           </span>
         ) : (
           <span className="flex items-center gap-2">
-            Potvrdi i stvori galeriju <Check className="w-5 h-5" />
+            Potwierdź i utwórz galerię <Check className="w-5 h-5" />
           </span>
         )}
       </button>
@@ -1624,14 +1624,15 @@ function StripePaymentForm({
           <ShieldCheck className="w-6 h-6 text-[#5B45FF]" />
         </div>
         <div className="pt-0.5">
-          <p className="font-bold text-[#5B45FF] text-[13px] leading-tight mb-0.5">30-dnevno jamstvo povrata novca</p>
-          <p className="text-[12px] text-gray-500 font-medium leading-tight">Ako niste 100% zadovoljni proizvodom, vraćamo vam novac – bez pitanja.</p>
+          <p className="font-bold text-[#5B45FF] text-[13px] leading-tight mb-0.5">30-dniowa gwarancja zwrotu pieniędzy</p>
+          <p className="text-[12px] text-gray-500 font-medium leading-tight">Jeśli nie jesteś w 100% zadowolony, zwrócimy Ci pieniądze – bez pytań.</p>
         </div>
       </div>
       
       <div className="mt-4 text-center text-xs text-gray-400">
-        Sigurno plaćanje osigurava Stripe
+        Bezpieczna płatność przez Stripe
       </div>
     </form>
   );
 }
+// translated

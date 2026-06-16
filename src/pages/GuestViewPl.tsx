@@ -690,3 +690,4 @@ export default function GuestViewHr() {
     </div>
   );
 }
+// translated
