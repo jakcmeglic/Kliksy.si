@@ -9,10 +9,10 @@ import { useAuth } from "../components/AuthProvider";
 import { db, storage, handleFirestoreError, OperationType } from "../firebase";
 import { collection, query, where, getDocs, onSnapshot, doc, getDoc, orderBy, updateDoc, arrayUnion, arrayRemove, deleteDoc } from "firebase/firestore";
 import { ref, deleteObject } from 'firebase/storage';
-import QRModalPl from "../components/QRModalPl";
+import QRModalHr from "../components/QRModalHr";
 import ImageViewer from "../components/ImageViewer";
 
-export default function DashboardPl() {
+export default function DashboardHr() {
   const { user, loading: authLoading, signOut } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -38,7 +38,7 @@ export default function DashboardPl() {
 
   useEffect(() => {
     if (event) {
-      setWelcomeMessage(event.welcomeMessage || (event.eventType === 'poroka' || !event.eventType ? "Hvala što dijeliš uspomene s nama." : "Hvala što dijeliš uspomene s nama."));
+      setWelcomeMessage(event.welcomeMessage || (event.eventType === 'poroka' || !event.eventType ? "Dziękujemy za dzielenie się z nami wspomnieniami." : "Dziękujemy za dzielenie się z nami wspomnieniami."));
     }
   }, [event]);
 
@@ -74,13 +74,13 @@ export default function DashboardPl() {
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({
                     email: eventData.email || user.email,
-                    eventName: eventData.eventName || (eventData.partner1 ? `${eventData.partner1} & ${eventData.partner2}` : 'Vaš događaj'),
+                    eventName: eventData.eventName || (eventData.partner1 ? `${eventData.partner1} & ${eventData.partner2}` : 'Twoje wydarzenie'),
                     plan: eventData.plan,
                     amountPaid: eventData.amountPaid,
                     standsQuantity: eventData.standsQuantity,
                     printedQrQuantity: eventData.printedQrQuantity,
                     deliveryMode: eventData.deliveryMode,
-                    lang: 'hr'
+                    lang: 'pl'
                   })
                 }).catch(err => console.error("Failed to send order summary email:", err));
               }
@@ -209,10 +209,10 @@ export default function DashboardPl() {
   if (!event) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-[#FDFCFB] p-6 text-center">
-        <h2 className="text-3xl font-extrabold tracking-tight text-gray-900 mb-4">Nemate još događaj</h2>
-        <p className="text-gray-600 mb-8">Napravite svoj prvi događaj za početak skupljanja uspomena.</p>
+        <h2 className="text-3xl font-extrabold tracking-tight text-gray-900 mb-4">Nie masz jeszcze żadnego wydarzenia</h2>
+        <p className="text-gray-600 mb-8">Stwórz swoje pierwsze wydarzenie, aby zacząć zbierać wspomnienia.</p>
         <Link to="/create" className="bg-gray-900 text-white px-8 py-4 rounded-full font-medium hover:bg-black transition-colors shadow-sm">
-          Napravi događaj
+          Stwórz wydarzenie
         </Link>
       </div>
     );
@@ -262,7 +262,7 @@ export default function DashboardPl() {
           link.href = blobUrl;
           
           const eventNameStr = event.eventType === 'poroka' || !event.eventType ? `${event.partner1}-${event.partner2}` : event.eventName;
-          link.download = `QR-Koda-${eventNameStr}.png`;
+          link.download = `Kod-QR-${eventNameStr}.png`;
           
           document.body.appendChild(link);
           link.click();
@@ -278,9 +278,9 @@ export default function DashboardPl() {
   };
   
   const stats = [
-    { label: "Učitane slike", value: photos.length.toString(), icon: ImageIcon },
-    { label: "Gosti", value: new Set(photos.map(p => p.deviceId).filter(Boolean)).size.toString() || "0", icon: Users },
-    { label: "Zadnja slika", value: photos.length > 0 ? "Upravo" : "-", icon: Clock },
+    { label: "Przesłane zdjęcia", value: photos.length.toString(), icon: ImageIcon },
+    { label: "Goście", value: new Set(photos.map(p => p.deviceId).filter(Boolean)).size.toString() || "0", icon: Users },
+    { label: "Ostatnie zdjęcie", value: photos.length > 0 ? "Właśnie teraz" : "-", icon: Clock },
   ];
 
   const handleDownloadSingle = async (url: string, index: number) => {
@@ -349,7 +349,7 @@ export default function DashboardPl() {
         setSelectedImageIndex(photos.length - 2);
       }
     } catch (error) {
-      console.error("Greška pri brisanju slike:", error);
+      console.error("Błąd podczas usuwania zdjęcia:", error);
       // Fallback alert for network errors, etc. Not blocked by all browsers, but console handle is enough.
     } finally {
       setImageToDelete(null);
@@ -400,7 +400,7 @@ export default function DashboardPl() {
       setDownloadError('');
     } catch (error) {
       console.error("Error creating zip file:", error);
-      setDownloadError("Prišlo je do napake pri prenosu. Poskusite znova.");
+      setDownloadError("Wystąpił błąd podczas pobierania. Spróbuj ponownie.");
     } finally {
       setIsDownloading(false);
     }
@@ -418,7 +418,7 @@ export default function DashboardPl() {
         
         <div className="p-6 flex-1">
           <div className="mb-8">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Tvoj događaj</p>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Twoje wydarzenie</p>
             {events.length > 1 ? (
               <select
                 value={event.id}
@@ -442,7 +442,7 @@ export default function DashboardPl() {
                 {event.eventType === 'poroka' || !event.eventType ? `${event.partner1} & ${event.partner2}` : event.eventName}
               </h2>
             )}
-            <p className="text-sm text-gray-500 mt-2">{new Date(event.date).toLocaleDateString('sl-SI')}</p>
+            <p className="text-sm text-gray-500 mt-2">{new Date(event.date).toLocaleDateString('pl-PL')}</p>
             {event.plan && (
               <div className="mt-3 flex flex-col items-start gap-2">
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
@@ -451,7 +451,7 @@ export default function DashboardPl() {
                   event.plan === 'plus' ? 'bg-blue-50 text-blue-800 border-blue-200' :
                   'bg-gray-100 text-gray-800 border-gray-200'
                 }`}>
-                  Paket: {event.paymentStatus !== 'paid' ? 'Demo' : event.plan.charAt(0).toUpperCase() + event.plan.slice(1)}
+                  Pakiet: {event.paymentStatus !== 'paid' ? 'Demo' : event.plan.charAt(0).toUpperCase() + event.plan.slice(1)}
                 </span>
                 
                 {event.paymentStatus === 'paid' && event.plan !== 'premium' && (
@@ -459,7 +459,7 @@ export default function DashboardPl() {
                     onClick={() => setIsUpgradeModalOpen(true)}
                     className="text-xs font-bold text-indigo-600 hover:text-indigo-800 hover:underline flex items-center gap-1 transition-colors"
                   >
-                    Nadgradi paket
+                    Ulepsz pakiet
                   </button>
                 )}
               </div>
@@ -470,15 +470,15 @@ export default function DashboardPl() {
               className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2 border-2 border-dashed border-gray-200 text-gray-600 rounded-xl text-sm font-medium hover:bg-gray-50 hover:text-gray-900 hover:border-gray-300 transition-colors"
             >
               <Plus className="w-4 h-4" />
-              Dodaj novi događaj
+              Dodaj nowe wydarzenie
             </button>
           </div>
 
           <nav className="space-y-2">
             {[
-              { id: 'overview', label: 'Pregled', icon: Clock },
-              { id: 'gallery', label: 'Galerija', icon: ImageIcon },
-              { id: 'settings', label: 'Postavke', icon: Settings },
+              { id: 'overview', label: 'Przegląd', icon: Clock },
+              { id: 'gallery', label: 'Galeria', icon: ImageIcon },
+              { id: 'settings', label: 'Ustawienia', icon: Settings },
             ].map((item) => (
               <button
                 key={item.id}
@@ -499,7 +499,7 @@ export default function DashboardPl() {
         <div className="p-6 border-t border-gray-100">
           <button onClick={signOut} className="flex items-center gap-3 text-sm font-medium text-red-600 hover:text-red-700 transition-colors">
             <LogOut className="w-5 h-5" />
-            Odjava
+            Wyloguj
           </button>
         </div>
       </aside>
@@ -511,14 +511,14 @@ export default function DashboardPl() {
           {event.paymentStatus !== 'paid' && (
             <div className="mb-8 bg-indigo-50 border border-indigo-100 rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-sm">
               <div>
-                <h3 className="text-lg font-bold text-indigo-900 mb-2">Demo paket (ograničeno na 5 slika)</h3>
-                <p className="text-indigo-700">Trenutno isprobavate demo paket. Da bi gosti mogli učitati više slika i pristupiti svim funkcijama, otključajte vaš događaj.</p>
+                <h3 className="text-lg font-bold text-indigo-900 mb-2">Pakiet Demo (ograniczony do 5 zdjęć)</h3>
+                <p className="text-indigo-700">Obecnie testujesz pakiet demo. Aby goście mogli przesyłać więcej zdjęć i korzystać ze wszystkich funkcji, odblokuj swoje wydarzenie.</p>
               </div>
               <button 
                 onClick={() => navigate(`/create?eventId=${event.id}`)}
                 className="shrink-0 bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-indigo-700 transition md:ml-auto shadow-md shadow-indigo-200"
               >
-                Otključaj moj događaj
+                Odblokuj moje wydarzenie
               </button>
             </div>
           )}
@@ -534,16 +534,16 @@ export default function DashboardPl() {
               </button>
               <div>
                 <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 mb-1">
-                  {activeTab === 'overview' && 'Pregled događaja'}
-                  {activeTab === 'gallery' && 'Sve fotografije'}
-                  {activeTab === 'settings' && 'Postavke'}
+                  {activeTab === 'overview' && 'Przegląd wydarzenia'}
+                  {activeTab === 'gallery' && 'Wszystkie zdjęcia'}
+                  {activeTab === 'settings' && 'Ustawienia'}
                 </h1>
                 <p className="text-gray-500">
-                  {event.eventType === 'poroka' || !event.eventType ? 'Upravljaj svojim vjenčanim uspomenama.' : 
-                   event.eventType === 'rojstni_dan' ? 'Upravljaj svojim rođendanskim uspomenama.' : 
-                   event.eventType === 'poslovni_događaj' ? 'Upravljajte uspomenama s poslovnog događaja.' : 
-                   event.eventType === 'teambuilding' ? 'Upravljaj svojim teambuilding uspomenama.' : 
-                   'Upravljajte uspomenama događaja.'}
+                  {event.eventType === 'poroka' || !event.eventType ? 'Zarządzaj swoimi wspomnieniami ze ślubu.' : 
+                   event.eventType === 'rojstni_dan' ? 'Zarządzaj swoimi wspomnieniami z urodzin.' : 
+                   event.eventType === 'poslovni_događaj' ? 'Zarządzaj wspomnieniami z wydarzenia firmowego.' : 
+                   event.eventType === 'teambuilding' ? 'Zarządzaj swoimi wspomnieniami z wyjazdu integracyjnego.' : 
+                   'Zarządzaj wspomnieniami z wydarzenia.'}
                 </p>
               </div>
             </div>
@@ -556,8 +556,8 @@ export default function DashboardPl() {
                 className="flex items-center justify-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-full text-sm font-medium hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm flex-1 md:flex-none text-gray-700"
               >
                 <ExternalLink className="w-4 h-4" />
-                <span className="hidden sm:inline">Poglej kot gost</span>
-                <span className="sm:hidden">Gost</span>
+                <span className="hidden sm:inline">Zobacz jako gość</span>
+                <span className="sm:hidden">Gość</span>
               </a>
               <button 
                 onClick={handleDownloadAll}
@@ -569,8 +569,8 @@ export default function DashboardPl() {
                 ) : (
                   <Download className="w-4 h-4" />
                 )}
-                <span className="hidden sm:inline">{isDownloading ? "Pripravljam ZIP..." : "Preuzmi sve (ZIP)"}</span>
-                <span className="sm:hidden">{isDownloading ? "..." : "Preuzmi sve"}</span>
+                <span className="hidden sm:inline">{isDownloading ? "Przygotowuję ZIP..." : "Pobierz wszystko (ZIP)"}</span>
+                <span className="sm:hidden">{isDownloading ? "..." : "Pobierz wszystko"}</span>
               </button>
             </div>
           </header>
@@ -605,8 +605,8 @@ export default function DashboardPl() {
               <div className="grid md:grid-cols-3 gap-8">
                 {/* QR Code Card */}
                 <div className="md:col-span-1 bg-white p-8 rounded-3xl border border-gray-200 shadow-sm text-center flex flex-col items-center relative overflow-hidden">
-                  <h3 className="font-bold tracking-tight text-xl mb-2 text-gray-900">Tvoj QR kod</h3>
-                  <p className="text-sm text-gray-500 mb-6">Ispiši ovaj kod i postavi ga na stolove.</p>
+                  <h3 className="font-bold tracking-tight text-xl mb-2 text-gray-900">Twój kod QR</h3>
+                  <p className="text-sm text-gray-500 mb-6">Wydrukuj ten kod i umieść go na stołach.</p>
                   
                   {event && event.paymentStatus !== 'paid' && (
                     <motion.div 
@@ -616,7 +616,7 @@ export default function DashboardPl() {
                     >
                       <div className="bg-indigo-50 border border-indigo-100 px-4 py-2 rounded-2xl shadow-sm mb-2 max-w-[220px]">
                         <p className="text-sm font-bold leading-snug">
-                          Skeniraj ovaj QR kod i isprobaj kako radi
+                          Zeskanuj ten kod QR i sprawdź jak to działa
                         </p>
                       </div>
                       <svg className="w-8 h-8 animate-bounce text-indigo-500 drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -641,22 +641,22 @@ export default function DashboardPl() {
                     onClick={() => setIsQRModalOpen(true)}
                     className="w-full py-3 px-4 mb-2 bg-gray-100 text-gray-900 rounded-xl text-sm font-medium hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
                   >
-                    <Download className="w-4 h-4" /> Preuzmi QR kod s dizajnom
+                    <Download className="w-4 h-4" /> Pobierz kod QR z projektem
                   </button>
                   <button 
                     onClick={handleDownloadRawQR}
                     className="w-full py-3 px-4 bg-white border border-gray-200 text-gray-900 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
                   >
-                    <Download className="w-4 h-4" /> Preuzmi samo QR kod
+                    <Download className="w-4 h-4" /> Pobierz sam kod QR
                   </button>
                 </div>
 
                 {/* Recent Photos Preview */}
                 <div className="md:col-span-2 bg-white p-8 rounded-3xl border border-gray-200 shadow-sm">
                   <div className="flex items-center justify-between mb-6">
-                    <h3 className="font-bold tracking-tight text-xl text-gray-900">Zadnje učitano</h3>
+                    <h3 className="font-bold tracking-tight text-xl text-gray-900">Ostatnio przesłane</h3>
                     <button onClick={() => setActiveTab('gallery')} className="text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors">
-                      Pogledaj sve
+                      Zobacz wszystkie
                     </button>
                   </div>
                   
@@ -689,7 +689,7 @@ export default function DashboardPl() {
                     ))}
                     {photos.length === 0 && (
                       <div className="col-span-full py-12 text-center text-gray-500">
-                        Još nema učitanih fotografija.
+                        Brak przesłanych zdjęć.
                       </div>
                     )}
                   </div>
@@ -749,13 +749,13 @@ export default function DashboardPl() {
                 ))}
                 {photos.length === 0 && (
                   <div className="col-span-full py-20 text-center text-gray-500">
-                    Još nema učitanih fotografija.
+                    Brak przesłanych zdjęć.
                   </div>
                 )}
               </div>
               <div className="text-center pt-8">
                 <button className="px-8 py-3 bg-white border border-gray-200 rounded-full text-sm font-medium hover:bg-gray-50 text-gray-700 transition-colors shadow-sm">
-                  Učitaj više
+                  Załaduj więcej
                 </button>
               </div>
             </motion.div>
@@ -767,11 +767,11 @@ export default function DashboardPl() {
               animate={{ opacity: 1, y: 0 }}
               className="bg-white p-8 rounded-3xl border border-gray-200 shadow-sm max-w-2xl"
             >
-              <h3 className="font-bold tracking-tight text-xl mb-6 text-gray-900">Postavke događaja</h3>
+              <h3 className="font-bold tracking-tight text-xl mb-6 text-gray-900">Ustawienia wydarzenia</h3>
               
               <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-700">Ime događaja</label>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">Nazwa wydarzenia</label>
                   <input 
                     type="text" 
                     defaultValue={event.eventType === 'poroka' || !event.eventType ? `${event.partner1} & ${event.partner2}` : event.eventName}
@@ -780,7 +780,7 @@ export default function DashboardPl() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-700">Datum</label>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">Data</label>
                   <input 
                     type="date" 
                     defaultValue={event.date}
@@ -789,7 +789,7 @@ export default function DashboardPl() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-700">Poruka dobrodošlice za goste</label>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">Wiadomość powitalna dla gości</label>
                   <textarea 
                     value={welcomeMessage}
                     onChange={(e) => setWelcomeMessage(e.target.value)}
@@ -807,10 +807,10 @@ export default function DashboardPl() {
                         const eventDocRef = doc(db, "events", event.id);
                         await updateDoc(eventDocRef, { welcomeMessage });
                         setEvent({ ...event, welcomeMessage });
-                        alert('Promjene su uspješno spremljene!');
+                        alert('Zmiany zostały pomyślnie zapisane!');
                       } catch (err) {
                         console.error("Error saving settings:", err);
-                        alert('Došlo je do pogreške pri spremanju.');
+                        alert('Wystąpił błąd podczas zapisywania.');
                       } finally {
                         setIsSavingSettings(false);
                       }
@@ -818,7 +818,7 @@ export default function DashboardPl() {
                     disabled={isSavingSettings}
                     className="px-8 py-3 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 transition-colors shadow-sm disabled:opacity-50 min-w-[180px]"
                   >
-                    {isSavingSettings ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : "Spremi promjene"}
+                    {isSavingSettings ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : "Zapisz zmiany"}
                   </button>
                 </div>
               </div>
@@ -828,7 +828,7 @@ export default function DashboardPl() {
         </div>
       </main>
 
-      <QRModalPl 
+      <QRModalHr 
         isOpen={isQRModalOpen} 
         onClose={() => setIsQRModalOpen(false)} 
         event={event} 
@@ -858,20 +858,20 @@ export default function DashboardPl() {
             <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
               <Trash2 className="w-8 h-8 text-red-500" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Izbris slike</h3>
-            <p className="text-gray-500 mb-6 font-medium leading-relaxed">Ova slika bit će trajno izbrisana i uklonjena iz galerije. Ova se radnja ne može poništiti.</p>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Usuń zdjęcie</h3>
+            <p className="text-gray-500 mb-6 font-medium leading-relaxed">To zdjęcie zostanie trwale usunięte z galerii. Tej czynności nie można cofnąć.</p>
             <div className="flex gap-3">
               <button 
                 onClick={() => setImageToDelete(null)}
                 className="flex-1 px-4 py-3 bg-gray-100 font-bold text-gray-700 rounded-xl hover:bg-gray-200 transition-colors"
               >
-                Odustani
+                Anuluj
               </button>
               <button 
                 onClick={confirmDelete}
                 className="flex-1 px-4 py-3 bg-red-500 font-bold text-white rounded-xl hover:bg-red-600 transition-colors shadow-sm shadow-red-200"
               >
-                Obriši
+                Usuń
               </button>
             </div>
           </motion.div>
@@ -887,8 +887,8 @@ export default function DashboardPl() {
             onClick={(e) => e.stopPropagation()}
             className="bg-white rounded-2xl p-6 md:p-8 text-center max-w-lg w-full shadow-xl relative"
           >
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">Nadogradite svoj paket</h3>
-            <p className="text-gray-500 mb-6">Odaberite viši paket za više funkcionalnosti. Platit ćete samo razliku u cijeni.</p>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">Ulepsz swój pakiet</h3>
+            <p className="text-gray-500 mb-6">Wybierz wyższy pakiet, aby uzyskać więcej funkcji. Zapłacisz tylko różnicę w cenie.</p>
             
             <div className="space-y-4 mb-8">
               {(event?.plan === 'osnovni' || event?.plan === 'basic') && (
@@ -911,11 +911,11 @@ export default function DashboardPl() {
                       if (data.url) {
                         window.location.href = data.url;
                       } else {
-                        alert("Greška u povezivanju sa sustavom naplate.");
+                        alert("Błąd połączenia z systemem płatności.");
                         setIsUpgradingStatus(false);
                       }
                     } catch (err) {
-                      alert("Greška pri povezivanju.");
+                      alert("Błąd połączenia.");
                       setIsUpgradingStatus(false);
                     }
                   }}
@@ -923,10 +923,10 @@ export default function DashboardPl() {
                   className="w-full flex items-center justify-between p-4 border-2 border-blue-100 rounded-xl hover:border-blue-500 transition-all text-left bg-blue-50/50 group"
                 >
                   <div className="pr-4">
-                    <h4 className="font-bold text-lg text-gray-900 group-hover:text-blue-700">Nadogradi na Plus</h4>
-                    <p className="text-sm text-gray-500">Neograničeno slika, duži pristup galeriji, live galerija</p>
+                    <h4 className="font-bold text-lg text-gray-900 group-hover:text-blue-700">Ulepsz do Plus</h4>
+                    <p className="text-sm text-gray-500">Nieograniczona liczba zdjęć, dłuższy dostęp do galerii, galeria na żywo</p>
                   </div>
-                  <div className="font-bold text-blue-600 bg-blue-100 px-3 py-1.5 rounded-lg shrink-0">+ 10zł</div>
+                  <div className="font-bold text-blue-600 bg-blue-100 px-3 py-1.5 rounded-lg shrink-0">+ 10€</div>
                 </button>
               )}
 
@@ -949,11 +949,11 @@ export default function DashboardPl() {
                       if (data.url) {
                         window.location.href = data.url;
                       } else {
-                        alert("Greška u povezivanju sa sustavom naplate.");
+                        alert("Błąd połączenia z systemem płatności.");
                         setIsUpgradingStatus(false);
                       }
                     } catch (err) {
-                      alert("Greška pri povezivanju.");
+                      alert("Błąd połączenia.");
                       setIsUpgradingStatus(false);
                     }
                 }}
@@ -961,11 +961,11 @@ export default function DashboardPl() {
                  className="w-full flex items-center justify-between p-4 border-2 border-amber-100 rounded-xl hover:border-amber-500 transition-all text-left bg-amber-50/50 group"
               >
                   <div className="pr-4">
-                    <h4 className="font-bold text-lg text-gray-900 group-hover:text-amber-700">Nadogradi na Premium</h4>
-                    <p className="text-sm text-gray-500">Sve iz Plus paketa + podrška za prijenos videa</p>
+                    <h4 className="font-bold text-lg text-gray-900 group-hover:text-amber-700">Ulepsz do Premium</h4>
+                    <p className="text-sm text-gray-500">Wszystko z pakietu Plus + obsługa przesyłania wideo</p>
                   </div>
                   <div className="font-bold text-amber-600 bg-amber-100 px-3 py-1.5 rounded-lg shrink-0">
-                    + {(event?.plan === 'osnovni' || event?.plan === 'basic') ? '40' : '30'} zł
+                    + {(event?.plan === 'osnovni' || event?.plan === 'basic') ? '40' : '30'}€
                   </div>
               </button>
             </div>
@@ -975,7 +975,7 @@ export default function DashboardPl() {
               disabled={isUpgradingStatus}
               className="w-full py-3 text-gray-500 font-medium hover:text-gray-900 hover:bg-gray-50 rounded-xl transition-colors disabled:opacity-50"
             >
-              Odustani
+              Anuluj
             </button>
             
             {isUpgradingStatus && (

@@ -5,7 +5,7 @@ import { Mail, ArrowRight, ArrowLeft, Loader2 } from "lucide-react";
 import { useAuth } from "../components/AuthProvider";
 import { signInWithGoogle, signInWithEmail } from "../firebase";
 
-export default function LoginPl() {
+export default function LoginHr() {
   const { user } = useAuth();
   const navigate = useNavigate();
   
@@ -32,7 +32,7 @@ export default function LoginPl() {
       if (authMode === 'forgot_password') {
         const { resetPassword } = await import('../firebase');
         await resetPassword(email);
-        setSuccessMsg("Poveznica za poništavanje lozinke poslana je na vašu e-mail adresu.");
+        setSuccessMsg("Link do resetowania hasła został wysłany na Twój adres e-mail.");
         setAuthMode('login');
       } else if (authMode === 'register') {
         const { signUpWithEmail } = await import('../firebase');
@@ -46,9 +46,9 @@ export default function LoginPl() {
     } catch (err: any) {
       console.error("Auth error:", err);
       if (authMode === 'forgot_password') {
-        setError("Pogreška pri slanju poveznice. Provjerite e-mail adresu.");
+        setError("Błąd podczas wysyłania linku. Sprawdź adres e-mail.");
       } else {
-        setError(authMode === 'register' ? "Pogreška pri registraciji. Možda račun već postoji." : "Nevažeća e-mail adresa ili lozinka.");
+        setError(authMode === 'register' ? "Błąd rejestracji. Być może konto już istnieje." : "Nieprawidłowy adres e-mail lub hasło.");
       }
     } finally {
       setLoading(false);
@@ -63,7 +63,7 @@ export default function LoginPl() {
       navigate("/dashboard");
     } catch (err: any) {
       console.error("Google login error:", err);
-      setError("Pogreška pri prijavi s Google računom.");
+      setError("Błąd podczas logowania przez Google.");
     } finally {
       setLoading(false);
     }
@@ -91,10 +91,10 @@ export default function LoginPl() {
         >
           <div className="text-center mb-8">
             <h1 className="text-3xl font-serif text-gray-900 mb-2">
-              {authMode === 'login' ? 'Dobrodošli natrag' : authMode === 'forgot_password' ? 'Poništavanje lozinke' : 'Stvorite račun'}
+              {authMode === 'login' ? 'Witaj ponownie' : authMode === 'forgot_password' ? 'Resetowanie hasła' : 'Utwórz konto'}
             </h1>
             <p className="text-gray-500">
-              {authMode === 'login' ? 'Prijavite se za pristup vašem događaju' : authMode === 'forgot_password' ? 'Unesite e-mail adresu i poslat ćemo vam poveznicu za poništavanje lozinke' : 'Pridružite nam se i stvorite nezaboravne uspomene'}
+              {authMode === 'login' ? 'Zaloguj się, aby uzyskać dostęp do swojego wydarzenia' : authMode === 'forgot_password' ? 'Wpisz adres e-mail, a wyślemy Ci link do zresetowania hasła' : 'Dołącz do nas i twórz niezapomniane wspomnienia'}
             </p>
           </div>
 
@@ -104,13 +104,13 @@ export default function LoginPl() {
                 onClick={() => { setAuthMode('login'); setError(null); setSuccessMsg(null); }}
                 className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${authMode === 'login' ? 'bg-white shadow-sm text-black' : 'text-gray-500 hover:text-black'}`}
               >
-                Prijava
+                Logowanie
               </button>
               <button 
                 onClick={() => { setAuthMode('register'); setError(null); setSuccessMsg(null); }}
                 className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${authMode === 'register' ? 'bg-white shadow-sm text-black' : 'text-gray-500 hover:text-black'}`}
               >
-                Registracija
+                Rejestracja
               </button>
             </div>
           )}
@@ -141,7 +141,7 @@ export default function LoginPl() {
                     <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
                     <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
                   </svg>
-                  {authMode === 'login' ? 'Prijava putem Googlea' : 'Registracija putem Googlea'}
+                  {authMode === 'login' ? 'Zaloguj przez Google' : 'Zarejestruj przez Google'}
                 </button>
               </div>
 
@@ -149,27 +149,27 @@ export default function LoginPl() {
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-gray-200"></div>
                 </div>
-                <span className="relative bg-white px-4 text-sm text-gray-500">ili e-mailom</span>
+                <span className="relative bg-white px-4 text-sm text-gray-500">lub przez e-mail</span>
               </div>
             </>
           )}
 
           <form onSubmit={handleEmailAuth} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">E-mail adresa</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Adres e-mail</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[var(--color-wedding-gold)] focus:ring-1 focus:ring-[var(--color-wedding-gold)] outline-none transition-all"
-                placeholder="vas@email.com"
+                placeholder="twoj@email.com"
               />
             </div>
             
             {authMode !== 'forgot_password' && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Lozinka</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Hasło</label>
                 <input
                   type="password"
                   value={password}
@@ -188,7 +188,7 @@ export default function LoginPl() {
                   onClick={() => { setAuthMode('forgot_password'); setError(null); setSuccessMsg(null); }}
                   className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
                 >
-                  Zaboravio/la sam lozinku
+                  Zapomniałem/am hasła
                 </button>
               </div>
             )}
@@ -198,7 +198,7 @@ export default function LoginPl() {
               disabled={loading}
               className="w-full py-3 px-4 bg-gray-900 text-white rounded-xl font-medium hover:bg-black transition-colors flex items-center justify-center gap-2 disabled:opacity-50 mt-2"
             >
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (authMode === 'login' ? 'Prijava' : authMode === 'forgot_password' ? 'Pošalji poveznicu' : 'Registracija')}
+              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (authMode === 'login' ? 'Zaloguj' : authMode === 'forgot_password' ? 'Wyślij link' : 'Zarejestruj')}
             </button>
           </form>
 
@@ -208,14 +208,14 @@ export default function LoginPl() {
                 onClick={() => { setAuthMode('login'); setError(null); setSuccessMsg(null); }}
                 className="text-gray-500 font-medium hover:text-gray-900"
               >
-                Natrag na prijavu
+                Powrót do logowania
               </button>
             </div>
           ) : (
             <div className="mt-8 text-center text-sm text-gray-500">
-              Još nemate događaj?{" "}
+              Nie masz jeszcze wydarzenia?{" "}
               <Link to="/create" className="text-gray-900 font-medium hover:underline">
-                Stvorite ga ovdje
+                Utwórz je tutaj
               </Link>
             </div>
           )}

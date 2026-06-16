@@ -76,7 +76,7 @@ export default function GuestViewHr() {
     try {
       id = localStorage.getItem('guestDeviceId');
     } catch (e) {
-      console.warn("localStorage jest niedostępne (prawdopodobnie przeglądarka wewnątrz aplikacji)", e);
+      console.warn("localStorage niedostępny (prawdopodobnie przeglądarka wewnątrz aplikacji)", e);
     }
     
     if (!id) {
@@ -84,7 +84,7 @@ export default function GuestViewHr() {
       try {
         localStorage.setItem('guestDeviceId', id);
       } catch (e) {
-        console.warn("Nie można zapisać w localStorage.", e);
+        console.warn("Nie udało się zapisać w localStorage.", e);
       }
     }
     return id;
@@ -263,11 +263,11 @@ export default function GuestViewHr() {
     if (isDemo) {
       const allowedRemaining = Math.max(0, 5 - recentPhotos.length);
       if (allowedRemaining === 0) {
-        setUploadError("To jest wydarzenie demo. Osiągnięto limit 5 zdjęć.");
+        setUploadError("To jest wydarzenie demonstracyjne. Osiągnięto limit 5 zdjęć.");
         return;
       }
       if (files.length > allowedRemaining) {
-        setUploadError(`To jest wydarzenie demo. Możesz przesłać jeszcze tylko ${allowedRemaining} zdjęć.`);
+        setUploadError(`To jest wydarzenie demonstracyjne. Możesz przesłać tylko jeszcze ${allowedRemaining} zdjęć.`);
         files = files.slice(0, allowedRemaining); // Optional: just slice it or return. Let's return out of caution to not surprise user.
         return;
       }
@@ -285,7 +285,7 @@ export default function GuestViewHr() {
     });
     
     if (files.length === 0) {
-       setUploadError("Przesyłanie filmów wideo nie jest włączone lub osiągnięto limit (100).");
+       setUploadError("Przesyłanie wideo nie jest włączone lub osiągnięto limit (100).");
        return;
     }
 
@@ -441,7 +441,7 @@ export default function GuestViewHr() {
                 >
                   <div className="bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-full text-xs font-medium flex items-center justify-center gap-1.5 shadow-sm border border-indigo-100">
                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                     Przesyłanie ({uploadProgress.current}/{uploadProgress.total})...
+                     Przesyłam ({uploadProgress.current}/{uploadProgress.total})...
                   </div>
                 </motion.div>
               )}
@@ -501,7 +501,7 @@ export default function GuestViewHr() {
               </div>
               {(recentPhotos.length > 0) && (
                 <button onClick={() => setSelectedImageIndex(0)} className="text-sm font-bold text-indigo-600 hover:text-indigo-700">
-                  Zobacz wszystkie
+                  Zobacz wszystko
                 </button>
               )}
             </div>
@@ -539,7 +539,7 @@ export default function GuestViewHr() {
               ))}
               {recentPhotos.length === 0 && (
                 <div className="col-span-3 py-8 text-center text-sm text-gray-500">
-                  Bądź pierwszym, który prześle zdjęcie!
+                  Bądź pierwszą osobą, która prześle zdjęcie!
                 </div>
               )}
             </div>
@@ -585,7 +585,7 @@ export default function GuestViewHr() {
                   onClick={() => setGalleryMode('grid')}
                   className={`px-4 py-1.5 rounded-full text-sm font-bold transition-colors ${galleryMode === 'grid' ? 'bg-white text-black' : 'text-white/80 hover:text-white'}`}
                 >
-                  Widok siatki
+                  Siatka
                 </button>
               </div>
               <div className="w-12 h-12" /> {/* Spacer for centering */}
@@ -649,7 +649,7 @@ export default function GuestViewHr() {
                         transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
                         className="flex flex-col items-center"
                       >
-                        <span className="text-white font-medium text-sm mb-2 drop-shadow-lg bg-black/40 px-3 py-1 rounded-full backdrop-blur-md">Przeciągnij w górę</span>
+                        <span className="text-white font-medium text-sm mb-2 drop-shadow-lg bg-black/40 px-3 py-1 rounded-full backdrop-blur-md">Przesuń w górę</span>
                         <ChevronUp className="w-8 h-8 text-white drop-shadow-lg" />
                       </motion.div>
                     </motion.div>

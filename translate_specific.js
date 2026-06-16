@@ -16,7 +16,7 @@ async function translateFile(sourcePath, destPath) {
 
     try {
         const fetch = globalThis.fetch;
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent?key=${process.env.GEMINI_API_KEY}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(requestBody)
@@ -41,11 +41,16 @@ async function translateFile(sourcePath, destPath) {
 
 async function run() {
     const files = [
-        ['src/pages/PrivacyHr.tsx', 'src/pages/PrivacyPl.tsx'],
+        ['src/pages/CreateEventHr.tsx', 'src/pages/CreateEventPl.tsx'],
+        ['src/pages/DashboardHr.tsx', 'src/pages/DashboardPl.tsx'],
+        ['src/pages/GuestViewHr.tsx', 'src/pages/GuestViewPl.tsx'],
+        ['src/pages/LoginHr.tsx', 'src/pages/LoginPl.tsx']
     ];
 
     for (const [src, dest] of files) {
         await translateFile(src, dest);
+        console.log("Waiting 15 seconds...");
+        await new Promise(r => setTimeout(r, 15000));
     }
 }
 run();
