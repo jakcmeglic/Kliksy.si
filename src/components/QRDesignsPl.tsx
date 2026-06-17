@@ -748,7 +748,7 @@ export const DESIGNS = [
             </div>
           </div>
           <div className={`absolute bottom-0 w-full flex justify-center ${isPrint ? 'pb-8' : 'pb-4'} z-10`}>
-            <p className={`font-sans font-semibold tracking-widest text-blue-200 opacity-80 ${isPrint ? 'text-sm' : 'text-[8px]'}`}>Kliksy.si</p>
+            <p className={`font-sans font-semibold tracking-widest text-blue-200 opacity-80 ${isPrint ? 'text-sm' : 'text-[8px]'}`}>kliksy.pl</p>
           </div>
         </div>
       );
@@ -770,7 +770,7 @@ export const DESIGNS = [
             </div>
           </div>
           <div className={`absolute bottom-0 w-full flex justify-center ${isPrint ? 'pb-8' : 'pb-4'} z-10`}>
-            <p className={`font-sans font-bold tracking-widest text-slate-300 ${isPrint ? 'text-sm' : 'text-[8px]'}`}>Kliksy.si</p>
+            <p className={`font-sans font-bold tracking-widest text-slate-300 ${isPrint ? 'text-sm' : 'text-[8px]'}`}>kliksy.pl</p>
           </div>
         </div>
       );
@@ -791,10 +791,10 @@ export const DESIGNS = [
             <div className={`p-4 bg-white rounded-sm shadow-[0_0_15px_rgba(202,138,4,0.3)] mb-6`}>
               <QRCodeComponent value={eventUrl} size={qrSize * 1.1} bgColor="#ffffff" fgColor="#000000" level="Q" includeMargin={false} />
             </div>
-            <p className={`font-sans text-gray-300 font-light ${isPrint ? 'text-lg px-12' : 'text-[10px] px-4'}`}>Zabilježite trenutke. Skenirajte kod za dijeljenje slika s nama.</p>
+            <p className={`font-sans text-gray-300 font-light ${isPrint ? 'text-lg px-12' : 'text-[10px] px-4'}`}>Uchwyć chwile. Zeskanuj kod, aby przesłać zdjęcia.</p>
           </div>
           <div className={`absolute bottom-0 w-full flex justify-center ${isPrint ? 'pb-8' : 'pb-4'} z-10`}>
-            <p className={`font-sans font-semibold tracking-widest text-yellow-400 opacity-90 ${isPrint ? 'text-sm' : 'text-[8px]'}`}>Kliksy.si</p>
+            <p className={`font-sans font-semibold tracking-widest text-yellow-400 opacity-90 ${isPrint ? 'text-sm' : 'text-[8px]'}`}>kliksy.pl</p>
           </div>
         </div>
       );
@@ -812,13 +812,13 @@ export const DESIGNS = [
             <div className={`h-px bg-gray-400 w-full ${isPrint ? 'mt-6' : 'mt-3'}`}></div>
           </div>
           <div className="flex flex-col items-center z-10">
-            <p className={`font-sans text-gray-600 font-medium mb-6 ${isPrint ? 'text-xl px-10' : 'text-xs px-2'}`}>Stvaramo priču događaja. Slikajte i podijelite fotografije.</p>
+            <p className={`font-sans text-gray-600 font-medium mb-6 ${isPrint ? 'text-xl px-10' : 'text-xs px-2'}`}>Tworzymy historię wydarzenia. Zrób zdjęcie i podziel się.</p>
             <div className={`p-3 bg-white border border-gray-300 shadow-sm`}>
               <QRCodeComponent value={eventUrl} size={qrSize * 1.1} bgColor="#ffffff" fgColor="#1f2937" level="Q" includeMargin={false} />
             </div>
           </div>
           <div className={`absolute bottom-0 w-full flex justify-center ${isPrint ? 'pb-8' : 'pb-4'} z-10`}>
-            <p className={`font-sans font-bold tracking-widest text-gray-400 ${isPrint ? 'text-sm' : 'text-[8px]'}`}>Kliksy.si</p>
+            <p className={`font-sans font-bold tracking-widest text-gray-400 ${isPrint ? 'text-sm' : 'text-[8px]'}`}>kliksy.pl</p>
           </div>
         </div>
       );
@@ -839,10 +839,10 @@ export const DESIGNS = [
             <div className={`p-4 bg-emerald-50 rounded-lg shadow-2xl mb-6`}>
               <QRCodeComponent value={eventUrl} size={qrSize * 1.1} bgColor="#f0fdf4" fgColor="#022c22" level="Q" includeMargin={false} />
             </div>
-            <p className={`font-sans text-emerald-100 font-light ${isPrint ? 'text-lg px-12' : 'text-[10px] px-4'}`}>Doprinesite zajedničkoj galeriji. Skenirajte i podijelite trenutke.</p>
+            <p className={`font-sans text-emerald-100 font-light ${isPrint ? 'text-lg px-12' : 'text-[10px] px-4'}`}>Buduj naszą wspólną galerię. Zeskanuj i prześlij wspomnienia.</p>
           </div>
           <div className={`absolute bottom-0 w-full flex justify-center ${isPrint ? 'pb-8' : 'pb-4'} z-10`}>
-            <p className={`font-sans font-semibold tracking-widest text-emerald-400 opacity-80 ${isPrint ? 'text-sm' : 'text-[8px]'}`}>Kliksy.si</p>
+            <p className={`font-sans font-semibold tracking-widest text-emerald-400 opacity-80 ${isPrint ? 'text-sm' : 'text-[8px]'}`}>kliksy.pl</p>
           </div>
         </div>
       );
@@ -859,13 +859,13 @@ export const DESIGNS = [
             <h1 className={`font-sans text-white font-bold tracking-wide ${isPrint ? 'text-3xl' : 'text-lg'}`} style={{ textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>{title}</h1>
           </div>
           <div className="flex flex-col items-center z-10 mt-4">
-            <p className={`font-sans text-zinc-200 font-medium mb-6 ${isPrint ? 'text-xl px-10' : 'text-xs px-2'}`}>Vaše fotografije obogaćuju naš događaj. Skenirajte i podijelite.</p>
+            <p className={`font-sans text-zinc-200 font-medium mb-6 ${isPrint ? 'text-xl px-10' : 'text-xs px-2'}`}>Twoje zdjęcia wzbogacają nasze wydarzenie. Zeskanuj i prześlij.</p>
             <div className={`p-3 bg-white rounded-xl shadow-lg`}>
               <QRCodeComponent value={eventUrl} size={qrSize * 1.1} bgColor="#ffffff" fgColor="#27272a" level="Q" includeMargin={false} />
             </div>
           </div>
           <div className={`absolute bottom-0 w-full flex justify-center ${isPrint ? 'pb-8' : 'pb-4'} z-10`}>
-            <p className={`font-sans font-bold tracking-widest text-zinc-300 opacity-60 ${isPrint ? 'text-sm' : 'text-[8px]'}`}>Kliksy.si</p>
+            <p className={`font-sans font-bold tracking-widest text-zinc-300 opacity-60 ${isPrint ? 'text-sm' : 'text-[8px]'}`}>kliksy.pl</p>
           </div>
         </div>
       );
@@ -884,10 +884,10 @@ export const DESIGNS = [
             <div className={`p-1 mb-6 border-2 border-slate-200`}>
               <QRCodeComponent value={eventUrl} size={qrSize * 1.1} bgColor="#ffffff" fgColor="#0f172a" level="Q" includeMargin={false} />
             </div>
-            <p className={`font-sans text-slate-700 font-medium uppercase tracking-wider ${isPrint ? 'text-lg px-8' : 'text-[9px] px-2'}`}>Slikaj i podijeli fotografije s nama.<br/>Skeniraj QR kod.</p>
+            <p className={`font-sans text-slate-700 font-medium uppercase tracking-wider ${isPrint ? 'text-lg px-8' : 'text-[9px] px-2'}`}>Zrób zdjęcie i podziel się z nami.<br/>Zeskanuj kod QR.</p>
           </div>
           <div className={`absolute bottom-0 w-full flex justify-center ${isPrint ? 'pb-8' : 'pb-4'} z-10`}>
-            <p className={`font-sans font-bold tracking-widest text-slate-300 ${isPrint ? 'text-sm' : 'text-[8px]'}`}>Kliksy.si</p>
+            <p className={`font-sans font-bold tracking-widest text-slate-300 ${isPrint ? 'text-sm' : 'text-[8px]'}`}>kliksy.pl</p>
           </div>
         </div>
       );
@@ -904,13 +904,13 @@ export const DESIGNS = [
             <h1 className={`font-sans text-stone-800 font-semibold tracking-tight ${isPrint ? 'text-4xl' : 'text-xl'}`}>{title}</h1>
           </div>
           <div className="flex flex-col items-center z-10">
-            <p className={`font-sans text-stone-600 mb-6 ${isPrint ? 'text-xl px-12' : 'text-xs px-4'}`}>Sačuvajmo uspomene zajedno. Slikajte, skenirajte i podijelite.</p>
+            <p className={`font-sans text-stone-600 mb-6 ${isPrint ? 'text-xl px-12' : 'text-xs px-4'}`}>Zachowajmy wspomnienia razem. Zrób zdjęcie, zeskanuj i udostępnij.</p>
             <div className={`p-4 bg-white rounded-2xl shadow-md border border-stone-100`}>
               <QRCodeComponent value={eventUrl} size={qrSize * 1.1} bgColor="#ffffff" fgColor="#44403c" level="Q" includeMargin={false} />
             </div>
           </div>
           <div className={`absolute bottom-0 w-full flex justify-center ${isPrint ? 'pb-8' : 'pb-4'} z-10`}>
-            <p className={`font-sans font-semibold tracking-widest text-stone-300 ${isPrint ? 'text-sm' : 'text-[8px]'}`}>Kliksy.si</p>
+            <p className={`font-sans font-semibold tracking-widest text-stone-300 ${isPrint ? 'text-sm' : 'text-[8px]'}`}>kliksy.pl</p>
           </div>
         </div>
       );

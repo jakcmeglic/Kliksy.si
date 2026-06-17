@@ -9,7 +9,7 @@ import { useAuth } from "../components/AuthProvider";
 import { db, storage, handleFirestoreError, OperationType } from "../firebase";
 import { collection, query, where, getDocs, onSnapshot, doc, getDoc, orderBy, updateDoc, arrayUnion, arrayRemove, deleteDoc } from "firebase/firestore";
 import { ref, deleteObject } from 'firebase/storage';
-import QRModalHr from "../components/QRModalHr";
+import QRModalPl from "../components/QRModalPl";
 import ImageViewer from "../components/ImageViewer";
 
 export default function DashboardHr() {
@@ -768,7 +768,7 @@ export default function DashboardHr() {
         </div>
       </main>
 
-      <QRModalHr 
+      <QRModalPl 
         isOpen={isQRModalOpen} 
         onClose={() => setIsQRModalOpen(false)} 
         event={event} 
