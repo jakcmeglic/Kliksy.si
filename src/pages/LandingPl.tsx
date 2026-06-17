@@ -597,8 +597,8 @@ export default function LandingHr() {
               <h3 className="text-[18px] font-extrabold mb-1 text-gray-900 tracking-tight">BASIC</h3>
               <p className="text-gray-500 text-[13px] mb-8 font-medium">Na mniejsze wydarzenia</p>
               <div className="flex items-baseline gap-3 mb-8">
-                <div className="text-[48px] font-extrabold text-gray-900 tracking-tight leading-none">39<span className="text-[32px]">€</span></div>
-                <div className="text-[20px] text-gray-400 font-bold line-through">55€</div>
+                <div className="text-[48px] font-extrabold text-gray-900 tracking-tight leading-none">169<span className="text-[32px]">zł</span></div>
+                <div className="text-[20px] text-gray-400 font-bold line-through">239zł</div>
               </div>
               <ul className="space-y-4 mb-10 flex-1">
                 {[
@@ -627,8 +627,8 @@ export default function LandingHr() {
               <h3 className="text-[18px] font-extrabold mb-1 text-gray-900 tracking-tight pt-2">PLUS</h3>
               <p className="text-gray-500 text-[13px] mb-8 font-medium">Na większe wydarzenia i wesela</p>
               <div className="flex items-baseline gap-3 mb-8">
-                <div className="text-[48px] font-extrabold text-[#5B45FF] tracking-tight leading-none">49<span className="text-[32px]">€</span></div>
-                <div className="text-[20px] text-gray-400 font-bold line-through">69€</div>
+                <div className="text-[48px] font-extrabold text-[#5B45FF] tracking-tight leading-none">219<span className="text-[32px]">zł</span></div>
+                <div className="text-[20px] text-gray-400 font-bold line-through">299zł</div>
               </div>
               <ul className="space-y-4 mb-10 flex-1">
                 {[
@@ -656,8 +656,8 @@ export default function LandingHr() {
               <h3 className="text-[18px] font-extrabold mb-1 text-gray-900 tracking-tight">PREMIUM</h3>
               <p className="text-gray-500 text-[13px] mb-8 font-medium">Dla tych, którzy chcą wszystkiego</p>
               <div className="flex items-baseline gap-3 mb-8">
-                <div className="text-[48px] font-extrabold text-gray-900 tracking-tight leading-none">79<span className="text-[32px]">€</span></div>
-                <div className="text-[20px] text-gray-400 font-bold line-through">109€</div>
+                <div className="text-[48px] font-extrabold text-gray-900 tracking-tight leading-none">349<span className="text-[32px]">zł</span></div>
+                <div className="text-[20px] text-gray-400 font-bold line-through">489zł</div>
               </div>
               <ul className="space-y-4 mb-10 flex-1">
                 {[
