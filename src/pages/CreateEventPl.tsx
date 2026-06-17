@@ -97,17 +97,17 @@ export default function CreateEventHr() {
   const plans = {
     basic: { 
       name: 'Basic', 
-      price: 39,
+      price: 169,
       features: ['Unikalny kod QR', 'Do 50 gości', 'Do 200 zdjęć', 'Dostęp do galerii 1 miesiąc', 'Pobieranie wszystkich zdjęć (ZIP)']
     },
     plus: { 
       name: 'Plus', 
-      price: 49,
+      price: 219,
       features: ['Unikalny kod QR', 'Nieograniczona liczba gości', 'Nieograniczona liczba zdjęć', 'Dostęp do galerii 1 rok', 'Pobieranie wszystkich zdjęć (ZIP)', 'Galeria na żywo (projekcja)', 'Spersonalizowana strona z imionami']
     },
     premium: { 
       name: 'Premium', 
-      price: 79,
+      price: 349,
       features: ['Unikalny kod QR', 'Nieograniczona liczba gości', 'Nieograniczona liczba zdjęć', 'Do 100 filmów', 'Dostęp do galerii 2 lata', 'Pobieranie wszystkich zdjęć (ZIP)', 'Galeria na żywo (projekcja)', 'Spersonalizowana strona z imionami', 'Szablony Premium', 'Priorytetowe wsparcie']
     }
   };
@@ -305,10 +305,10 @@ export default function CreateEventHr() {
   
   let upsellPrice = 0;
   // Always use self_print logic since home_delivery is removed
-  if (standsQuantity === 5) upsellPrice += 19.99;
-  else if (standsQuantity === 10) upsellPrice += 24.99;
-  else if (standsQuantity === 20) upsellPrice += 29.99;
-  else if (standsQuantity === 30) upsellPrice += 34.99;
+  if (standsQuantity === 5) upsellPrice += 89.00;
+  else if (standsQuantity === 10) upsellPrice += 109.00;
+  else if (standsQuantity === 20) upsellPrice += 129.00;
+  else if (standsQuantity === 30) upsellPrice += 149.00;
 
   let finalPrice = originalPrice + upsellPrice;
   if (discountApplied && activeDiscount) {
@@ -345,7 +345,8 @@ export default function CreateEventHr() {
           const res = await fetch('/api/create-payment-intent', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
+            body: JSON.stringify({
+              currency: 'pln',
               plan: formData.plan, 
               discountCode: discountApplied ? discountCode : '',
               deliveryMode: 'self_print',
@@ -887,9 +888,9 @@ export default function CreateEventHr() {
                         <div className="flex items-center gap-4">
                           <div className="flex flex-col items-end">
                             <div className="flex items-baseline gap-2">
-                              <span className="text-2xl font-bold">{plans[planKey].price}€</span>
+                              <span className="text-2xl font-bold">{plans[planKey].price}zł</span>
                               <span className="text-sm font-bold text-gray-400 line-through">
-                                {planKey === 'basic' ? '55€' : planKey === 'plus' ? '69€' : '109€'}
+                                {planKey === 'basic' ? '239zł' : planKey === 'plus' ? '299zł' : '489zł'}
                               </span>
                             </div>
                           </div>
@@ -1078,7 +1079,7 @@ export default function CreateEventHr() {
                         Bez
                       </button>
                       {[5, 10, 20, 30].map((qty) => {
-                        const price = (qty === 5 ? 19.99 : qty === 10 ? 24.99 : qty === 20 ? 29.99 : 34.99);
+                        const price = (qty === 5 ? 89.00 : qty === 10 ? 109.00 : qty === 20 ? 129.00 : 149.00);
                         
                         return (
                           <button
@@ -1089,7 +1090,7 @@ export default function CreateEventHr() {
                             }`}
                           >
                             <span>{qty} sztuk</span>
-                            <span className={standsQuantity === qty ? 'text-gray-300 text-xs' : 'text-gray-500 text-xs'}>+{price}€</span>
+                            <span className={standsQuantity === qty ? 'text-gray-300 text-xs' : 'text-gray-500 text-xs'}>+{price}zł</span>
                           </button>
                         );
                       })}
@@ -1158,13 +1159,13 @@ export default function CreateEventHr() {
                 <div className="bg-gray-50 p-6 rounded-2xl mb-8">
                   <div className="flex justify-between items-center mb-4 pb-4 border-b border-gray-200">
                     <span className="font-medium">Pakiet {plans[formData.plan].name}</span>
-                    <span className="font-medium">{originalPrice}€</span>
+                    <span className="font-medium">{originalPrice}zł</span>
                   </div>
                   
                   {upsellPrice > 0 && (
                     <div className="flex justify-between items-center mb-4 pb-4 border-b border-gray-200">
                       <span className="font-medium text-gray-600">Dodatkowe usługi</span>
-                      <span className="font-medium">+{upsellPrice.toFixed(2)}€</span>
+                      <span className="font-medium">+{upsellPrice.toFixed(2)}zł</span>
                     </div>
                   )}
 
@@ -1202,7 +1203,7 @@ export default function CreateEventHr() {
                     {discountError && <p className="text-red-500 text-sm mt-2">{discountError}</p>}
                     {discountApplied && activeDiscount && (
                       <p className="text-green-600 text-sm mt-2">
-                        Kod {activeDiscount.code} został pomyślnie użyty! (-{activeDiscount.value}{activeDiscount.discountType === 'percentage' ? '%' : '€'} {activeDiscount.appliesTo === 'packages_only' ? 'na pakiet' : 'na całą kwotę'})
+                        Kod {activeDiscount.code} został pomyślnie użyty! (-{activeDiscount.value}{activeDiscount.discountType === 'percentage' ? '%' : 'zł'} {activeDiscount.appliesTo === 'packages_only' ? 'na pakiet' : 'na całą kwotę'})
                       </p>
                     )}
                   </div>
@@ -1264,8 +1265,8 @@ export default function CreateEventHr() {
                   <div className="flex justify-between items-center text-sm text-gray-500">
                     <span>Suma do zapłaty</span>
                     <div className="text-right">
-                      {discountApplied && <span className="text-gray-400 line-through mr-2">{(originalPrice + upsellPrice).toFixed(2)}€</span>}
-                      <span className="text-xl font-bold text-black">{finalPrice.toFixed(2)}€</span>
+                      {discountApplied && <span className="text-gray-400 line-through mr-2">{(originalPrice + upsellPrice).toFixed(2)}zł</span>}
+                      <span className="text-xl font-bold text-black">{finalPrice.toFixed(2)}zł</span>
                     </div>
                   </div>
                 </div>
