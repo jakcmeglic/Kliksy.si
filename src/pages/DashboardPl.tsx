@@ -519,7 +519,7 @@ export default function DashboardHr() {
                 </p>
               </div>
               <button 
-                onClick={() => navigate(`/checkout/${event.id}`)} 
+                onClick={() => setIsUpgradeModalOpen(true)} 
                 className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition-colors whitespace-nowrap shadow-sm"
               >
                 Zaktualizuj teraz
