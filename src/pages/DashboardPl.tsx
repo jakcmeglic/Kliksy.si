@@ -721,7 +721,7 @@ export default function DashboardHr() {
                         onChange={() => setGuestViewSettings('all')}
                         className="w-4 h-4 text-indigo-600 focus:ring-indigo-500"
                       />
-                      <span className="text-gray-700">Vse zdjęće</span>
+                      <span className="text-gray-700">Wszystkie zdjęcia</span>
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input 
@@ -732,10 +732,10 @@ export default function DashboardHr() {
                         onChange={() => setGuestViewSettings('own')}
                         className="w-4 h-4 text-indigo-600 focus:ring-indigo-500"
                       />
-                      <span className="text-gray-700">Samo svoje zdjęće</span>
+                      <span className="text-gray-700">Tylko swoje zdjęcia</span>
                     </label>
                   </div>
-                  <p className="mt-2 text-sm text-gray-500">Če izberete "Samo svoje zdjęće", gostje v galeriji (ko skenirajo kodo) ne bodo videli zdjęć drugih gostov, ampak samo tiste, ki so jih sami naložili.</p>
+                  <p className="mt-2 text-sm text-gray-500">Jeśli wybierzesz "Tylko swoje zdjęcia", goście w galerii (po zeskanowaniu kodu) nie zobaczą zdjęć innych gości, a jedynie te, które sami dodali.</p>
                 </div>
                 
                 <div className="pt-6 border-t border-gray-100">
