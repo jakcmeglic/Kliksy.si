@@ -258,6 +258,8 @@ export default function CreateEventHr() {
         setAuthMode('login');
       } else if (authMode === 'register') {
         await signUpWithEmail(authEmail, authPassword);
+        setAuthSuccess('Račun kreiran! Provjerite svoju pristiglu poštu (i neželjenu poštu) te potvrdite e-mail, a zatim se prijavite.');
+        setAuthMode('login');
       } else {
         await signInWithEmail(authEmail, authPassword);
       }
@@ -265,7 +267,11 @@ export default function CreateEventHr() {
       if (authMode === 'forgot_password') {
         setAuthError("Pogreška pri slanju poveznice. Provjerite e-mail u.");
       } else {
-        setAuthError(error.message || 'Došlo je do pogreške pri prijavi.');
+        if (error.code === 'auth/email-not-verified') {
+          setAuthError('Molimo, provjerite svoju pristiglu poštu i potvrdite svoj račun prije prijave.');
+        } else {
+          setAuthError('Došlo je do pogreške prilikom prijave.');
+        }
       }
     }
   };

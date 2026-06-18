@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, OAuthProvider, signInWithPopup, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, OAuthProvider, signInWithPopup, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, sendEmailVerification } from 'firebase/auth';
 import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import firebaseConfig from '../firebase-applet-config.json';
@@ -73,7 +73,11 @@ export const signInWithApple = async () => {
 export const signUpWithEmail = async (email: string, pass: string) => {
   try {
     const result = await createUserWithEmailAndPassword(auth, email, pass);
+    await sendEmailVerification(result.user, {
+      url: window.location.origin + '/login',
+    });
     await createUserProfile(result.user);
+    await signOut(auth); // Sign them out right away, force them to verify
     return result.user;
   } catch (error) {
     console.error("Error signing up with email", error);
@@ -84,6 +88,17 @@ export const signUpWithEmail = async (email: string, pass: string) => {
 export const signInWithEmail = async (email: string, pass: string) => {
   try {
     const result = await signInWithEmailAndPassword(auth, email, pass);
+    
+    const creationTime = result.user.metadata.creationTime ? new Date(result.user.metadata.creationTime).getTime() : 0;
+    const deploymentTime = new Date('2026-06-18T00:00:00Z').getTime();
+    const isLegacyUser = creationTime < deploymentTime;
+
+    if (!result.user.emailVerified && !isLegacyUser) {
+      await signOut(auth);
+      const error: any = new Error('auth/email-not-verified');
+      error.code = 'auth/email-not-verified';
+      throw error;
+    }
     await createUserProfile(result.user);
     return result.user;
   } catch (error) {

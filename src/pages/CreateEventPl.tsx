@@ -258,6 +258,8 @@ export default function CreateEventHr() {
         setAuthMode('login');
       } else if (authMode === 'register') {
         await signUpWithEmail(authEmail, authPassword);
+        setAuthSuccess('Konto zostało utworzone! Sprawdź swoją skrzynkę (również folder spam), potwierdź adres e-mail i zaloguj się.');
+        setAuthMode('login');
       } else {
         await signInWithEmail(authEmail, authPassword);
       }
@@ -265,7 +267,11 @@ export default function CreateEventHr() {
       if (authMode === 'forgot_password') {
         setAuthError("Błąd podczas wysyłania linku. Sprawdź adres e-mail.");
       } else {
-        setAuthError(error.message || 'Wystąpił błąd podczas logowania.');
+        if (error.code === 'auth/email-not-verified') {
+          setAuthError('Prosimy, sprawdź swoją skrzynkę e-mail i potwierdź konto przed zalogowaniem.');
+        } else {
+          setAuthError('Wystąpił błąd podczas logowania.');
+        }
       }
     }
   };

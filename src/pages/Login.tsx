@@ -37,7 +37,9 @@ export default function Login() {
       } else if (authMode === 'register') {
         const { signUpWithEmail } = await import('../firebase');
         await signUpWithEmail(email, password);
-        navigate("/dashboard");
+        setSuccessMsg('Račun ustvarjen! Preverite svoj e-poštni predal (tudi mapo vsiljena pošta) in potrdite e-pošto, nato se prijavite.');
+        setPassword('');
+        setAuthMode('login');
       } else {
         const { signInWithEmail } = await import('../firebase');
         await signInWithEmail(email, password);
@@ -48,7 +50,11 @@ export default function Login() {
       if (authMode === 'forgot_password') {
         setError("Napaka pri pošiljanju povezave. Preverite elektronski naslov.");
       } else {
-        setError(authMode === 'register' ? "Napaka pri registraciji. Morda račun že obstaja." : "Neveljaven e-poštni naslov ali geslo.");
+        if (err.code === 'auth/email-not-verified') {
+          setError('Prosimo, preverite svoj e-poštni predal in potrdite svoj račun pred prijavo.');
+        } else {
+          setError(authMode === 'register' ? "Napaka pri registraciji. Morda račun že obstaja." : "Neveljaven e-poštni naslov ali geslo.");
+        }
       }
     } finally {
       setLoading(false);

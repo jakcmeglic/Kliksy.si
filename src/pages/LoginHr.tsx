@@ -37,7 +37,9 @@ export default function LoginHr() {
       } else if (authMode === 'register') {
         const { signUpWithEmail } = await import('../firebase');
         await signUpWithEmail(email, password);
-        navigate("/dashboard");
+        setSuccessMsg('Račun kreiran! Provjerite svoju pristiglu poštu (i neželjenu poštu) te potvrdite e-mail, a zatim se prijavite.');
+        setPassword('');
+        setAuthMode('login');
       } else {
         const { signInWithEmail } = await import('../firebase');
         await signInWithEmail(email, password);
@@ -48,7 +50,11 @@ export default function LoginHr() {
       if (authMode === 'forgot_password') {
         setError("Pogreška pri slanju poveznice. Provjerite e-mail adresu.");
       } else {
-        setError(authMode === 'register' ? "Pogreška pri registraciji. Možda račun već postoji." : "Nevažeća e-mail adresa ili lozinka.");
+        if (err.code === 'auth/email-not-verified') {
+          setError('Molimo, provjerite svoju pristiglu poštu i potvrdite svoj račun prije prijave.');
+        } else {
+          setError(authMode === 'register' ? "Pogreška pri registraciji. Možda račun već postoji." : "Nevažeća adresa e-pošte ili lozinka.");
+        }
       }
     } finally {
       setLoading(false);

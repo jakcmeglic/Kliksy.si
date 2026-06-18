@@ -257,6 +257,8 @@ export default function CreateEvent() {
         setAuthMode('login');
       } else if (authMode === 'register') {
         await signUpWithEmail(authEmail, authPassword);
+        setAuthSuccess('Račun ustvarjen! Preverite svoj e-poštni predal (tudi mapo vsiljena pošta) in potrdite e-pošto, nato se prijavite.');
+        setAuthMode('login');
       } else {
         await signInWithEmail(authEmail, authPassword);
       }
@@ -264,7 +266,11 @@ export default function CreateEvent() {
       if (authMode === 'forgot_password') {
         setAuthError("Napaka pri pošiljanju povezave. Preverite elektronski naslov.");
       } else {
-        setAuthError(error.message || 'Prišlo je do napake pri prijavi.');
+        if (error.code === 'auth/email-not-verified') {
+          setAuthError('Prosimo, preverite svoj e-poštni predal in potrdite svoj račun pred prijavo.');
+        } else {
+          setAuthError('Prišlo je do napake pri prijavi.');
+        }
       }
     }
   };

@@ -37,7 +37,9 @@ export default function LoginHr() {
       } else if (authMode === 'register') {
         const { signUpWithEmail } = await import('../firebase');
         await signUpWithEmail(email, password);
-        navigate("/dashboard");
+        setSuccessMsg('Konto zostało utworzone! Sprawdź swoją skrzynkę (również folder spam), potwierdź adres e-mail i zaloguj się.');
+        setPassword('');
+        setAuthMode('login');
       } else {
         const { signInWithEmail } = await import('../firebase');
         await signInWithEmail(email, password);
@@ -48,7 +50,11 @@ export default function LoginHr() {
       if (authMode === 'forgot_password') {
         setError("Błąd podczas wysyłania linku. Sprawdź adres e-mail.");
       } else {
-        setError(authMode === 'register' ? "Błąd rejestracji. Być może konto już istnieje." : "Nieprawidłowy adres e-mail lub hasło.");
+        if (err.code === 'auth/email-not-verified') {
+          setError('Prosimy, sprawdź swoją skrzynkę e-mail i potwierdź konto przed zalogowaniem.');
+        } else {
+          setError(authMode === 'register' ? "Błąd rejestracji. Być może konto już istnieje." : "Nieprawidłowy adres e-mail lub hasło.");
+        }
       }
     } finally {
       setLoading(false);
