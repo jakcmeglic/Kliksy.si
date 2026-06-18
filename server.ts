@@ -47,10 +47,6 @@ async function calculatePrice(plan: string, discountCode: string | undefined, de
     const code = discountCode.trim().toLowerCase();
     if (code === 'test99') {
       return upsellPrice;
-    } else if (code === 'prvi50') {
-      return Math.round(finalPrice * 0.5);
-    } else if (code === 'pomlad30') {
-      return Math.round(finalPrice * 0.7);
     }
   }
 

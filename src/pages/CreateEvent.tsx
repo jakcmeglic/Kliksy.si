@@ -279,15 +279,7 @@ export default function CreateEvent() {
     // Simulate slight network delay for better UX
     await new Promise(resolve => setTimeout(resolve, 500));
     
-    if (codeNormalized === 'prvi50') {
-      setDiscountApplied(true);
-      setActiveDiscount({ code: 'PRVI50', value: 50, discountType: 'percentage', appliesTo: 'all' });
-      setDiscountError('');
-    } else if (codeNormalized === 'pomlad30') {
-      setDiscountApplied(true);
-      setActiveDiscount({ code: 'POMLAD30', value: 30, discountType: 'percentage', appliesTo: 'all' });
-      setDiscountError('');
-    } else if (codeNormalized === 'test99') {
+    if (codeNormalized === 'test99') {
       setDiscountApplied(true);
       setActiveDiscount({ code: 'TEST99', value: 100, discountType: 'percentage', appliesTo: 'packages_only' });
       setDiscountError('');
@@ -326,10 +318,6 @@ export default function CreateEvent() {
     // Legacy support for hardcoded codes if needed, but we'll prefer the Firestore ones
     if (discountCode.toLowerCase() === 'test99') {
       finalPrice = upsellPrice;
-    } else if (discountCode.toLowerCase() === 'prvi50') {
-      finalPrice = finalPrice * 0.5;
-    } else if (discountCode.toLowerCase() === 'pomlad30') {
-      finalPrice = finalPrice * 0.7;
     }
   }
 
