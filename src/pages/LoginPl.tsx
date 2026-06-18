@@ -19,10 +19,10 @@ export default function LoginHr() {
 
   // If already logged in, redirect to dashboard
   React.useEffect(() => {
-    if (user && !user.isAnonymous) {
+    if (user && !user.isAnonymous && authMode !== 'register') {
       navigate("/dashboard");
     }
-  }, [user, navigate]);
+  }, [user, navigate, authMode]);
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
