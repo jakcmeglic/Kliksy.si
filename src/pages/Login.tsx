@@ -10,6 +10,7 @@ export default function Login() {
   const navigate = useNavigate();
   
   const [authMode, setAuthMode] = useState<'login' | 'register' | 'forgot_password'>('login');
+  const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -36,8 +37,9 @@ export default function Login() {
         setAuthMode('login');
       } else if (authMode === 'register') {
         const { signUpWithEmail } = await import('../firebase');
-        await signUpWithEmail(email, password);
-        setSuccessMsg('Račun ustvarjen! Preverite svoj e-poštni predal (tudi mapo vsiljena pošta) in potrdite e-pošto, nato se prijavite.');
+        await signUpWithEmail(email, password, 'sl');
+        setIsVerificationModalOpen(true);
+        setSuccessMsg('');
         setPassword('');
         setAuthMode('login');
       } else {
@@ -226,6 +228,28 @@ export default function Login() {
             </div>
           )}
         </motion.div>
+
+      {isVerificationModalOpen && (
+        <div className="fixed inset-0 z-[100] flex justify-center items-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setIsVerificationModalOpen(false)}>
+          <div className="bg-white rounded-2xl p-6 md:p-8 w-full max-w-md shadow-xl text-center" onClick={(e) => e.stopPropagation()}>
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Preverite vaš e-poštni predal</h2>
+            <p className="text-gray-600 mb-4">Račun je bil uspešno ustvarjen! Na vaš elektronski naslov smo poslali povezavo za potrditev računa. Prosimo, preverite svoj nabiralnik in potrdite račun.</p>
+            <p className="text-sm text-gray-500 mb-6 font-medium bg-gray-50 p-3 rounded-lg border border-gray-100">Če sporočila ne najdete, prosimo preverite tudi mapo z vsiljeno pošto (Spam).</p>
+            <button 
+              onClick={() => setIsVerificationModalOpen(false)}
+              className="w-full bg-gray-900 text-white font-bold py-3 px-6 rounded-xl hover:bg-black transition-colors"
+            >
+              Razumem, zapri okno
+            </button>
+          </div>
+        </div>
+      )}
+  
       </div>
     </div>
   );

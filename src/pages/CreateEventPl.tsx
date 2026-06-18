@@ -66,6 +66,7 @@ export default function CreateEventHr() {
   
   // Auth states
   const [authMode, setAuthMode] = useState<'login' | 'register' | 'forgot_password'>('register');
+  const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
   const [authEmail, setAuthEmail] = useState('');
   const [authPassword, setAuthPassword] = useState('');
   const [authError, setAuthError] = useState('');
@@ -257,8 +258,8 @@ export default function CreateEventHr() {
         setAuthSuccess("Link do resetowania hasła został wysłany na Twój adres e-mail.");
         setAuthMode('login');
       } else if (authMode === 'register') {
-        await signUpWithEmail(authEmail, authPassword);
-        setAuthSuccess('Konto zostało utworzone! Sprawdź swoją skrzynkę (również folder spam), potwierdź adres e-mail i zaloguj się.');
+        await signUpWithEmail(authEmail, authPassword, 'pl');
+        setIsVerificationModalOpen(true);
         setAuthMode('login');
       } else {
         await signInWithEmail(authEmail, authPassword);
@@ -1373,6 +1374,28 @@ export default function CreateEventHr() {
         />
       )}
 
+      
+      {isVerificationModalOpen && (
+        <div className="fixed inset-0 z-[100] flex justify-center items-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setIsVerificationModalOpen(false)}>
+          <div className="bg-white rounded-2xl p-6 md:p-8 w-full max-w-md shadow-xl text-center" onClick={(e) => e.stopPropagation()}>
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Sprawdź swoją skrzynkę e-mail</h2>
+            <p className="text-gray-600 mb-4">Konto zostało pomyślnie utworzone! Wysłaliśmy link do potwierdzenia konta na Twój adres e-mail. Prosimy o sprawdzenie skrzynki i potwierdzenie konta.</p>
+            <p className="text-sm text-gray-500 mb-6 font-medium bg-gray-50 p-3 rounded-lg border border-gray-100">Jeśli nie możesz znaleźć wiadomości, sprawdź również folder ze spamem.</p>
+            <button 
+              onClick={() => setIsVerificationModalOpen(false)}
+              className="w-full bg-gray-900 text-white font-bold py-3 px-6 rounded-xl hover:bg-black transition-colors"
+            >
+              Rozumiem, zamknij
+            </button>
+          </div>
+        </div>
+      )}
+  
       {isTermsModalOpen && (
         <div className="fixed inset-0 z-[100] flex justify-center items-end sm:items-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm" onClick={() => setIsTermsModalOpen(false)}>
           <motion.div 

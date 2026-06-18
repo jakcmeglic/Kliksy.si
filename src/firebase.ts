@@ -70,7 +70,8 @@ export const signInWithApple = async () => {
   }
 };
 
-export const signUpWithEmail = async (email: string, pass: string) => {
+export const signUpWithEmail = async (email: string, pass: string, lang = 'sl') => {
+  auth.languageCode = lang;
   try {
     const result = await createUserWithEmailAndPassword(auth, email, pass);
     await sendEmailVerification(result.user, {
