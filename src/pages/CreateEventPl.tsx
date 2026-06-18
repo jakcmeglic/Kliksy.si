@@ -270,7 +270,7 @@ export default function CreateEventHr() {
         if (error.code === 'auth/email-not-verified') {
           setAuthError('Prosimy, sprawdź swoją skrzynkę e-mail i potwierdź konto przed zalogowaniem.');
         } else {
-          setAuthError('Wystąpił błąd podczas logowania.');
+          setAuthError(authMode === 'register' ? 'Błąd rejestracji. Być może konto już istnieje lub hasło jest za krótkie (minimum 6 znaków).' : 'Nieprawidłowy adres e-mail lub hasło.');
         }
       }
     }

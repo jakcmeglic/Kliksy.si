@@ -269,7 +269,7 @@ export default function CreateEvent() {
         if (error.code === 'auth/email-not-verified') {
           setAuthError('Prosimo, preverite svoj e-poštni predal in potrdite svoj račun pred prijavo.');
         } else {
-          setAuthError('Prišlo je do napake pri prijavi.');
+          setAuthError(authMode === 'register' ? 'Napaka pri registraciji. Morda račun že obstaja ali je geslo prekratko (vsaj 6 znakov).' : 'Neveljaven e-poštni naslov ali geslo.');
         }
       }
     }

@@ -53,7 +53,7 @@ export default function Login() {
         if (err.code === 'auth/email-not-verified') {
           setError('Prosimo, preverite svoj e-poštni predal in potrdite svoj račun pred prijavo.');
         } else {
-          setError(authMode === 'register' ? "Napaka pri registraciji. Morda račun že obstaja." : "Neveljaven e-poštni naslov ali geslo.");
+          setError(authMode === 'register' ? "Napaka pri registraciji. Morda račun že obstaja ali je geslo prekratko (vsaj 6 znakov)." : "Neveljaven e-poštni naslov ali geslo.");
         }
       }
     } finally {

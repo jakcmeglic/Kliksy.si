@@ -53,7 +53,7 @@ export default function LoginHr() {
         if (err.code === 'auth/email-not-verified') {
           setError('Molimo, provjerite svoju pristiglu poštu i potvrdite svoj račun prije prijave.');
         } else {
-          setError(authMode === 'register' ? "Pogreška pri registraciji. Možda račun već postoji." : "Nevažeća adresa e-pošte ili lozinka.");
+          setError(authMode === 'register' ? "Pogreška pri registraciji. Možda račun već postoji ili je lozinka prekratka (najmanje 6 znakova)." : "Nevažeća adresa e-pošte ili lozinka.");
         }
       }
     } finally {
