@@ -1043,7 +1043,7 @@ export default function Admin() {
           <div className="p-6 border-b border-gray-100 flex justify-between items-center">
             <div>
               <h3 className="text-lg font-bold text-gray-900">Zapuščene košarice ({abandonedCarts.length})</h3>
-              <p className="text-sm text-gray-500 mt-1">Uporabniki, ki so si ustvarili račun, vendar še niso plačali za noben dogodek.</p>
+              <p className="text-sm text-gray-500 mt-1">Unikatni uporabniki, ki so si ustvarili račun, vendar nimajo nobenega plačanega dogodka (ustvarili so demo dogodke, a niso plačali).</p>
             </div>
           </div>
           <div className="overflow-x-auto">
@@ -1054,6 +1054,7 @@ export default function Admin() {
                   <th className="px-6 py-4 font-medium">Email</th>
                   <th className="px-6 py-4 font-medium">Zadnji dogodek</th>
                   <th className="px-6 py-4 font-medium">Neplačani dogodki</th>
+                  <th className="px-6 py-4 font-medium">Število poskusov (Checkout)</th>
                   <th className="px-6 py-4 font-medium">Slike (Demo)</th>
                   <th className="px-6 py-4 font-medium text-right">Akcija</th>
                 </tr>
@@ -1086,6 +1087,15 @@ export default function Admin() {
                         </div>
                       ) : (
                         <span className="text-gray-400 italic">Ni ustvarjenih dogodkov</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      {user.pendingEvents && user.pendingEvents.length > 0 ? (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-700">
+                          {user.pendingEvents.length} checkoutov
+                        </span>
+                      ) : (
+                        <span className="text-gray-400">0</span>
                       )}
                     </td>
                     <td className="px-6 py-4 font-medium text-gray-700">
