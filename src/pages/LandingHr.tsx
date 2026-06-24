@@ -635,10 +635,11 @@ export default function LandingHr() {
                   'Unikatni QR kod', 
                   'Neograničen broj gostiju', 
                   'Neograničeno fotografija', 
-                  'Pristup galeriji 1 godina', 
+                  'Pristup galeriji 1 godinu nakon završetka događaja', 
                   'Preuzimanje svih slika (ZIP)', 
                   'Live galerija (projekcija)',
-                  'Personalizirana stranica s imenima'
+                  'Personalizirana stranica s imenima',
+                  'Kupite sada, iskoristite kad god zatrebate (bez vremenskog ograničenja)'
                 ].map((f, i) => (
                   <li key={i} className="flex items-start gap-3 text-[14px] text-gray-700 font-medium">
                     <Check className="w-4 h-4 text-[#5B45FF] shrink-0 mt-0.5" /> 
@@ -665,12 +666,14 @@ export default function LandingHr() {
                   'Neograničen broj gostiju', 
                   'Neograničeno fotografija', 
                   'Do 100 videozapisa',
-                  'Pristup galeriji 2 godine', 
+                  'Pristup galeriji 2 godine nakon završetka događaja', 
                   'Preuzimanje svih slika (ZIP)', 
                   'Live galerija (projekcija)',
                   'Personalizirana stranica s imenima',
+                  'Kupite sada, iskoristite kad god zatrebate (bez vremenskog ograničenja)',
                   'Premium design predlošci',
-                  'Prioritetna podrška'
+                  'Prioritetna podrška',
+                  'Kupite sada, iskoristite kad god zatrebate (bez vremenskog ograničenja)'
                 ].map((f, i) => (
                   <li key={i} className="flex items-start gap-3 text-[14px] text-gray-700 font-medium">
                     <Check className="w-4 h-4 text-gray-900 shrink-0 mt-0.5" /> 

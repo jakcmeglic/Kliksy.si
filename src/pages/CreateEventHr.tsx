@@ -104,12 +104,12 @@ export default function CreateEventHr() {
     plus: { 
       name: 'Plus', 
       price: 49,
-      features: ['Jedinstveni QR kod', 'Neograničen broj gostiju', 'Neograničeno fotografija', 'Pristup galeriji 1 godina', 'Preuzimanje svih slika (ZIP)', 'Live galerija (projekcija)', 'Personalizirana stranica s imenima']
+      features: ['Jedinstveni QR kod', 'Neograničen broj gostiju', 'Neograničeno fotografija', 'Pristup galeriji 1 godinu nakon završetka događaja', 'Preuzimanje svih slika (ZIP)', 'Live galerija (projekcija)', 'Personalizirana stranica s imenima', 'Kupite sada, iskoristite kad god zatrebate (bez vremenskog ograničenja)']
     },
     premium: { 
       name: 'Premium', 
       price: 79,
-      features: ['Jedinstveni QR kod', 'Neograničen broj gostiju', 'Neograničeno fotografija', 'Do 100 videozapisa', 'Pristup galeriji 2 godine', 'Preuzimanje svih slika (ZIP)', 'Live galerija (projekcija)', 'Personalizirana stranica s imenima', 'Premium predlošci dizajna', 'Prioritetna podrška']
+      features: ['Jedinstveni QR kod', 'Neograničen broj gostiju', 'Neograničeno fotografija', 'Do 100 videozapisa', 'Pristup galeriji 2 godine nakon završetka događaja', 'Preuzimanje svih slika (ZIP)', 'Live galerija (projekcija)', 'Personalizirana stranica s imenima', 'Premium predlošci dizajna', 'Prioritetna podrška', 'Kupite sada, iskoristite kad god zatrebate (bez vremenskog ograničenja)']
     }
   };
 

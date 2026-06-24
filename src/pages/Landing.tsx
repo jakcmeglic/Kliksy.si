@@ -635,10 +635,11 @@ export default function Landing() {
                   'Unikatna QR koda', 
                   'Neomejeno število gostov', 
                   'Neomejeno fotografij', 
-                  'Dostop do galerije 1 leto', 
+                  'Dostop do galerije 1 leto po zaključku dogodka', 
                   'Prenos vseh slik (ZIP)', 
                   'Live galerija (projekcija)',
-                  'Personalizirana stran z imeni'
+                  'Personalizirana stran z imeni',
+                  'Kupi zdaj, uporabi kadarkoli potrebuješ (brez časovne omejitve)'
                 ].map((f, i) => (
                   <li key={i} className="flex items-start gap-3 text-[14px] text-gray-700 font-medium">
                     <Check className="w-4 h-4 text-[#5B45FF] shrink-0 mt-0.5" /> 
@@ -665,12 +666,13 @@ export default function Landing() {
                   'Neomejeno število gostov', 
                   'Neomejeno fotografij', 
                   'Do 100 videoposnetkov',
-                  'Dostop do galerije 2 leti', 
+                  'Dostop do galerije 2 leti po zaključku dogodka', 
                   'Prenos vseh slik (ZIP)', 
                   'Live galerija (projekcija)',
                   'Personalizirana stran z imeni',
                   'Premium design predloge',
-                  'Prioritetna podpora'
+                  'Prioritetna podpora',
+                  'Kupi zdaj, uporabi kadarkoli potrebuješ (brez časovne omejitve)'
                 ].map((f, i) => (
                   <li key={i} className="flex items-start gap-3 text-[14px] text-gray-700 font-medium">
                     <Check className="w-4 h-4 text-gray-900 shrink-0 mt-0.5" /> 

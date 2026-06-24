@@ -635,10 +635,11 @@ export default function LandingHr() {
                   'Unikalny kod QR', 
                   'Nieograniczona liczba gości', 
                   'Nieograniczona liczba zdjęć', 
-                  'Dostęp do galerii przez 1 rok', 
+                  'Dostęp do galerii przez 1 rok po zakończeniu wydarzenia', 
                   'Pobieranie wszystkich zdjęć (ZIP)', 
                   'Galeria na żywo (slajdy)',
-                  'Spersonalizowana strona z imionami'
+                  'Spersonalizowana strona z imionami',
+                  'Kup teraz, wykorzystaj kiedy potrzebujesz (bez limitu czasowego)'
                 ].map((f, i) => (
                   <li key={i} className="flex items-start gap-3 text-[14px] text-gray-700 font-medium">
                     <Check className="w-4 h-4 text-[#5B45FF] shrink-0 mt-0.5" /> 
@@ -665,10 +666,11 @@ export default function LandingHr() {
                   'Nieograniczona liczba gości', 
                   'Nieograniczona liczba zdjęć', 
                   'Do 100 filmów',
-                  'Dostęp do galerii przez 2 lata', 
+                  'Dostęp do galerii przez 2 lata po zakończeniu wydarzenia', 
                   'Pobieranie wszystkich zdjęć (ZIP)', 
                   'Galeria na żywo (slajdy)',
                   'Spersonalizowana strona z imionami',
+                  'Kup teraz, wykorzystaj kiedy potrzebujesz (bez limitu czasowego)',
                   'Szablony premium design',
                   'Wsparcie priorytetowe'
                 ].map((f, i) => (

@@ -104,12 +104,12 @@ export default function CreateEventHr() {
     plus: { 
       name: 'Plus', 
       price: 219,
-      features: ['Unikalny kod QR', 'Nieograniczona liczba gości', 'Nieograniczona liczba zdjęć', 'Dostęp do galerii 1 rok', 'Pobieranie wszystkich zdjęć (ZIP)', 'Galeria na żywo (projekcja)', 'Spersonalizowana strona z imionami']
+      features: ['Unikalny kod QR', 'Nieograniczona liczba gości', 'Nieograniczona liczba zdjęć', 'Dostęp do galerii 1 rok po zakończeniu wydarzenia', 'Pobieranie wszystkich zdjęć (ZIP)', 'Galeria na żywo (projekcja)', 'Spersonalizowana strona z imionami', 'Kup teraz, wykorzystaj kiedy potrzebujesz (bez limitu czasowego)']
     },
     premium: { 
       name: 'Premium', 
       price: 349,
-      features: ['Unikalny kod QR', 'Nieograniczona liczba gości', 'Nieograniczona liczba zdjęć', 'Do 100 filmów', 'Dostęp do galerii 2 lata', 'Pobieranie wszystkich zdjęć (ZIP)', 'Galeria na żywo (projekcja)', 'Spersonalizowana strona z imionami', 'Szablony Premium', 'Priorytetowe wsparcie']
+      features: ['Unikalny kod QR', 'Nieograniczona liczba gości', 'Nieograniczona liczba zdjęć', 'Do 100 filmów', 'Dostęp do galerii 2 lata po zakończeniu wydarzenia', 'Pobieranie wszystkich zdjęć (ZIP)', 'Galeria na żywo (projekcja)', 'Spersonalizowana strona z imionami', 'Szablony Premium', 'Priorytetowe wsparcie', 'Kup teraz, wykorzystaj kiedy potrzebujesz (bez limitu czasowego)']
     }
   };
 
