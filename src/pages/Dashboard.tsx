@@ -28,6 +28,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState('');
+  const [downloadProgress, setDownloadProgress] = useState('');
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [isUpgradingStatus, setIsUpgradingStatus] = useState(false);
@@ -360,6 +361,7 @@ export default function Dashboard() {
   const handleDownloadAll = async () => {
     if (photos.length === 0) return;
     setIsDownloading(true);
+    setDownloadProgress('0%');
     try {
       const zip = new JSZip();
       const eventNameStr = event.eventType === 'poroka' || !event.eventType ? `${event.partner1}-${event.partner2}` : event.eventName;
@@ -368,35 +370,48 @@ export default function Dashboard() {
       if (!folder) throw new Error("Could not create zip folder");
 
       // Fetch all images and add them to the zip
-      const promises = photos.map(async (photo, index) => {
-        try {
-          let response;
-          if (photo.url.startsWith('data:')) {
-            response = await fetch(photo.url);
-          } else {
-            const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(photo.url)}`;
-            response = await fetch(proxyUrl);
+      let fetchedCount = 0;
+      const batchSize = 10;
+      for (let i = 0; i < photos.length; i += batchSize) {
+        const batch = photos.slice(i, i + batchSize);
+        await Promise.all(batch.map(async (photo, index) => {
+          const actualIndex = i + index;
+          try {
+            let response;
+            if (photo.url.startsWith('data:')) {
+              response = await fetch(photo.url);
+            } else {
+              const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(photo.url)}`;
+              response = await fetch(proxyUrl);
+            }
+            
+            if (!response.ok && !photo.url.startsWith('data:')) throw new Error("Proxy fetch failed");
+            
+            const blob = await response.blob();
+            
+            let extension = photo.type === 'video' ? 'mp4' : 'jpg';
+            if (blob.type && !blob.type.includes('octet-stream')) {
+              const split = blob.type.split('/');
+              if (split.length > 1) {
+                // handle image/jpeg -> jpeg, video/mp4 -> mp4
+                extension = split[1];
+                if (extension === 'jpeg') extension = 'jpg';
+              }
+            }
+            
+            const prefix = photo.type === 'video' ? 'video' : 'photo';
+            folder.file(`${prefix}-${actualIndex + 1}.${extension}`, blob);
+            fetchedCount++;
+            setDownloadProgress(`${Math.round((fetchedCount / photos.length) * 50)}%`);
+          } catch (err) {
+            console.error(`Failed to download media ${actualIndex}`, err);
           }
-          
-          if (!response.ok && !photo.url.startsWith('data:')) throw new Error("Proxy fetch failed");
-          
-          const blob = await response.blob();
-          
-          // Try to get original extension or default to jpg
-          let extension = 'jpg';
-          if (blob.type) {
-            extension = blob.type.split('/')[1] || 'jpg';
-          }
-          
-          folder.file(`photo-${index + 1}.${extension}`, blob);
-        } catch (err) {
-          console.error(`Failed to download photo ${index}`, err);
-        }
-      });
-
-      await Promise.all(promises);
+        }));
+      }
       
-      const content = await zip.generateAsync({ type: "blob" });
+      const content = await zip.generateAsync({ type: "blob" }, (metadata) => {
+        setDownloadProgress((50 + (metadata.percent / 2)).toFixed(0) + '%');
+      });
       saveAs(content, `Kliksy-${eventNameStr}.zip`);
       setDownloadError('');
     } catch (error) {
@@ -619,7 +634,12 @@ export default function Dashboard() {
                    disabled={isDownloading || photos.length === 0}
                    className="px-6 py-3 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 transition shadow-sm disabled:opacity-50 flex items-center gap-2"
                  >
-                   {isDownloading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Download className="w-5 h-5" />}
+                   {isDownloading ? (
+                     <div className="flex items-center gap-2">
+                       <Loader2 className="w-5 h-5 animate-spin" />
+                       <span className="text-sm">{downloadProgress}</span>
+                     </div>
+                   ) : <Download className="w-5 h-5" />}
                    Prenesi vse (ZIP)
                  </button>
                </div>

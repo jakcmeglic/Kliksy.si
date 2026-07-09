@@ -806,12 +806,20 @@ async function startServer() {
         return;
       }
       
-      const arrayBuffer = await response.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-      
       res.set('Content-Type', response.headers.get('content-type') || 'application/octet-stream');
-      res.set('Content-Length', buffer.length.toString());
-      res.send(buffer);
+      const contentLength = response.headers.get('content-length');
+      if (contentLength) {
+        res.set('Content-Length', contentLength);
+      }
+      
+      if (response.body) {
+        const readable = require('stream').Readable.fromWeb(response.body);
+        readable.pipe(res);
+      } else {
+        const arrayBuffer = await response.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        res.send(buffer);
+      }
     } catch (error: any) {
       console.error("Proxy error:", error);
       res.status(500).send("Proxy error: " + error.message);
