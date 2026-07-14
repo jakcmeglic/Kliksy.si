@@ -41,16 +41,14 @@ export default function CheckoutForm({ amount, onSuccess, isProcessing, setIsPro
             disabled={!stripe || isProcessing}
             className="w-full bg-gray-900 text-white py-4 rounded-xl font-medium hover:bg-black transition-colors flex items-center justify-center gap-2 disabled:opacity-70 shadow-lg"
           >
-            {isProcessing ? (
-              <span className="flex items-center gap-2">
-                <Loader2 className="w-5 h-5 animate-spin" />
-                Obdelujem...
-              </span>
-            ) : (
-              <span className="flex items-center gap-2">
-                Plačaj <Check className="w-5 h-5" />
-              </span>
-            )}
+            <div className={`flex items-center gap-2 ${isProcessing ? 'flex' : 'hidden'}`}>
+              <Loader2 className="w-5 h-5 animate-spin" />
+              <span>Obdelujem...</span>
+            </div>
+            <div className={`flex items-center gap-2 ${!isProcessing ? 'flex' : 'hidden'}`}>
+              <span>Plačaj</span>
+              <Check className="w-5 h-5" />
+            </div>
           </button>
           <p className="text-center text-xs text-gray-400 mt-3 flex items-center justify-center gap-1">
             Varno plačilo zagotavlja Stripe

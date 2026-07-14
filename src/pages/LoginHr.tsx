@@ -206,7 +206,12 @@ export default function LoginHr() {
               disabled={loading}
               className="w-full py-3 px-4 bg-gray-900 text-white rounded-xl font-medium hover:bg-black transition-colors flex items-center justify-center gap-2 disabled:opacity-50 mt-2"
             >
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (authMode === 'login' ? 'Prijava' : authMode === 'forgot_password' ? 'Pošalji poveznicu' : 'Registracija')}
+              <div className={`flex items-center gap-2 ${loading ? 'flex' : 'hidden'}`}>
+                <Loader2 className="w-5 h-5 animate-spin" />
+              </div>
+              <div className={`flex items-center gap-2 ${!loading ? 'flex' : 'hidden'}`}>
+                <span>{authMode === 'login' ? 'Prijava' : authMode === 'forgot_password' ? 'Pošalji poveznicu' : 'Registracija'}</span>
+              </div>
             </button>
           </form>
 

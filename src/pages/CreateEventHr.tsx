@@ -1339,16 +1339,13 @@ export default function CreateEventHr() {
                           disabled={isProcessing || !user || user.isAnonymous || !termsAcceptedFree}
                           className="w-full bg-gray-900 text-white py-4 rounded-xl font-medium hover:bg-black transition-colors flex items-center justify-center gap-2 disabled:opacity-70"
                         >
-                          {isProcessing ? (
-                            <span className="flex items-center gap-2">
-                              <Loader2 className="w-5 h-5 animate-spin" />
-                              Obrađujem...
-                            </span>
-                          ) : (
-                            <span className="flex items-center gap-2">
-                              Napravi događaj besplatno <Check className="w-5 h-5" />
-                            </span>
-                          )}
+                          <div className={`flex items-center gap-2 ${isProcessing ? 'flex' : 'hidden'}`}>
+      <Loader2 className="w-5 h-5 animate-spin" />
+      <span>Obrađujem...</span>
+    </div>
+    <div className={`flex items-center gap-2 ${!isProcessing ? 'flex' : 'hidden'}`}>
+      <span>Napravi događaj besplatno</span> <Check className="w-5 h-5" />
+    </div>
                         </button>
                       </div>
                     )}
@@ -1624,16 +1621,13 @@ function StripePaymentForm({
         disabled={isProcessing || !stripe || !elements || isUpdatingPrice || !termsAcceptedStripe}
         className="w-full bg-gray-900 text-white py-4 rounded-xl font-medium hover:bg-black transition-colors flex items-center justify-center gap-2 mt-4 disabled:opacity-70 shadow-lg"
       >
-        {isProcessing || isUpdatingPrice ? (
-          <span className="flex items-center gap-2">
+        <div className={`flex items-center gap-2 ${isProcessing || isUpdatingPrice ? 'flex' : 'hidden'}`}>
             <Loader2 className="w-5 h-5 animate-spin" />
-            {isUpdatingPrice ? 'Osvježavam cijenu...' : 'Obrađujem...'}
-          </span>
-        ) : (
-          <span className="flex items-center gap-2">
-            Potvrdi i stvori galeriju <Check className="w-5 h-5" />
-          </span>
-        )}
+            <span>{isUpdatingPrice ? (file.includes('Hr') ? 'Ažuriram cijenu...' : file.includes('Pl') ? 'Aktualizuję cenę...' : 'Osvežujem ceno...') : 'Obrađujem...'}</span>
+          </div>
+          <div className={`flex items-center gap-2 ${!(isProcessing || isUpdatingPrice) ? 'flex' : 'hidden'}`}>
+            <span>Potvrdi i stvori galeriju</span> <Check className="w-5 h-5" />
+          </div>
       </button>
 
       <div className="mt-4 bg-[#F8F7FF] rounded-xl p-4 flex items-start gap-4">

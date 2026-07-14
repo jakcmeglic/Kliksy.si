@@ -1340,16 +1340,13 @@ export default function CreateEventHr() {
                           disabled={isProcessing || !user || user.isAnonymous || !termsAcceptedFree}
                           className="w-full bg-gray-900 text-white py-4 rounded-xl font-medium hover:bg-black transition-colors flex items-center justify-center gap-2 disabled:opacity-70"
                         >
-                          {isProcessing ? (
-                            <span className="flex items-center gap-2">
-                              <Loader2 className="w-5 h-5 animate-spin" />
-                              Przetwarzanie...
-                            </span>
-                          ) : (
-                            <span className="flex items-center gap-2">
-                              Utwórz wydarzenie za darmo <Check className="w-5 h-5" />
-                            </span>
-                          )}
+                          <div className={`flex items-center gap-2 ${isProcessing ? 'flex' : 'hidden'}`}>
+      <Loader2 className="w-5 h-5 animate-spin" />
+      <span>Przetwarzanie...</span>
+    </div>
+    <div className={`flex items-center gap-2 ${!isProcessing ? 'flex' : 'hidden'}`}>
+      <span>Utwórz wydarzenie za darmo</span> <Check className="w-5 h-5" />
+    </div>
                         </button>
                       </div>
                     )}
@@ -1625,16 +1622,13 @@ function StripePaymentForm({
         disabled={isProcessing || !stripe || !elements || isUpdatingPrice || !termsAcceptedStripe}
         className="w-full bg-gray-900 text-white py-4 rounded-xl font-medium hover:bg-black transition-colors flex items-center justify-center gap-2 mt-4 disabled:opacity-70 shadow-lg"
       >
-        {isProcessing || isUpdatingPrice ? (
-          <span className="flex items-center gap-2">
-            <Loader2 className="w-5 h-5 animate-spin" />
-            {isUpdatingPrice ? 'Odświeżam cenę...' : 'Przetwarzanie...'}
-          </span>
-        ) : (
-          <span className="flex items-center gap-2">
-            Potwierdź i utwórz galerię <Check className="w-5 h-5" />
-          </span>
-        )}
+        <div className={`flex items-center gap-2 ${isProcessing || isUpdatingPrice ? 'flex' : 'hidden'}`}>
+      <Loader2 className="w-5 h-5 animate-spin" />
+      <span>{isUpdatingPrice ? 'Odświeżam cenę...' : 'Przetwarzanie...'}</span>
+    </div>
+    <div className={`flex items-center gap-2 ${!(isProcessing || isUpdatingPrice) ? 'flex' : 'hidden'}`}>
+      <span>Potwierdź i utwórz galerię</span> <Check className="w-5 h-5" />
+    </div>
       </button>
 
       <div className="mt-4 bg-[#F8F7FF] rounded-xl p-4 flex items-start gap-4">

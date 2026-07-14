@@ -1,3 +1,2 @@
-import * as archiver from 'archiver';
+import archiver from 'archiver';
 console.log(archiver);
-const archive = archiver.create('zip', {});
