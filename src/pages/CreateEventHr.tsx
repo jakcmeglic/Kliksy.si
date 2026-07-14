@@ -1623,7 +1623,7 @@ function StripePaymentForm({
       >
         <div className={`flex items-center gap-2 ${isProcessing || isUpdatingPrice ? 'flex' : 'hidden'}`}>
             <Loader2 className="w-5 h-5 animate-spin" />
-            <span>{isUpdatingPrice ? (file.includes('Hr') ? 'Ažuriram cijenu...' : file.includes('Pl') ? 'Aktualizuję cenę...' : 'Osvežujem ceno...') : 'Obrađujem...'}</span>
+            <span>{isUpdatingPrice ? 'Ažuriram cijenu...' : 'Obrađujem...'}</span>
           </div>
           <div className={`flex items-center gap-2 ${!(isProcessing || isUpdatingPrice) ? 'flex' : 'hidden'}`}>
             <span>Potvrdi i stvori galeriju</span> <Check className="w-5 h-5" />
