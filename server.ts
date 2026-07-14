@@ -1,3 +1,4 @@
+import archiver from 'archiver';
 import express from "express";
 import Stripe from "stripe";
 import path from "path";
@@ -61,7 +62,8 @@ async function startServer() {
   const app = express();
   const PORT = Number(process.env.PORT) || 3000;
 
-  app.use(express.json());
+  app.use(express.json({ limit: "50mb" }));
+  app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
   const requestLogs: string[] = [];
 
@@ -792,6 +794,82 @@ async function startServer() {
   });
 
   // Simple proxy to bypass CORS for image downloading (e.g. ZIP packing)
+  
+  app.post("/api/download-zip", async (req, res) => {
+    try {
+      const { photos, eventName } = req.body;
+      let parsedPhotos = [];
+      if (typeof photos === 'string') {
+        parsedPhotos = JSON.parse(photos);
+      } else {
+        parsedPhotos = parsedPhotos.concat(photos || []);
+      }
+      
+      if (!parsedPhotos || !parsedPhotos.length) {
+        return res.status(400).send("No photos provided");
+      }
+
+      const safeEventName = (eventName || 'Dogodek').replace(/[^a-zA-Z0-9_-]/g, '_');
+      
+      res.setHeader('Content-Type', 'application/zip');
+      res.setHeader('Content-Disposition', `attachment; filename="Kliksy-${safeEventName}.zip"`);
+
+      const archive = archiver('zip', {
+        zlib: { level: 0 } // No compression for speed and low CPU
+      });
+
+      archive.on('error', (err) => {
+        console.error("Archiver error:", err);
+        if (!res.headersSent) {
+          res.status(500).send({error: err.message});
+        } else {
+          res.end();
+        }
+      });
+
+      archive.pipe(res);
+
+      let fetchedCount = 0;
+      
+      for (let i = 0; i < parsedPhotos.length; i++) {
+        const photo = parsedPhotos[i];
+        try {
+          if (photo && photo.url && photo.url.startsWith('http')) {
+            const response = await fetch(photo.url);
+            if (response.ok) {
+              const contentType = response.headers.get('content-type') || '';
+              let extension = photo.type === 'video' ? 'mp4' : 'jpg';
+              if (contentType && !contentType.includes('octet-stream')) {
+                const split = contentType.split('/');
+                if (split.length > 1) {
+                  extension = split[1];
+                  if (extension === 'jpeg') extension = 'jpg';
+                }
+              }
+              const prefix = photo.type === 'video' ? 'video' : 'photo';
+              const fileName = `${prefix}-${i + 1}.${extension}`;
+              
+              const arrayBuffer = await response.arrayBuffer();
+              const buffer = Buffer.from(arrayBuffer);
+              
+              archive.append(buffer, { name: fileName });
+              fetchedCount++;
+            }
+          }
+        } catch (e) {
+          console.error(`Failed to fetch photo ${i} for zip:`, e.message);
+        }
+      }
+
+      await archive.finalize();
+    } catch (err) {
+      console.error("Error in download-zip endpoint:", err);
+      if (!res.headersSent) {
+        res.status(500).send("Error generating zip");
+      }
+    }
+  });
+
   app.get("/api/proxy-image", async (req, res) => {
     try {
       const url = req.query.url as string;

@@ -3,8 +3,6 @@ import { motion } from "framer-motion";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { QRCodeSVG } from "qrcode.react";
 import { Download, Image as ImageIcon, Users, Clock, Settings, ExternalLink, LogOut, Heart, Loader2, ArrowLeft, Plus, Trash2, Play } from "lucide-react";
-import JSZip from "jszip";
-import { saveAs } from "file-saver";
 import { useAuth } from "../components/AuthProvider";
 import { db, storage, handleFirestoreError, OperationType } from "../firebase";
 import { collection, query, where, getDocs, onSnapshot, doc, getDoc, orderBy, updateDoc, arrayUnion, arrayRemove, deleteDoc } from "firebase/firestore";
@@ -362,63 +360,39 @@ export default function DashboardHr() {
   const handleDownloadAll = async () => {
     if (photos.length === 0) return;
     setIsDownloading(true);
-    setDownloadProgress('0%');
-    try {
-      const zip = new JSZip();
-      const eventNameStr = event.eventType === 'poroka' || !event.eventType ? `${event.partner1}-${event.partner2}` : event.eventName;
-      const folder = zip.folder(`Kliksy-${eventNameStr}`);
-      
-      if (!folder) throw new Error("Could not create zip folder");
+    setDownloadError('');
 
-      // Fetch all images and add them to the zip
-      let fetchedCount = 0;
-      const batchSize = 10;
-      for (let i = 0; i < photos.length; i += batchSize) {
-        const batch = photos.slice(i, i + batchSize);
-        await Promise.all(batch.map(async (photo, index) => {
-          const actualIndex = i + index;
-          try {
-            let response;
-            if (photo.url.startsWith('data:')) {
-              response = await fetch(photo.url);
-            } else {
-              const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(photo.url)}`;
-              response = await fetch(proxyUrl);
-            }
-            
-            if (!response.ok && !photo.url.startsWith('data:')) throw new Error("Proxy fetch failed");
-            
-            const blob = await response.blob();
-            
-            let extension = photo.type === 'video' ? 'mp4' : 'jpg';
-            if (blob.type && !blob.type.includes('octet-stream')) {
-              const split = blob.type.split('/');
-              if (split.length > 1) {
-                // handle image/jpeg -> jpeg, video/mp4 -> mp4
-                extension = split[1];
-                if (extension === 'jpeg') extension = 'jpg';
-              }
-            }
-            
-            const prefix = photo.type === 'video' ? 'video' : 'photo';
-            folder.file(`${prefix}-${actualIndex + 1}.${extension}`, blob);
-            fetchedCount++;
-            setDownloadProgress(`${Math.round((fetchedCount / photos.length) * 50)}%`);
-          } catch (err) {
-            console.error(`Failed to download media ${actualIndex}`, err);
-          }
-        }));
-      }
+    try {
+      const eventNameStr = event.eventType === 'poroka' || !event.eventType ? `${event.partner1}-${event.partner2}` : event.eventName;
       
-      const content = await zip.generateAsync({ type: "blob" }, (metadata) => {
-        setDownloadProgress((50 + (metadata.percent / 2)).toFixed(0) + '%');
-      });
-      saveAs(content, `Kliksy-${eventNameStr}.zip`);
-      setDownloadError('');
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = '/api/download-zip';
+      
+      const photosInput = document.createElement('input');
+      photosInput.type = 'hidden';
+      photosInput.name = 'photos';
+      photosInput.value = JSON.stringify(photos.map(p => ({ url: p.url, type: p.type })));
+      
+      const eventNameInput = document.createElement('input');
+      eventNameInput.type = 'hidden';
+      eventNameInput.name = 'eventName';
+      eventNameInput.value = eventNameStr;
+      
+      form.appendChild(photosInput);
+      form.appendChild(eventNameInput);
+      document.body.appendChild(form);
+      form.submit();
+      document.body.removeChild(form);
+      
+      // Stop spinning after a short delay since download starts natively
+      setTimeout(() => {
+        setIsDownloading(false);
+        setDownloadProgress('');
+      }, 3000);
     } catch (error) {
-      console.error("Error creating zip file:", error);
+      console.error("Error submitting zip download:", error);
       setDownloadError("Wystąpił błąd podczas pobierania. Spróbuj ponownie.");
-    } finally {
       setIsDownloading(false);
     }
   };
