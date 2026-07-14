@@ -1,4 +1,4 @@
-import archiver from 'archiver';
+import { ZipArchive } from 'archiver';
 import express from "express";
 import Stripe from "stripe";
 import path from "path";
@@ -60,7 +60,7 @@ import { startCronService } from "./src/cronService.js";
 async function startServer() {
   startCronService();
   const app = express();
-  const PORT = Number(process.env.PORT) || 3000;
+  const PORT = 3000;
 
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
@@ -814,7 +814,7 @@ async function startServer() {
       res.setHeader('Content-Type', 'application/zip');
       res.setHeader('Content-Disposition', `attachment; filename="Kliksy-${safeEventName}.zip"`);
 
-      const archive = archiver('zip', {
+      const archive = new ZipArchive({
         zlib: { level: 0 } // No compression for speed and low CPU
       });
 
@@ -831,12 +831,19 @@ async function startServer() {
 
       let fetchedCount = 0;
       
+      const { Readable } = require('stream');
+      
+      let clientDisconnected = false;
+      req.on('close', () => { clientDisconnected = true; });
+      
       for (let i = 0; i < parsedPhotos.length; i++) {
+        if (clientDisconnected) break;
+        
         const photo = parsedPhotos[i];
         try {
           if (photo && photo.url && photo.url.startsWith('http')) {
             const response = await fetch(photo.url);
-            if (response.ok) {
+            if (response.ok && response.body) {
               const contentType = response.headers.get('content-type') || '';
               let extension = photo.type === 'video' ? 'mp4' : 'jpg';
               if (contentType && !contentType.includes('octet-stream')) {
@@ -849,10 +856,13 @@ async function startServer() {
               const prefix = photo.type === 'video' ? 'video' : 'photo';
               const fileName = `${prefix}-${i + 1}.${extension}`;
               
-              const arrayBuffer = await response.arrayBuffer();
-              const buffer = Buffer.from(arrayBuffer);
-              
-              archive.append(buffer, { name: fileName });
+              await new Promise((resolve) => {
+                 const nodeStream = Readable.fromWeb(response.body);
+                 nodeStream.on('end', resolve);
+                 nodeStream.on('error', resolve);
+                 
+                 archive.append(nodeStream, { name: fileName });
+              });
               fetchedCount++;
             }
           }
@@ -860,8 +870,10 @@ async function startServer() {
           console.error(`Failed to fetch photo ${i} for zip:`, e.message);
         }
       }
-
-      await archive.finalize();
+      
+      if (!clientDisconnected) {
+        await archive.finalize();
+      }
     } catch (err) {
       console.error("Error in download-zip endpoint:", err);
       if (!res.headersSent) {
