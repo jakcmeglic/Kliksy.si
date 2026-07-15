@@ -1,0 +1,2 @@
+Appending photo-1.png, size: 5969
+Loop finished. Fetched: 1, Disconnected: true

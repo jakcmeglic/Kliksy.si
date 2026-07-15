@@ -1,3 +1,4 @@
+import { Readable } from 'stream';
 import { ZipArchive } from 'archiver';
 import express from "express";
 import Stripe from "stripe";
@@ -831,14 +832,9 @@ async function startServer() {
 
       let fetchedCount = 0;
       
-      const { Readable } = require('stream');
       
-      let clientDisconnected = false;
-      req.on('close', () => { clientDisconnected = true; });
       
       for (let i = 0; i < parsedPhotos.length; i++) {
-        if (clientDisconnected) break;
-        
         const photo = parsedPhotos[i];
         try {
           if (photo && photo.url && photo.url.startsWith('http')) {
@@ -856,28 +852,21 @@ async function startServer() {
               const prefix = photo.type === 'video' ? 'video' : 'photo';
               const fileName = `${prefix}-${i + 1}.${extension}`;
               
-              await new Promise((resolve) => {
-                 const nodeStream = Readable.fromWeb(response.body);
-                 nodeStream.on('end', resolve);
-                 nodeStream.on('error', resolve);
-                 
-                 archive.append(nodeStream, { name: fileName });
-              });
+              const arrayBuffer = await response.arrayBuffer();
+              archive.append(Buffer.from(arrayBuffer), { name: fileName });
               fetchedCount++;
             }
           }
-        } catch (e) {
+        } catch (e: any) {
           console.error(`Failed to fetch photo ${i} for zip:`, e.message);
         }
       }
       
-      if (!clientDisconnected) {
-        await archive.finalize();
-      }
-    } catch (err) {
+      await archive.finalize();
+    } catch (err: any) {
       console.error("Error in download-zip endpoint:", err);
       if (!res.headersSent) {
-        res.status(500).send("Error generating zip");
+        res.status(500).send("Error generating zip: " + (err.stack || err.message || err));
       }
     }
   });
@@ -903,7 +892,7 @@ async function startServer() {
       }
       
       if (response.body) {
-        const readable = require('stream').Readable.fromWeb(response.body);
+        const readable = Readable.fromWeb(response.body);
         readable.pipe(res);
       } else {
         const arrayBuffer = await response.arrayBuffer();
