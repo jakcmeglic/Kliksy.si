@@ -366,10 +366,13 @@ export default function DashboardHr() {
 
     try {
       const eventNameStr = event.eventType === 'poroka' || !event.eventType ? `${event.partner1}-${event.partner2}` : event.eventName;
-      const dateStr = new Date(event.eventDate).toISOString().split('T')[0];
+      let dateStr = new Date().toISOString().split('T')[0];
+      try {
+        if (event.date) dateStr = new Date(event.date).toISOString().split('T')[0];
+      } catch(e) {}
       const zipFilename = `Kliksy-${eventNameStr}-${dateStr}.zip`;
       
-      const zip = new JSZip();
+      const zip = typeof JSZip === 'function' ? new JSZip() : new (JSZip as any).default();
       
       let successCount = 0;
       let totalCount = photos.length;
@@ -400,9 +403,10 @@ export default function DashboardHr() {
       
       setIsDownloading(false);
       setDownloadProgress('');
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error generating zip:", error);
-      setDownloadError('Wystąpił błąd podczas pobierania. Spróbuj ponownie.');
+      alert("NAPAKA: " + (error.stack || error.message || String(error)));
+      setDownloadError('Prišlo je do napake pri prenosu. Poskusite znova.');
       setIsDownloading(false);
     }
   };

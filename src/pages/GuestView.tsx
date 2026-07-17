@@ -340,11 +340,9 @@ export default function GuestView() {
               let uploadContentType = file.type;
               let originalName = file.name;
               
-              if (!isVideo) {
+                            if (!isVideo) {
+                let fileForCompression = file;
                 try {
-                  let fileForCompression = file;
-                  
-                  // Convert HEIC/HEIF to JPEG before compressing and uploading
                   if (
                     file.type === "image/heic" || 
                     file.type === "image/heif" || 
@@ -360,10 +358,13 @@ export default function GuestView() {
                         quality: 0.8
                       });
                       const blob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
-                    
-                    originalName = file.name.replace(/\.heic$/i, ".jpg").replace(/\.heif$/i, ".jpg");
-                    fileForCompression = new File([blob], originalName, { type: "image/jpeg" });
-                    uploadContentType = "image/jpeg";
+                      
+                      originalName = file.name.replace(/\.heic$/i, ".jpg").replace(/\.heif$/i, ".jpg");
+                      fileForCompression = new File([blob], originalName, { type: "image/jpeg" });
+                      uploadContentType = "image/jpeg";
+                      fileToUpload = fileForCompression; // ensure fallback uses this
+                    } catch (heicErr) {
+                      console.error("HEIC conversion failed:", heicErr);
                     } finally {
                       setIsConvertingHeic(false);
                     }
@@ -372,8 +373,8 @@ export default function GuestView() {
                   const options = { maxSizeMB: 5, maxWidthOrHeight: 4000, useWebWorker: true };
                   fileToUpload = await imageCompression(fileForCompression, options);
                 } catch (compressionError) {
-                  // Fall back to original file if compression fails
-                  console.error("Compression/Conversion error:", compressionError);
+                  console.error("Compression error:", compressionError);
+                  fileToUpload = fileForCompression; // Fall back to converted jpeg if compression fails
                 }
               }
 
