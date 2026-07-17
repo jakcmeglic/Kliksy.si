@@ -896,8 +896,9 @@ async function startServer() {
       let buffer = Buffer.from(arrayBuffer);
 
       const isHeic = url.toLowerCase().includes('.heic') || url.toLowerCase().includes('.heif');
+      const isRaw = req.query.raw === '1';
       
-      if (isHeic) {
+      if (isHeic && !isRaw) {
         try {
           buffer = await heicConvert({
             buffer: buffer,
