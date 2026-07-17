@@ -292,11 +292,10 @@ export default function Dashboard() {
       if (url.startsWith('data:')) {
         response = await fetch(url);
       } else {
-        const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(url)}`;
-        response = await fetch(proxyUrl);
+        response = await fetch(url, { mode: 'cors' });
       }
       
-      if (!response.ok && !url.startsWith('data:')) throw new Error("Proxy fetch failed");
+      if (!response.ok && !url.startsWith('data:')) throw new Error("Fetch failed");
 
       const blob = await response.blob();
       const blobUrl = window.URL.createObjectURL(blob);

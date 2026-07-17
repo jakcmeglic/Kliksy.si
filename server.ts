@@ -3,7 +3,6 @@ import { ZipArchive } from 'archiver';
 import express from "express";
 import Stripe from "stripe";
 import path from "path";
-import heicConvert from 'heic-convert';
 import { generateInvoicePdfBuffer } from "./src/pdfService.js";
 
 // Globani handlerji za preprečevanje sesutja aplikacije (pomagajo pri stabilnosti na Hostingerju)
@@ -872,52 +871,6 @@ async function startServer() {
     }
   });
 
-  app.get("/api/proxy-image", async (req, res) => {
-    try {
-      const url = req.query.url as string;
-      if (!url || !url.includes("firebasestorage.googleapis.com")) {
-        res.status(400).send("Invalid or missing url");
-        return;
-      }
-      
-      const response = await fetch(url);
-      if (!response.ok) {
-        res.status(response.status).send(`Failed to fetch image: ${response.statusText}`);
-        return;
-      }
-      
-      res.set('Content-Type', response.headers.get('content-type') || 'application/octet-stream');
-      const contentLength = response.headers.get('content-length');
-      if (contentLength) {
-        res.set('Content-Length', contentLength);
-      }
-      
-      const arrayBuffer = await response.arrayBuffer();
-      let buffer = Buffer.from(arrayBuffer);
-
-      const isHeic = url.toLowerCase().includes('.heic') || url.toLowerCase().includes('.heif');
-      const isRaw = req.query.raw === '1';
-      
-      if (isHeic && !isRaw) {
-        try {
-          buffer = await heicConvert({
-            buffer: buffer,
-            format: 'JPEG',
-            quality: 0.5
-          });
-          res.set('Content-Type', 'image/jpeg');
-          res.set('Content-Length', buffer.length.toString());
-        } catch (convertErr: any) {
-          console.error("heicConvert error:", convertErr);
-        }
-      }
-
-      res.send(buffer);
-    } catch (error: any) {
-      console.error("Proxy error:", error);
-      res.status(500).send("Proxy error: " + error.message);
-    }
-  });
 
   // Catch-all for /api/* to prevent falling through to Vite SPA fallback
   app.all("/api/*", (req, res) => {

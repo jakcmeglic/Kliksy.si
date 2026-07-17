@@ -1,35 +1,48 @@
-import React, { forwardRef } from 'react';
+import React, { useState, useEffect } from 'react';
 
-interface SmartImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
-  src: string;
-}
+export const SmartImage = ({ src, alt, className }: any) => {
+  const [imageSrc, setImageSrc] = useState(src);
+  const [loading, setLoading] = useState(false);
 
-export const SmartImage = forwardRef<HTMLImageElement, SmartImageProps>(
-  ({ src, alt, className, ...props }, ref) => {
-    const handleImageError = async (e: any, imageUrl: string) => {
-      if (imageUrl.toLowerCase().includes('.heic') || imageUrl.toLowerCase().includes('heic')) {
+  useEffect(() => {
+    const isHeic = src && (
+      src.toLowerCase().includes('.heic') ||
+      src.toLowerCase().includes('%2Fheic') ||
+      src.toLowerCase().includes('heic%2F')
+    );
+
+    if (isHeic) {
+      setLoading(true);
+      const convertHeic = async () => {
         try {
-          const fetchUrl = imageUrl.includes('firebasestorage.googleapis.com') ? `/api/proxy-image?url=${encodeURIComponent(imageUrl)}&raw=1` : imageUrl;
-          const response = await fetch(fetchUrl);
+          const response = await fetch(src);
           const blob = await response.blob();
           const heic2anyModule = await import('heic2any');
           const heic2any = heic2anyModule.default || heic2anyModule;
-          const convertedBlob = await (heic2any as any)({
-            blob: blob,
+          const converted = await heic2any({
+            blob,
             toType: 'image/jpeg',
             quality: 0.8
           });
-          const finalBlob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
-          const objectUrl = URL.createObjectURL(finalBlob);
-          e.target.src = objectUrl;
+          const url = URL.createObjectURL(
+            Array.isArray(converted) ? converted[0] : converted
+          );
+          setImageSrc(url);
         } catch (err) {
-          console.error('HEIC conversion failed:', err);
+          console.error('HEIC failed:', err);
+        } finally {
+          setLoading(false);
         }
-      }
-    };
+      };
+      convertHeic();
+    } else {
+      setImageSrc(src);
+    }
+  }, [src]);
 
-    return <img ref={ref} src={src} alt={alt} className={className} onError={(e) => handleImageError(e, src)} {...props} />;
-  }
-);
+  if (loading) return <div style={{background:'#1a1a2e', aspectRatio:'1', display:'flex', alignItems:'center', justifyContent:'center', color:'white', fontSize:'12px'}}>Nalagam...</div>;
 
-SmartImage.displayName = 'SmartImage';
+  return <img src={imageSrc} alt={alt} className={className} />;
+};
+
+export default SmartImage;
