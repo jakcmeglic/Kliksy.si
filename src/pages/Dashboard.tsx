@@ -360,78 +360,57 @@ export default function Dashboard() {
   };
 
   const handleDownloadAll = async () => {
-    if (photos.length === 0) return;
     setIsDownloading(true);
     setDownloadError('');
-    setDownloadProgress('Pripravljam ZIP... X/Y slik'.replace('X', '0').replace('Y', photos.length.toString()));
-
     try {
-      const eventNameStr = event.eventType === 'poroka' || !event.eventType ? `${event.partner1}-${event.partner2}` : event.eventName;
-      let dateStr = new Date().toISOString().split('T')[0];
-      try {
-        if (event.date) dateStr = new Date(event.date).toISOString().split('T')[0];
-      } catch(e) {}
-      const zipFilename = `Kliksy-${eventNameStr}-${dateStr}.zip`;
+      const JSZip = (await import('jszip')).default;
+      const { saveAs } = await import('file-saver');
       
       const zip = new JSZip();
+      let added = 0;
       
-      let successCount = 0;
-      let totalCount = photos.length;
-
-      console.log('Photos to zip:', photos.length, photos);
+      console.log('Total photos:', photos.length);
       
       for (let i = 0; i < photos.length; i++) {
-        const photo = photos[i];
         try {
-          let freshUrl = photo.url;
+          const photo = photos[i];
+          const url = photo.url || photo.downloadURL || photo.imageUrl;
           
-          if (photo.url.includes('firebasestorage.googleapis.com')) {
-             try {
-                const decoded = decodeURIComponent(photo.url);
-                const match = decoded.match(/\/o\/(.*?)\?/);
-                if (match && match[1]) {
-                   const storagePath = match[1];
-                   const storageRef = ref(storage, storagePath);
-                   const directUrl = await import('firebase/storage').then(m => m.getDownloadURL(storageRef));
-                   // Proxy the fresh URL to bypass CORS
-                   freshUrl = `/api/proxy-image?url=${encodeURIComponent(directUrl)}&raw=1`;
-                } else {
-                   freshUrl = `/api/proxy-image?url=${encodeURIComponent(photo.url)}&raw=1`;
-                }
-             } catch (e) {
-                console.error("Failed to get fresh url, falling back to original:", e);
-                freshUrl = `/api/proxy-image?url=${encodeURIComponent(photo.url)}&raw=1`;
-             }
-          }
+          console.log('Fetching photo', i, url);
           
-          const response = await fetch(freshUrl);
-          if (!response.ok) throw new Error(`Fetch failed! status: ${response.status}`);
+          const response = await fetch(url, { mode: 'cors' });
           const blob = await response.blob();
           
-          let extension = photo.type === 'video' ? 'mp4' : 'jpg';
-          let filename = photo.url.split('?')[0].split('%2F').pop() || `photo-${i}.${extension}`;
-          if (!filename.includes('.')) filename += `.${extension}`;
+          console.log('Blob size:', blob.size, 'type:', blob.type);
           
-          zip.file(filename, blob);
-          successCount++;
-          setDownloadProgress('Pripravljam ZIP... X/Y slik'.replace('X', successCount.toString()).replace('Y', totalCount.toString()));
+          if (blob.size > 0) {
+            zip.file(`photo-${i + 1}.jpg`, blob);
+            added++;
+          }
+          
+          setDownloadProgress(`Pripravljam ZIP... ${i + 1}/${photos.length}`);
         } catch (err) {
-          console.error("Failed to add photo:", err, photo.url);
+          console.error('Photo failed:', i, err);
         }
       }
       
-      console.log('Successfully added to ZIP:', successCount);
+      console.log('Photos added to ZIP:', added);
+      
+      if (added === 0) {
+        alert('Nobena slika ni bila dodana v ZIP. Preverite konzolo za napake.');
+        setIsDownloading(false);
+        return;
+      }
       
       setDownloadProgress('Ustvarjam datoteko...');
-      const zipBlob = await zip.generateAsync({ type: 'blob' });
-      saveAs(zipBlob, zipFilename);
-      
-      setIsDownloading(false);
+      const blob = await zip.generateAsync({ type: 'blob' });
+      saveAs(blob, 'Kliksy-galerija.zip');
       setDownloadProgress('');
-    } catch (error: any) {
-      console.error("Error generating zip:", error);
-      alert("NAPAKA: " + (error.stack || error.message || String(error)));
-      setDownloadError('Prišlo je do napake pri prenosu. Poskusite znova.');
+      
+    } catch (err: any) {
+      console.error('ZIP error:', err);
+      alert('Napaka pri prenosu: ' + err.message);
+    } finally {
       setIsDownloading(false);
     }
   };
