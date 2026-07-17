@@ -1,6 +1,8 @@
 import { SmartImage } from "../components/SmartImage";
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { QRCodeSVG } from "qrcode.react";
 import { Download, Image as ImageIcon, Users, Clock, Settings, ExternalLink, LogOut, Heart, Loader2, ArrowLeft, Plus, Trash2, Play } from "lucide-react";
@@ -372,7 +374,7 @@ export default function DashboardHr() {
       } catch(e) {}
       const zipFilename = `Kliksy-${eventNameStr}-${dateStr}.zip`;
       
-      const zip = typeof JSZip === 'function' ? new JSZip() : new (JSZip as any).default();
+      const zip = new JSZip();
       
       let successCount = 0;
       let totalCount = photos.length;
