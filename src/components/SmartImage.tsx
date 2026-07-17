@@ -17,7 +17,9 @@ export const SmartImage = forwardRef<HTMLImageElement, SmartImageProps>(
       
       if (isHeic) {
         let isMounted = true;
-        fetch(src)
+        const fetchUrl = src.includes('firebasestorage.googleapis.com') ? `/api/proxy-image?url=${encodeURIComponent(src)}` : src;
+        
+        fetch(fetchUrl)
           .then(res => res.blob())
           .then(blob => heic2any({ blob, toType: 'image/jpeg', quality: 0.5 }))
           .then(conversionResult => {

@@ -643,7 +643,7 @@ export default function DashboardHr() {
                           </div>
                         </>
                      ) : (
-                        <img 
+                        <SmartImage 
                           src={photo.url} 
                           alt="Moment" 
                           referrerPolicy="no-referrer"

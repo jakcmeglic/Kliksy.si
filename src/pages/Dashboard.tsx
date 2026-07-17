@@ -642,7 +642,7 @@ export default function Dashboard() {
                           </div>
                         </>
                      ) : (
-                        <img 
+                        <SmartImage 
                           src={photo.url} 
                           alt="Moment" 
                           referrerPolicy="no-referrer"
