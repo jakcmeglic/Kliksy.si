@@ -360,6 +360,23 @@ export default function DashboardHr() {
     }
   };
 
+  const downloadImageAsBlob = (url: string): Promise<Blob> => {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.responseType = 'blob';
+    xhr.onload = () => {
+      if (xhr.status === 200) {
+        resolve(xhr.response);
+      } else {
+        reject(new Error('Failed: ' + xhr.status));
+      }
+    };
+    xhr.onerror = () => reject(new Error('XHR failed'));
+    xhr.open('GET', url);
+    xhr.send();
+  });
+};
+
   const handleDownloadAll = async () => {
     setIsDownloading(true);
     setDownloadError('');
@@ -379,8 +396,7 @@ export default function DashboardHr() {
           
           console.log('Fetching photo', i, url);
           
-          const response = await fetch(url, { mode: 'cors' });
-          const blob = await response.blob();
+          const blob = await downloadImageAsBlob(url);
           
           console.log('Blob size:', blob.size, 'type:', blob.type);
           
