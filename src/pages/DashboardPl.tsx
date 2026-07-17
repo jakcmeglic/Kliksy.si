@@ -362,38 +362,47 @@ export default function DashboardHr() {
     if (photos.length === 0) return;
     setIsDownloading(true);
     setDownloadError('');
+    setDownloadProgress('Przygotowuję ZIP... X/Y zdjęć'.replace('X', '0').replace('Y', photos.length.toString()));
 
     try {
       const eventNameStr = event.eventType === 'poroka' || !event.eventType ? `${event.partner1}-${event.partner2}` : event.eventName;
+      const dateStr = new Date(event.eventDate).toISOString().split('T')[0];
+      const zipFilename = `Kliksy-${eventNameStr}-${dateStr}.zip`;
       
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = '/api/download-zip';
+      const zip = new JSZip();
       
-      const photosInput = document.createElement('input');
-      photosInput.type = 'hidden';
-      photosInput.name = 'photos';
-      photosInput.value = JSON.stringify(photos.map(p => ({ url: p.url, type: p.type })));
+      let successCount = 0;
+      let totalCount = photos.length;
+
+      for (let i = 0; i < photos.length; i++) {
+        const photo = photos[i];
+        try {
+          const fetchUrl = photo.url.includes('firebasestorage.googleapis.com') ? `/api/proxy-image?url=${encodeURIComponent(photo.url)}&raw=1` : photo.url;
+          const response = await fetch(fetchUrl);
+          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+          const blob = await response.blob();
+          
+          let extension = photo.type === 'video' ? 'mp4' : 'jpg';
+          let filename = photo.url.split('?')[0].split('%2F').pop() || `photo-${i}.${extension}`;
+          if (!filename.includes('.')) filename += `.${extension}`;
+          
+          zip.file(filename, blob);
+          successCount++;
+          setDownloadProgress('Przygotowuję ZIP... X/Y zdjęć'.replace('X', successCount.toString()).replace('Y', totalCount.toString()));
+        } catch (err) {
+          console.error("Failed to fetch image for ZIP:", photo.url, err);
+        }
+      }
       
-      const eventNameInput = document.createElement('input');
-      eventNameInput.type = 'hidden';
-      eventNameInput.name = 'eventName';
-      eventNameInput.value = eventNameStr;
+      setDownloadProgress('Tworzenie pliku...');
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      saveAs(zipBlob, zipFilename);
       
-      form.appendChild(photosInput);
-      form.appendChild(eventNameInput);
-      document.body.appendChild(form);
-      form.submit();
-      document.body.removeChild(form);
-      
-      // Stop spinning after a short delay since download starts natively
-      setTimeout(() => {
-        setIsDownloading(false);
-        setDownloadProgress('');
-      }, 3000);
+      setIsDownloading(false);
+      setDownloadProgress('');
     } catch (error) {
-      console.error("Error submitting zip download:", error);
-      setDownloadError("Wystąpił błąd podczas pobierania. Spróbuj ponownie.");
+      console.error("Error generating zip:", error);
+      setDownloadError('Wystąpił błąd podczas pobierania. Spróbuj ponownie.');
       setIsDownloading(false);
     }
   };

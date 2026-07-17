@@ -51,6 +51,7 @@ export default function GuestViewHr() {
   const [loading, setLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
+  const [isConvertingHeic, setIsConvertingHeic] = useState(false);
   const isUploadingRef = useRef(false);
   
   useEffect(() => {
@@ -350,17 +351,22 @@ export default function GuestViewHr() {
                     file.name.toLowerCase().endsWith(".heic") || 
                     file.name.toLowerCase().endsWith(".heif")
                   ) {
-                    const heic2anyFn = await loadHeic2Any();
-                    const convertedBlob = await heic2anyFn({
-                      blob: file,
-                      toType: "image/jpeg",
-                      quality: 0.8
-                    });
-                    const blob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
+                    setIsConvertingHeic(true);
+                    try {
+                      const heic2anyFn = await loadHeic2Any();
+                      const convertedBlob = await heic2anyFn({
+                        blob: file,
+                        toType: "image/jpeg",
+                        quality: 0.8
+                      });
+                      const blob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
                     
                     originalName = file.name.replace(/\.heic$/i, ".jpg").replace(/\.heif$/i, ".jpg");
                     fileForCompression = new File([blob], originalName, { type: "image/jpeg" });
                     uploadContentType = "image/jpeg";
+                    } finally {
+                      setIsConvertingHeic(false);
+                    }
                   }
                   
                   const options = { maxSizeMB: 5, maxWidthOrHeight: 4000, useWebWorker: true };
@@ -491,7 +497,19 @@ export default function GuestViewHr() {
               className="w-full space-y-4 relative"
             >
               {/* Progress Toast */}
-              {uploadProgress.total > 0 && (
+              {isConvertingHeic && (
+                <motion.div 
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="flex justify-center"
+                >
+                  <div className="bg-amber-50 text-amber-700 px-3 py-1.5 rounded-full text-xs font-medium flex items-center justify-center gap-1.5 shadow-sm border border-amber-100 mb-2">
+                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                     Konwertowanie HEIC... (może to zająć kilka sekund)
+                  </div>
+                </motion.div>
+              )}
+              {uploadProgress.total > 0 && !isConvertingHeic && (
                 <motion.div 
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
