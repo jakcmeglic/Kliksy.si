@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight, Heart, Trash2 } from 'lucide-react';
+import { SmartImage } from './SmartImage';
+
+const MotionSmartImage = motion.create ? motion.create(SmartImage) : (motion as any)(SmartImage);
 
   interface ImageViewerProps {
   images: { id: string; url: string; likes?: number; likedBy?: string[]; type?: string }[];
@@ -113,7 +116,7 @@ export default function ImageViewer({ images, initialIndex, onClose, onToggleLik
               onClick={(e: React.MouseEvent<HTMLVideoElement>) => e.stopPropagation()}
             />
           ) : (
-            <motion.img
+            <MotionSmartImage
               key={`img-${currentIndex}`}
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -122,7 +125,7 @@ export default function ImageViewer({ images, initialIndex, onClose, onToggleLik
               alt="Gallery image"
               className="max-w-full max-h-full object-contain select-none"
               referrerPolicy="no-referrer"
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e: React.MouseEvent) => e.stopPropagation()}
             />
           )}
           

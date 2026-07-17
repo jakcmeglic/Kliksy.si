@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { SmartImage } from "../components/SmartImage";
 import { Camera, Upload, CheckCircle2, Plus, Heart, Loader2, Download, ArrowLeft, ChevronUp, Play } from "lucide-react";
 import { db, storage, handleFirestoreError, OperationType } from "../firebase";
 import { doc, getDoc, collection, addDoc, serverTimestamp, Timestamp, query, orderBy, limit, onSnapshot, getDocs, updateDoc, arrayUnion, arrayRemove, where } from "firebase/firestore";
@@ -9,6 +10,7 @@ import { signInAnonymously, onAuthStateChanged } from "firebase/auth";
 import { auth } from "../firebase";
 import { v4 as uuidv4 } from "uuid";
 import imageCompression from "browser-image-compression";
+import heic2any from "heic2any";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 
@@ -334,21 +336,45 @@ export default function GuestView() {
             try {
               let fileToUpload: File | Blob = file;
               const isVideo = file.type.startsWith('video/');
+              let uploadContentType = file.type;
+              let originalName = file.name;
               
               if (!isVideo) {
                 try {
+                  let fileForCompression = file;
+                  
+                  // Convert HEIC/HEIF to JPEG before compressing and uploading
+                  if (
+                    file.type === "image/heic" || 
+                    file.type === "image/heif" || 
+                    file.name.toLowerCase().endsWith(".heic") || 
+                    file.name.toLowerCase().endsWith(".heif")
+                  ) {
+                    const convertedBlob = await heic2any({
+                      blob: file,
+                      toType: "image/jpeg",
+                      quality: 0.8
+                    });
+                    const blob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
+                    
+                    originalName = file.name.replace(/\.heic$/i, ".jpg").replace(/\.heif$/i, ".jpg");
+                    fileForCompression = new File([blob], originalName, { type: "image/jpeg" });
+                    uploadContentType = "image/jpeg";
+                  }
+                  
                   const options = { maxSizeMB: 5, maxWidthOrHeight: 4000, useWebWorker: true };
-                  fileToUpload = await imageCompression(file, options);
+                  fileToUpload = await imageCompression(fileForCompression, options);
                 } catch (compressionError) {
                   // Fall back to original file if compression fails
+                  console.error("Compression/Conversion error:", compressionError);
                 }
               }
 
-              const extension = file.name.split('.').pop() || (isVideo ? 'mp4' : 'jpg');
+              const extension = originalName.split('.').pop() || (isVideo ? 'mp4' : 'jpg');
               const fileName = `${Date.now()}-${uuidv4()}.${extension}`;
               const storageRef = ref(storage, `events/${id}/${fileName}`);
               
-              await uploadBytes(storageRef, fileToUpload, { contentType: file.type });
+              await uploadBytes(storageRef, fileToUpload, { contentType: uploadContentType });
               const downloadUrl = await getDownloadURL(storageRef);
 
               await addDoc(collection(db, "events", id, "photos"), {
@@ -556,7 +582,7 @@ export default function GuestView() {
                       </div>
                     </>
                   ) : (
-                    <img src={photo.url} alt="Wedding moment" className="w-full h-full object-cover" referrerPolicy="no-referrer" loading="lazy" />
+                    <SmartImage src={photo.url} alt="Wedding moment" className="w-full h-full object-cover" referrerPolicy="no-referrer" loading="lazy" />
                   )}
 
                   {/* Thumb Like Indicator */}
@@ -653,7 +679,7 @@ export default function GuestView() {
                           playsInline 
                         />
                       ) : (
-                        <img src={photo.url} alt="Gallery item" className="w-full h-full object-contain" referrerPolicy="no-referrer" loading="lazy" />
+                        <SmartImage src={photo.url} alt="Gallery item" className="w-full h-full object-contain" referrerPolicy="no-referrer" loading="lazy" />
                       )}
                       <TikTokLikeButton photo={photo} deviceId={deviceId} onToggleLike={handleToggleLike} />
                     </div>
@@ -700,7 +726,7 @@ export default function GuestView() {
                           </div>
                         </>
                       ) : (
-                        <img src={photo.url} alt="Gallery item" className="w-full h-full object-cover" referrerPolicy="no-referrer" loading="lazy" />
+                        <SmartImage src={photo.url} alt="Gallery item" className="w-full h-full object-cover" referrerPolicy="no-referrer" loading="lazy" />
                       )}
                       {/* Thumb Like Indicator */}
                       {photo.likes > 0 && (
