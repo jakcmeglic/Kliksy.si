@@ -340,41 +340,40 @@ export default function GuestView() {
               let uploadContentType = file.type;
               let originalName = file.name;
               
-                            if (!isVideo) {
-                let fileForCompression = file;
-                try {
-                  if (
-                    file.type === "image/heic" || 
-                    file.type === "image/heif" || 
-                    file.name.toLowerCase().endsWith(".heic") || 
-                    file.name.toLowerCase().endsWith(".heif")
-                  ) {
-                    setIsConvertingHeic(true);
-                    try {
-                      const heic2anyFn = await loadHeic2Any();
-                      const convertedBlob = await heic2anyFn({
-                        blob: file,
-                        toType: "image/jpeg",
-                        quality: 0.8
-                      });
-                      const blob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
-                      
-                      originalName = file.name.replace(/\.heic$/i, ".jpg").replace(/\.heif$/i, ".jpg");
-                      fileForCompression = new File([blob], originalName, { type: "image/jpeg" });
-                      uploadContentType = "image/jpeg";
-                      fileToUpload = fileForCompression; // ensure fallback uses this
-                    } catch (heicErr) {
-                      console.error("HEIC conversion failed:", heicErr);
-                    } finally {
-                      setIsConvertingHeic(false);
-                    }
+              if (!isVideo) {
+                const isHeic = file.type === "image/heic" || 
+                               file.type === "image/heif" || 
+                               file.name.toLowerCase().endsWith(".heic") || 
+                               file.name.toLowerCase().endsWith(".heif");
+                if (isHeic) {
+                  setIsConvertingHeic(true);
+                  try {
+                    const heic2anyFn = await loadHeic2Any();
+                    const convertedBlob = await heic2anyFn({
+                      blob: file,
+                      toType: "image/jpeg",
+                      quality: 0.7
+                    });
+                    const blob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
+                    
+                    originalName = file.name.replace(/\.heic$/i, ".jpg").replace(/\.heif$/i, ".jpg");
+                    fileToUpload = new File([blob], originalName, { type: "image/jpeg" });
+                    uploadContentType = "image/jpeg";
+                  } catch (heicErr) {
+                    console.error("HEIC conversion failed:", heicErr);
+                    // Fallback to original if conversion fails
+                    fileToUpload = file;
+                  } finally {
+                    setIsConvertingHeic(false);
                   }
-                  
-                  const options = { maxSizeMB: 5, maxWidthOrHeight: 4000, useWebWorker: true };
-                  fileToUpload = await imageCompression(fileForCompression, options);
-                } catch (compressionError) {
-                  console.error("Compression error:", compressionError);
-                  fileToUpload = fileForCompression; // Fall back to converted jpeg if compression fails
+                } else {
+                  try {
+                    const options = { maxSizeMB: 5, maxWidthOrHeight: 4000, useWebWorker: true };
+                    fileToUpload = await imageCompression(file, options);
+                  } catch (compressionError) {
+                    console.error("Compression error:", compressionError);
+                    fileToUpload = file;
+                  }
                 }
               }
 

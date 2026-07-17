@@ -378,12 +378,34 @@ export default function Dashboard() {
       let successCount = 0;
       let totalCount = photos.length;
 
+      console.log('Photos to zip:', photos.length, photos);
+      
       for (let i = 0; i < photos.length; i++) {
         const photo = photos[i];
         try {
-          const fetchUrl = photo.url.includes('firebasestorage.googleapis.com') ? `/api/proxy-image?url=${encodeURIComponent(photo.url)}&raw=1` : photo.url;
-          const response = await fetch(fetchUrl);
-          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+          let freshUrl = photo.url;
+          
+          if (photo.url.includes('firebasestorage.googleapis.com')) {
+             try {
+                const decoded = decodeURIComponent(photo.url);
+                const match = decoded.match(/\/o\/(.*?)\?/);
+                if (match && match[1]) {
+                   const storagePath = match[1];
+                   const storageRef = ref(storage, storagePath);
+                   const directUrl = await import('firebase/storage').then(m => m.getDownloadURL(storageRef));
+                   // Proxy the fresh URL to bypass CORS
+                   freshUrl = `/api/proxy-image?url=${encodeURIComponent(directUrl)}&raw=1`;
+                } else {
+                   freshUrl = `/api/proxy-image?url=${encodeURIComponent(photo.url)}&raw=1`;
+                }
+             } catch (e) {
+                console.error("Failed to get fresh url, falling back to original:", e);
+                freshUrl = `/api/proxy-image?url=${encodeURIComponent(photo.url)}&raw=1`;
+             }
+          }
+          
+          const response = await fetch(freshUrl);
+          if (!response.ok) throw new Error(`Fetch failed! status: ${response.status}`);
           const blob = await response.blob();
           
           let extension = photo.type === 'video' ? 'mp4' : 'jpg';
@@ -394,9 +416,11 @@ export default function Dashboard() {
           successCount++;
           setDownloadProgress('Pripravljam ZIP... X/Y slik'.replace('X', successCount.toString()).replace('Y', totalCount.toString()));
         } catch (err) {
-          console.error("Failed to fetch image for ZIP:", photo.url, err);
+          console.error("Failed to add photo:", err, photo.url);
         }
       }
+      
+      console.log('Successfully added to ZIP:', successCount);
       
       setDownloadProgress('Ustvarjam datoteko...');
       const zipBlob = await zip.generateAsync({ type: 'blob' });
