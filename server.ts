@@ -3,6 +3,7 @@ import { ZipArchive } from 'archiver';
 import express from "express";
 import Stripe from "stripe";
 import path from "path";
+import heicConvert from 'heic-convert';
 import { generateInvoicePdfBuffer } from "./src/pdfService.js";
 
 // Globani handlerji za preprečevanje sesutja aplikacije (pomagajo pri stabilnosti na Hostingerju)
@@ -891,14 +892,26 @@ async function startServer() {
         res.set('Content-Length', contentLength);
       }
       
-      if (response.body) {
-        const readable = Readable.fromWeb(response.body);
-        readable.pipe(res);
-      } else {
-        const arrayBuffer = await response.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
-        res.send(buffer);
+      const arrayBuffer = await response.arrayBuffer();
+      let buffer = Buffer.from(arrayBuffer);
+
+      const isHeic = url.toLowerCase().includes('.heic') || url.toLowerCase().includes('.heif');
+      
+      if (isHeic) {
+        try {
+          buffer = await heicConvert({
+            buffer: buffer,
+            format: 'JPEG',
+            quality: 0.5
+          });
+          res.set('Content-Type', 'image/jpeg');
+          res.set('Content-Length', buffer.length.toString());
+        } catch (convertErr: any) {
+          console.error("heicConvert error:", convertErr);
+        }
       }
+
+      res.send(buffer);
     } catch (error: any) {
       console.error("Proxy error:", error);
       res.status(500).send("Proxy error: " + error.message);

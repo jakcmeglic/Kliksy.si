@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { SmartImage } from "../components/SmartImage";
+import { loadHeic2Any } from "../heicLoader";
 import { Camera, Upload, CheckCircle2, Plus, Heart, Loader2, Download, ArrowLeft, ChevronUp, Play } from "lucide-react";
 import { db, storage, handleFirestoreError, OperationType } from "../firebase";
 import { doc, getDoc, collection, addDoc, serverTimestamp, Timestamp, query, orderBy, limit, onSnapshot, getDocs, updateDoc, arrayUnion, arrayRemove, where } from "firebase/firestore";
@@ -10,7 +11,6 @@ import { signInAnonymously, onAuthStateChanged } from "firebase/auth";
 import { auth } from "../firebase";
 import { v4 as uuidv4 } from "uuid";
 import imageCompression from "browser-image-compression";
-import heic2any from "heic2any";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 
@@ -350,7 +350,8 @@ export default function GuestViewHr() {
                     file.name.toLowerCase().endsWith(".heic") || 
                     file.name.toLowerCase().endsWith(".heif")
                   ) {
-                    const convertedBlob = await heic2any({
+                    const heic2anyFn = await loadHeic2Any();
+                    const convertedBlob = await heic2anyFn({
                       blob: file,
                       toType: "image/jpeg",
                       quality: 0.8

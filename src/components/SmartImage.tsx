@@ -1,5 +1,4 @@
 import React, { useState, useEffect, forwardRef } from 'react';
-import heic2any from 'heic2any';
 
 interface SmartImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   src: string;
@@ -12,28 +11,10 @@ export const SmartImage = forwardRef<HTMLImageElement, SmartImageProps>(
     useEffect(() => {
       if (!src) return;
       
-      // Check if the URL might be a HEIC file
       const isHeic = src.toLowerCase().includes('.heic') || src.toLowerCase().includes('.heif');
       
-      if (isHeic) {
-        let isMounted = true;
-        const fetchUrl = src.includes('firebasestorage.googleapis.com') ? `/api/proxy-image?url=${encodeURIComponent(src)}` : src;
-        
-        fetch(fetchUrl)
-          .then(res => res.blob())
-          .then(blob => heic2any({ blob, toType: 'image/jpeg', quality: 0.5 }))
-          .then(conversionResult => {
-             if (isMounted) {
-               const jpegBlob = Array.isArray(conversionResult) ? conversionResult[0] : conversionResult;
-               setImgSrc(URL.createObjectURL(jpegBlob));
-             }
-          })
-          .catch(err => {
-             console.error("Error converting HEIC on the fly:", err);
-             if (isMounted) setImgSrc(src); // fallback
-          });
-          
-        return () => { isMounted = false; };
+      if (isHeic && src.includes('firebasestorage.googleapis.com')) {
+        setImgSrc(`/api/proxy-image?url=${encodeURIComponent(src)}`);
       } else {
         setImgSrc(src);
       }

@@ -1,3 +1,4 @@
+import { SmartImage } from "../components/SmartImage";
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
