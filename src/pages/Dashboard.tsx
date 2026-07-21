@@ -382,46 +382,51 @@ export default function Dashboard() {
       const JSZip = (await import('jszip')).default;
       const { saveAs } = await import('file-saver');
       
-      const zip = new JSZip();
-      let added = 0;
+      const BATCH_SIZE = 500;
+      const batches = [];
+      for (let i = 0; i < photos.length; i += BATCH_SIZE) {
+        batches.push(photos.slice(i, i + BATCH_SIZE));
+      }
       
-      console.log('Total photos:', photos.length);
+      alert(`Vaša galerija ima ${photos.length} slik. Prenos bo razdeljen v ${batches.length} ZIP datotekah.`);
       
-      for (let i = 0; i < photos.length; i++) {
-        try {
-          const photo = photos[i];
-          const url = photo.url || photo.downloadURL || photo.imageUrl;
-          
-          console.log('Fetching photo', i, url);
-          
-          const blob = await downloadImageAsBlob(url);
-          
-          console.log('Blob size:', blob.size, 'type:', blob.type);
-          
-          if (blob.size > 0) {
-            zip.file(`photo-${i + 1}.jpg`, blob);
-            added++;
+      let totalAdded = 0;
+      
+      for (let b = 0; b < batches.length; b++) {
+        const zip = new JSZip();
+        const batch = batches[b];
+        
+        setDownloadProgress(`Pripravljam ZIP ${b + 1}/${batches.length}...`);
+        
+        for (let i = 0; i < batch.length; i++) {
+          try {
+            const photo = batch[i];
+            const url = photo.url || photo.downloadURL || photo.imageUrl;
+            const blob = await downloadImageAsBlob(url);
+            
+            if (blob.size > 0) {
+              zip.file(`photo-${(b * BATCH_SIZE) + i + 1}.jpg`, blob);
+              totalAdded++;
+            }
+          } catch (err) {
+            console.error('Photo failed:', err);
           }
-          
-          setDownloadProgress(`Pripravljam ZIP... ${i + 1}/${photos.length}`);
-        } catch (err) {
-          console.error('Photo failed:', i, err);
+          setDownloadProgress(`ZIP ${b + 1}/${batches.length}: ${i + 1}/${batch.length} slik...`);
+        }
+        
+        const zipBlob = await zip.generateAsync({ type: 'blob' });
+        saveAs(zipBlob, `Kliksy-galerija-${b + 1}.zip`);
+        
+        if (b < batches.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 3000));
         }
       }
       
-      console.log('Photos added to ZIP:', added);
-      
-      if (added === 0) {
-        alert('Nobena slika ni bila dodana v ZIP. Preverite konzolo za napake.');
-        setIsDownloading(false);
-        return;
-      }
-      
-      setDownloadProgress('Ustvarjam datoteko...');
-      const blob = await zip.generateAsync({ type: 'blob' });
-      saveAs(blob, 'Kliksy-galerija.zip');
       setDownloadProgress('');
       
+      if (totalAdded === 0) {
+        alert('Nobena slika ni bila dodana v ZIP. Preverite konzolo za napake.');
+      }
     } catch (err: any) {
       console.error('ZIP error:', err);
       alert('Napaka pri prenosu: ' + err.message);

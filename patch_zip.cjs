@@ -1,68 +1,78 @@
 const fs = require('fs');
 
-function patch(file, progressText, generatingText, errorText) {
+function patch(file) {
   let content = fs.readFileSync(file, 'utf8');
-  
-  // Add imports if they don't exist
-  if (!content.includes('import JSZip from')) {
-    content = content.replace(/import {([^}]+)} from "react";/, 'import {$1} from "react";\nimport JSZip from "jszip";\nimport { saveAs } from "file-saver";');
-  }
 
-  // Replace handleDownloadAll
-  const zipLogic = `const handleDownloadAll = async () => {
-    if (photos.length === 0) return;
+  // Replace the entire handleDownloadAll function block
+  const oldCodeRegex = /  const handleDownloadAll = async \(\) => \{[\s\S]*?setIsDownloading\(false\);\n    \}\n  \};/m;
+  
+  const newCode = `  const handleDownloadAll = async () => {
     setIsDownloading(true);
     setDownloadError('');
-    setDownloadProgress('${progressText}'.replace('X', '0').replace('Y', photos.length.toString()));
-
     try {
-      const eventNameStr = event.eventType === 'poroka' || !event.eventType ? \`\${event.partner1}-\${event.partner2}\` : event.eventName;
-      const dateStr = new Date(event.eventDate).toISOString().split('T')[0];
-      const zipFilename = \`Kliksy-\${eventNameStr}-\${dateStr}.zip\`;
+      const JSZip = (await import('jszip')).default;
+      const { saveAs } = await import('file-saver');
       
-      const zip = new JSZip();
+      const BATCH_SIZE = 500;
+      const batches = [];
+      for (let i = 0; i < photos.length; i += BATCH_SIZE) {
+        batches.push(photos.slice(i, i + BATCH_SIZE));
+      }
       
-      let successCount = 0;
-      let totalCount = photos.length;
-
-      for (let i = 0; i < photos.length; i++) {
-        const photo = photos[i];
-        try {
-          const fetchUrl = photo.url.includes('firebasestorage.googleapis.com') ? \`/api/proxy-image?url=\${encodeURIComponent(photo.url)}&raw=1\` : photo.url;
-          const response = await fetch(fetchUrl);
-          if (!response.ok) throw new Error(\`HTTP error! status: \${response.status}\`);
-          const blob = await response.blob();
-          
-          let extension = photo.type === 'video' ? 'mp4' : 'jpg';
-          let filename = photo.url.split('?')[0].split('%2F').pop() || \`photo-\${i}.\${extension}\`;
-          if (!filename.includes('.')) filename += \`.\${extension}\`;
-          
-          zip.file(filename, blob);
-          successCount++;
-          setDownloadProgress('${progressText}'.replace('X', successCount.toString()).replace('Y', totalCount.toString()));
-        } catch (err) {
-          console.error("Failed to fetch image for ZIP:", photo.url, err);
+      alert(\`Vaša galerija ima \${photos.length} slik. Prenos bo razdeljen v \${batches.length} ZIP datotekah.\`);
+      
+      let totalAdded = 0;
+      
+      for (let b = 0; b < batches.length; b++) {
+        const zip = new JSZip();
+        const batch = batches[b];
+        
+        setDownloadProgress(\`Pripravljam ZIP \${b + 1}/\${batches.length}...\`);
+        
+        for (let i = 0; i < batch.length; i++) {
+          try {
+            const photo = batch[i];
+            const url = photo.url || photo.downloadURL || photo.imageUrl;
+            const blob = await downloadImageAsBlob(url);
+            
+            if (blob.size > 0) {
+              zip.file(\`photo-\${(b * BATCH_SIZE) + i + 1}.jpg\`, blob);
+              totalAdded++;
+            }
+          } catch (err) {
+            console.error('Photo failed:', err);
+          }
+          setDownloadProgress(\`ZIP \${b + 1}/\${batches.length}: \${i + 1}/\${batch.length} slik...\`);
+        }
+        
+        const zipBlob = await zip.generateAsync({ type: 'blob' });
+        saveAs(zipBlob, \`Kliksy-galerija-\${b + 1}.zip\`);
+        
+        if (b < batches.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 3000));
         }
       }
       
-      setDownloadProgress('${generatingText}');
-      const zipBlob = await zip.generateAsync({ type: 'blob' });
-      saveAs(zipBlob, zipFilename);
-      
-      setIsDownloading(false);
       setDownloadProgress('');
-    } catch (error) {
-      console.error("Error generating zip:", error);
-      setDownloadError('${errorText}');
+      
+      if (totalAdded === 0) {
+        alert('Nobena slika ni bila dodana v ZIP. Preverite konzolo za napake.');
+      }
+    } catch (err: any) {
+      console.error('ZIP error:', err);
+      alert('Napaka pri prenosu: ' + err.message);
+    } finally {
       setIsDownloading(false);
     }
   };`;
-  
-  content = content.replace(/const handleDownloadAll = async \(\) => \{[\s\S]*?^  \};/m, zipLogic);
-  fs.writeFileSync(file, content);
+
+  if (content.match(oldCodeRegex)) {
+    content = content.replace(oldCodeRegex, newCode);
+    fs.writeFileSync(file, content);
+    console.log("Patched", file);
+  } else {
+    console.log("Could not find regex match in", file);
+  }
 }
 
-patch('src/pages/Dashboard.tsx', 'Pripravljam ZIP... X/Y slik', 'Ustvarjam datoteko...', 'Prišlo je do napake pri prenosu. Poskusite znova.');
-patch('src/pages/DashboardHr.tsx', 'Pripremam ZIP... X/Y slika', 'Stvaranje datoteke...', 'Došlo je do greške prilikom preuzimanja. Pokušajte ponovno.');
-patch('src/pages/DashboardPl.tsx', 'Przygotowuję ZIP... X/Y zdjęć', 'Tworzenie pliku...', 'Wystąpił błąd podczas pobierania. Spróbuj ponownie.');
-
+['src/pages/Dashboard.tsx', 'src/pages/DashboardHr.tsx', 'src/pages/DashboardPl.tsx'].forEach(patch);
