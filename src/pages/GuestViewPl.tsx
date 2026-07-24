@@ -71,6 +71,10 @@ export default function GuestViewHr() {
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const [galleryMode, setGalleryMode] = useState<'scroll' | 'grid'>('scroll');
   const [allPhotos, setAllPhotos] = useState<any[]>([]);
+  const isVideo = (file: any) => {
+    return file?.type === 'video' || file?.url?.includes('.mp4') || file?.downloadURL?.includes('.mp4') || file?.imageUrl?.includes('.mp4');
+  };
+
   const [hasScrolledGallery, setHasScrolledGallery] = useState(false);
   const [videoCount, setVideoCount] = useState(0);
 
@@ -593,13 +597,17 @@ export default function GuestViewHr() {
                     setSelectedImageIndex(actualIndex >= 0 ? actualIndex : 0);
                   }}
                 >
-                  {photo.type === 'video' ? (
-                    <>
-                      <video src={`${photo.url}#t=0.001`} className="w-full h-full object-cover" muted playsInline preload="metadata" />
-                      <div className="absolute top-2 left-2 bg-black/40 backdrop-blur-sm rounded-full p-1">
-                        <Play className="w-3 h-3 text-white fill-white" />
-                      </div>
-                    </>
+                  {isVideo(photo) ? (
+                    <video
+                      src={photo.url}
+                      controls={false}
+                      muted
+                      playsInline
+                      preload="metadata"
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      onMouseEnter={e => (e.target as HTMLVideoElement).play()}
+                      onMouseLeave={e => { const v = (e.target as HTMLVideoElement); v.pause(); v.currentTime = 0; }}
+                    />
                   ) : (
                     <SmartImage src={photo.url} alt="Wedding moment" className="w-full h-full object-cover" referrerPolicy="no-referrer" loading="lazy" />
                   )}
@@ -686,7 +694,7 @@ export default function GuestViewHr() {
                 >
                   {allPhotos.map((photo) => (
                     <div key={photo.id} className="w-full h-[100dvh] snap-start snap-always relative flex items-center justify-center bg-black">
-                      {photo.type === 'video' ? (
+                      {isVideo(photo) ? (
                         <video 
                           src={photo.url} 
                           className="w-full h-full object-contain" 
@@ -737,13 +745,17 @@ export default function GuestViewHr() {
                 <div className="grid grid-cols-3 gap-2">
                   {allPhotos.map((photo, i) => (
                     <div key={photo.id} className="aspect-square rounded-xl overflow-hidden bg-gray-900 cursor-pointer relative" onClick={() => { setSelectedImageIndex(i); setGalleryMode('scroll'); }}>
-                      {photo.type === 'video' ? (
-                        <>
-                          <video src={`${photo.url}#t=0.001`} className="w-full h-full object-cover" muted playsInline preload="metadata" />
-                          <div className="absolute top-2 left-2 bg-black/40 backdrop-blur-sm rounded-full p-1 border border-white/10 shadow-sm pointer-events-none">
-                            <Play className="w-3 h-3 text-white fill-white" />
-                          </div>
-                        </>
+                      {isVideo(photo) ? (
+                        <video
+                          src={photo.url}
+                          controls={false}
+                          muted
+                          playsInline
+                          preload="metadata"
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          onMouseEnter={e => (e.target as HTMLVideoElement).play()}
+                          onMouseLeave={e => { const v = (e.target as HTMLVideoElement); v.pause(); v.currentTime = 0; }}
+                        />
                       ) : (
                         <SmartImage src={photo.url} alt="Gallery item" className="w-full h-full object-cover" referrerPolicy="no-referrer" loading="lazy" />
                       )}
