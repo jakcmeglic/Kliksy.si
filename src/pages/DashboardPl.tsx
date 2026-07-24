@@ -5,7 +5,7 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { QRCodeSVG } from "qrcode.react";
-import { Download, Image as ImageIcon, Users, Clock, Settings, ExternalLink, LogOut, Heart, Loader2, ArrowLeft, Plus, Trash2, Play, QrCode, Sparkles, ChevronRight } from "lucide-react";
+import { Download, Image as ImageIcon, Users, Clock, Settings, ExternalLink, LogOut, Heart, Loader2, ArrowLeft, Plus, Trash2, Play, QrCode, Sparkles, ChevronRight, LayoutGrid } from "lucide-react";
 import { useAuth } from "../components/AuthProvider";
 import { db, storage, handleFirestoreError, OperationType } from "../firebase";
 import { collection, query, where, getDocs, onSnapshot, doc, getDoc, orderBy, updateDoc, arrayUnion, arrayRemove, deleteDoc } from "firebase/firestore";
@@ -579,6 +579,16 @@ export default function DashboardHr() {
           <ul className="space-y-1.5">
             <li>
               <button
+                onClick={() => setActiveTab('overview')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition ${
+                  activeTab === 'overview' ? 'bg-indigo-50 text-indigo-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                }`}
+              >
+                <LayoutGrid className="w-5 h-5" /> Panel główny
+              </button>
+            </li>
+            <li>
+              <button
                 onClick={() => setActiveTab('gallery')}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition ${
                   activeTab === 'gallery' ? 'bg-indigo-50 text-indigo-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
@@ -634,8 +644,102 @@ export default function DashboardHr() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 max-h-screen overflow-y-auto">
-        <div className="max-w-7xl mx-auto p-4 md:p-8">
+      <main className="flex-1 max-h-screen overflow-y-auto p-4 md:p-8">
+        <div className="max-w-5xl mx-auto">
+          {event.paymentStatus !== 'paid' && (
+            <div className="mb-8 bg-indigo-50 border border-indigo-100 rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-sm">
+              <div>
+                <h3 className="font-bold text-lg text-gray-900 mb-1">To jest podgląd Demo</h3>
+                <p className="text-gray-600 text-sm max-w-xl">
+                  Twoje wydarzenie jest w trybie demo i ograniczone do 5 zdjęć. Zaktualizuj pakiet, aby uzyskać pełne wrażenia.
+                </p>
+              </div>
+              <button 
+                onClick={() => navigate(`/checkout/${event.id}`)} 
+                className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition-colors whitespace-nowrap shadow-sm"
+              >
+                Zaktualizuj teraz
+              </button>
+            </div>
+          )}
+
+          {activeTab === 'overview' && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-6"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {stats.map((stat, i) => (
+                  <div key={i} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex items-center gap-4">
+                    <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center shrink-0">
+                      <stat.icon className="w-6 h-6 text-indigo-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500 mb-1">{stat.label}</p>
+                      <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm flex flex-col md:flex-row items-center gap-8">
+                <div className="shrink-0 bg-white p-4 rounded-3xl shadow-sm border border-gray-100">
+                  <div className="w-[180px] h-[180px] relative" id="raw-qr-code-svg-container">
+                    <QRCodeSVG
+                      id="raw-qr-code-svg"
+                      value={eventUrl}
+                      size={180}
+                      level="H"
+                      includeMargin={true}
+                    />
+                  </div>
+                </div>
+                <div className="flex-1 text-center md:text-left">
+                  <h3 className="font-bold text-2xl text-gray-900 mb-2">Kod QR wydarzenia</h3>
+                  <p className="text-gray-500 mb-6 max-w-md mx-auto md:mx-0">
+                    Wydrukuj i połóż na stołach. Goście skanują go aplikacją aparatu na swoich telefonach.
+                  </p>
+                  <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
+                    <button
+                      onClick={() => setIsQRModalOpen(true)}
+                      className="px-6 py-3 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 transition-colors shadow-sm flex items-center gap-2"
+                    >
+                      Drukuj projekty
+                    </button>
+                    <button
+                      onClick={handleDownloadRawQR}
+                      className="px-6 py-3 bg-white border border-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors flex items-center gap-2"
+                    >
+                      <Download className="w-5 h-5" />
+                      Pobierz tylko kod
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm text-center">
+                <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <ExternalLink className="w-8 h-8 text-blue-600" />
+                </div>
+                <h3 className="font-bold text-xl text-gray-900 mb-2">Link do galerii</h3>
+                <p className="text-gray-500 mb-6">Możesz wysłać link tym, którzy nie mogą zeskanować kodu.</p>
+                <div className="flex bg-gray-50 p-2 border border-gray-200 rounded-xl max-w-md mx-auto">
+                  <input type="text" readOnly value={eventUrl} className="bg-transparent flex-1 px-3 text-gray-600 outline-none truncate" />
+                  <button 
+                    onClick={() => {
+                      navigator.clipboard.writeText(eventUrl);
+                      alert("Link skopiowany!");
+                    }}
+                    className="px-4 py-2 bg-white rounded-lg shadow-sm font-medium text-indigo-600 hover:text-indigo-700 transition"
+                  >
+                    Kopiuj
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
           {activeTab === 'gallery' && (
             <motion.div 
                initial={{ opacity: 0, y: 20 }}
@@ -645,7 +749,7 @@ export default function DashboardHr() {
                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
                  <div>
                    <h3 className="font-bold text-xl text-gray-900">Wszystkie zdjęcia wydarzenia</h3>
-                   <p className="text-gray-500 text-sm">{`Oglądasz ${photos.length} zdjęć`}</p>
+                   <p className="text-gray-500 text-sm">Oglądasz {photos.length} zdjęć</p>
                  </div>
                  <div className="flex flex-wrap items-center gap-3">
                    {photos.filter(f => !isVideo(f)).length > 0 && (
@@ -660,7 +764,7 @@ export default function DashboardHr() {
                            <span className="text-sm">{downloadProgress}</span>
                          </div>
                        ) : <Download className="w-5 h-5" />}
-                       📸 Prenesi fotografije ({photos.filter(f => !isVideo(f)).length})
+                       📸 Pobierz zdjęcia ({photos.filter(f => !isVideo(f)).length})
                      </button>
                    )}
                    {photos.filter(f => isVideo(f)).length > 0 && (
@@ -675,7 +779,7 @@ export default function DashboardHr() {
                            <span className="text-sm">{downloadProgress}</span>
                          </div>
                        ) : <Download className="w-5 h-5" />}
-                       🎥 Prenesi videe ({photos.filter(f => isVideo(f)).length})
+                       🎥 Pobierz filmy ({photos.filter(f => isVideo(f)).length})
                      </button>
                    )}
                  </div>
@@ -689,43 +793,65 @@ export default function DashboardHr() {
 
                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                  {photos.map((photo, i) => (
-                   <motion.div
-                     key={photo.id}
+                   <motion.div 
                      initial={{ opacity: 0, scale: 0.9 }}
                      animate={{ opacity: 1, scale: 1 }}
                      transition={{ delay: i * 0.05 }}
-                     className="aspect-square bg-gray-100 rounded-2xl overflow-hidden relative cursor-pointer group"
+                     key={photo.id} 
+                     className="group relative aspect-square rounded-2xl overflow-hidden bg-gray-100 shadow-sm cursor-pointer"
                      onClick={() => setSelectedImageIndex(i)}
                    >
-                     {photo.type === 'video' ? (
-                        <>
-                          <video src={`${photo.url}#t=0.001`} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" muted playsInline preload="metadata" />
-                          <div className="absolute top-2 left-2 bg-black/40 backdrop-blur-sm rounded-full p-2">
-                            <Play className="w-4 h-4 text-white fill-white" />
-                          </div>
-                        </>
-                     ) : (
-                        <SmartImage 
-                          src={photo.url} 
-                          alt="Moment" 
-                          referrerPolicy="no-referrer"
-                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                          loading="lazy" 
-                        />
-                     )}
-                     <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-black/50 backdrop-blur-md px-2 py-1 rounded-full pointer-events-none">
-                        <Heart className="w-3 h-3 text-red-500 fill-red-500" />
-                        <span className="text-white text-xs font-bold">{photo.likes || 0}</span>
+                     <SmartImage
+                        src={photo.url || photo.downloadURL || photo.imageUrl}
+                        alt="Event photo"
+                        className="w-full h-full object-cover transition duration-500 group-hover:scale-110"
+                     />
+                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
+                        <div className="flex items-center justify-between">
+                           <p className="text-white text-sm font-medium truncate max-w-[120px]">{photo.uploadedBy || 'Gość'}</p>
+                           <button
+                             onClick={(e) => {
+                               e.stopPropagation();
+                               handleToggleLike(photo.id);
+                             }}
+                             className="p-2 bg-white/20 hover:bg-white/40 backdrop-blur-md rounded-full transition-colors flex items-center gap-1.5"
+                           >
+                             <Heart className={`w-4 h-4 ${photo.likedBy?.includes(user?.uid) ? 'fill-white text-white' : 'text-white'}`} />
+                             {photo.likes > 0 && <span className="text-white text-xs font-medium">{photo.likes}</span>}
+                           </button>
+                        </div>
                      </div>
+                     {isVideo(photo) && (
+                       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                         <div className="w-12 h-12 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center">
+                           <Play className="w-5 h-5 text-white ml-1" />
+                         </div>
+                       </div>
+                     )}
+                     <button
+                       onClick={(e) => {
+                         e.stopPropagation();
+                         if(window.confirm('Ali ste prepričani, da želite izbrisati to zdjęćo?')) {
+                           deletePhoto(photo);
+                         }
+                       }}
+                       className="absolute top-2 right-2 p-2 bg-red-500/80 hover:bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all backdrop-blur-md"
+                     >
+                       <Trash2 className="w-4 h-4" />
+                     </button>
                    </motion.div>
                  ))}
-                 
-                 {photos.length === 0 && (
-                   <div className="col-span-full py-12 text-center text-gray-500 bg-white rounded-3xl border border-gray-100 border-dashed">
-                     Še ni zdjęć. Delite QR kodo z gosti!
-                   </div>
-                 )}
                </div>
+               
+               {photos.length === 0 && (
+                 <div className="text-center py-20 bg-white rounded-3xl border border-gray-100 shadow-sm">
+                   <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                     <ImageIcon className="w-10 h-10 text-gray-300" />
+                   </div>
+                   <h3 className="text-xl font-bold text-gray-900 mb-2">Brak zdjęć</h3>
+                   <p className="text-gray-500">Brak zdjęć. Udostępnij kod QR gościom!</p>
+                 </div>
+               )}
             </motion.div>
           )}
 
@@ -766,38 +892,22 @@ export default function DashboardHr() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-700">Jakie zdjęcia mogą zobaczyć Twoi goście?</label>
-                  <div className="flex gap-4">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input 
-                        type="radio" 
-                        name="guestViewSettings" 
-                        value="all" 
-                        checked={guestViewSettings === 'all'} 
-                        onChange={() => setGuestViewSettings('all')}
-                        className="w-4 h-4 text-indigo-600 focus:ring-indigo-500"
-                      />
-                      <span className="text-gray-700">Wszystkie zdjęcia</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input 
-                        type="radio" 
-                        name="guestViewSettings" 
-                        value="own" 
-                        checked={guestViewSettings === 'own'} 
-                        onChange={() => setGuestViewSettings('own')}
-                        className="w-4 h-4 text-indigo-600 focus:ring-indigo-500"
-                      />
-                      <span className="text-gray-700">Tylko swoje zdjęcia</span>
-                    </label>
-                  </div>
-                  <p className="mt-2 text-sm text-gray-500">Jeśli wybierzesz "Tylko swoje zdjęcia", goście w galerii (po zeskanowaniu kodu) nie zobaczą zdjęć innych gości, a jedynie te, które sami dodali.</p>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">Kdo lahko vidi zdjęće v galeriji na telefonu gosta?</label>
+                  <select 
+                    value={guestViewSettings}
+                    onChange={(e) => setGuestViewSettings(e.target.value as 'all' | 'own')}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all text-gray-900 bg-white"
+                  >
+                    <option value="all">Vse zdjęće</option>
+                    <option value="own">Samo svoje zdjęće</option>
+                  </select>
+                  <p className="mt-2 text-sm text-gray-500">
+                    Če izberete "Samo svoje zdjęće", gostje v galeriji (ko skenirajo kodo) ne bodo videli zdjęć drugih gostov, ampak samo tiste, ki so jih sami naložili.
+                  </p>
                 </div>
-                
-                <div className="pt-6 border-t border-gray-100">
+                <div className="pt-4 border-t border-gray-100 flex justify-end">
                   <button 
                     onClick={async () => {
-                      if (!event) return;
                       setIsSavingSettings(true);
                       try {
                         const eventDocRef = doc(db, "events", event.id);
