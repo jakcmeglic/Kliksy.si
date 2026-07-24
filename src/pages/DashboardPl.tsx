@@ -636,16 +636,7 @@ export default function DashboardHr() {
                 <ImageIcon className="w-5 h-5" /> Galeria ({photos.length})
               </button>
             </li>
-            <li>
-              <button
-                onClick={() => setActiveTab('qr')}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition ${
-                  activeTab === 'qr' ? 'bg-indigo-50 text-indigo-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                }`}
-              >
-                <QrCode className="w-5 h-5" /> Kod QR
-              </button>
-            </li>
+            
             <li>
               <button
                 onClick={() => setActiveTab('settings')}
