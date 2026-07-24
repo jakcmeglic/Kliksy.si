@@ -375,20 +375,29 @@ export default function Dashboard() {
   });
 };
 
-  const handleDownloadAll = async () => {
+
+  const isVideo = (file: any) => {
+    const url = (file.url || '').toLowerCase();
+    const type = (file.type || '').toLowerCase();
+    return url.includes('.mp4') || url.includes('.mov') || url.includes('.avi') || url.includes('.webm') || type.includes('video');
+  };
+    const handleDownloadPhotos = async () => {
+    const photoFiles = photos.filter(f => !isVideo(f));
+    if (photoFiles.length === 0) return;
+    
     setIsDownloading(true);
     setDownloadError('');
     try {
       const JSZip = (await import('jszip')).default;
       const { saveAs } = await import('file-saver');
       
-      const BATCH_SIZE = 500;
+      const PHOTO_BATCH_SIZE = 500;
       const batches = [];
-      for (let i = 0; i < photos.length; i += BATCH_SIZE) {
-        batches.push(photos.slice(i, i + BATCH_SIZE));
+      for (let i = 0; i < photoFiles.length; i += PHOTO_BATCH_SIZE) {
+        batches.push(photoFiles.slice(i, i + PHOTO_BATCH_SIZE));
       }
       
-      alert(`Vaša galerija ima ${photos.length} slik. Prenos bo razdeljen v ${batches.length} ZIP datotekah.`);
+      alert(`Fotografij za prenos: ${photoFiles.length}. Prenos bo razdeljen v ${batches.length} ZIP datotekah.`);
       
       let totalAdded = 0;
       
@@ -396,7 +405,7 @@ export default function Dashboard() {
         const zip = new JSZip();
         const batch = batches[b];
         
-        setDownloadProgress(`Pripravljam ZIP ${b + 1}/${batches.length}...`);
+        setDownloadProgress(`Pripravljam ZIP fotografij ${b + 1}/${batches.length}...`);
         
         for (let i = 0; i < batch.length; i++) {
           try {
@@ -405,17 +414,17 @@ export default function Dashboard() {
             const blob = await downloadImageAsBlob(url);
             
             if (blob.size > 0) {
-              zip.file(`photo-${(b * BATCH_SIZE) + i + 1}.jpg`, blob);
+              zip.file(`photo-${(b * PHOTO_BATCH_SIZE) + i + 1}.jpg`, blob);
               totalAdded++;
             }
           } catch (err) {
             console.error('Photo failed:', err);
           }
-          setDownloadProgress(`ZIP ${b + 1}/${batches.length}: ${i + 1}/${batch.length} slik...`);
+          setDownloadProgress(`Pripravljam ZIP fotografij ${b + 1}/${batches.length}: ${i + 1}/${batch.length}...`);
         }
         
         const zipBlob = await zip.generateAsync({ type: 'blob' });
-        saveAs(zipBlob, `Kliksy-galerija-${b + 1}.zip`);
+        saveAs(zipBlob, `Kliksy-fotografije-${b + 1}.zip`);
         
         if (b < batches.length - 1) {
           await new Promise(resolve => setTimeout(resolve, 3000));
@@ -425,7 +434,73 @@ export default function Dashboard() {
       setDownloadProgress('');
       
       if (totalAdded === 0) {
-        alert('Nobena slika ni bila dodana v ZIP. Preverite konzolo za napake.');
+        alert('Nobena fotografija ni bila dodana v ZIP. Preverite konzolo za napake.');
+      }
+    } catch (err: any) {
+      console.error('ZIP error:', err);
+      alert('Napaka pri prenosu: ' + err.message);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  const handleDownloadVideos = async () => {
+    const videoFiles = photos.filter(f => isVideo(f));
+    if (videoFiles.length === 0) return;
+
+    setIsDownloading(true);
+    setDownloadError('');
+    try {
+      const JSZip = (await import('jszip')).default;
+      const { saveAs } = await import('file-saver');
+      
+      const VIDEO_BATCH_SIZE = 10;
+      const batches = [];
+      for (let i = 0; i < videoFiles.length; i += VIDEO_BATCH_SIZE) {
+        batches.push(videoFiles.slice(i, i + VIDEO_BATCH_SIZE));
+      }
+      
+      alert(`Videov za prenos: ${videoFiles.length}. Prenos bo razdeljen v ${batches.length} ZIP datotekah.`);
+      
+      let totalAdded = 0;
+      
+      for (let b = 0; b < batches.length; b++) {
+        const zip = new JSZip();
+        const batch = batches[b];
+        
+        setDownloadProgress(`Pripravljam ZIP videov ${b + 1}/${batches.length}...`);
+        
+        for (let i = 0; i < batch.length; i++) {
+          try {
+            const video = batch[i];
+            const url = video.url || video.downloadURL || video.imageUrl;
+            
+            // For videos, fetch it normally
+            const response = await fetch(url, { mode: 'cors' });
+            const blob = await response.blob();
+            
+            if (blob.size > 0) {
+              zip.file(`video-${(b * VIDEO_BATCH_SIZE) + i + 1}.mp4`, blob);
+              totalAdded++;
+            }
+          } catch (err) {
+            console.error('Video failed:', err);
+          }
+          setDownloadProgress(`Pripravljam ZIP videov ${b + 1}/${batches.length}: ${i + 1}/${batch.length}...`);
+        }
+        
+        const zipBlob = await zip.generateAsync({ type: 'blob' });
+        saveAs(zipBlob, `Kliksy-videi-${b + 1}.zip`);
+        
+        if (b < batches.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 3000));
+        }
+      }
+      
+      setDownloadProgress('');
+      
+      if (totalAdded === 0) {
+        alert('Noben video ni bil dodan v ZIP. Preverite konzolo za napake.');
       }
     } catch (err: any) {
       console.error('ZIP error:', err);
@@ -484,153 +559,82 @@ export default function Dashboard() {
                 </span>
                 
                 {event.paymentStatus === 'paid' && event.plan !== 'premium' && (
-                  <button 
-                    onClick={() => setIsUpgradeModalOpen(true)}
-                    className="text-xs font-bold text-indigo-600 hover:text-indigo-800 hover:underline flex items-center gap-1 transition-colors"
-                  >
-                    Nadgradi paket
+                  <button onClick={() => navigate('/upgrade')} className="mt-2 text-sm text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1">
+                    Nadgradi paket <ChevronRight className="w-4 h-4" />
                   </button>
                 )}
               </div>
             )}
-            
-            <button
-              onClick={() => navigate('/create')}
-              className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2 border-2 border-dashed border-gray-200 text-gray-600 rounded-xl text-sm font-medium hover:bg-gray-50 hover:text-gray-900 hover:border-gray-300 transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              Dodaj nov dogodek
+          </div>
+          
+          <div className="flex gap-2">
+            <button onClick={() => window.open(`/${event.id}`, '_blank')} className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition">
+              <ExternalLink className="w-4 h-4" /> Predogled
             </button>
           </div>
-
-          <nav className="space-y-2">
-            {[
-              { id: 'overview', label: 'Pregled', icon: Clock },
-              { id: 'gallery', label: 'Galerija', icon: ImageIcon },
-              { id: 'settings', label: 'Nastavitve', icon: Settings },
-            ].map((item) => (
-              <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id as any)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-                  activeTab === item.id 
-                    ? 'bg-gray-900 text-white shadow-sm' 
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                }`}
-              >
-                <item.icon className="w-5 h-5" />
-                {item.label}
-              </button>
-            ))}
-          </nav>
         </div>
 
-        <div className="p-6 border-t border-gray-100">
-          <button onClick={signOut} className="flex items-center gap-3 text-sm font-medium text-red-600 hover:text-red-700 transition-colors">
-            <LogOut className="w-5 h-5" />
-            Odjava
+        <nav className="mt-4 px-4 pb-4">
+          <ul className="space-y-1.5">
+            <li>
+              <button
+                onClick={() => setActiveTab('gallery')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition ${
+                  activeTab === 'gallery' ? 'bg-indigo-50 text-indigo-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                }`}
+              >
+                <ImageIcon className="w-5 h-5" /> Galerija ({photos.length})
+              </button>
+            </li>
+            <li>
+              <button
+                onClick={() => setActiveTab('qr')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition ${
+                  activeTab === 'qr' ? 'bg-indigo-50 text-indigo-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                }`}
+              >
+                <QrCode className="w-5 h-5" /> QR Koda
+              </button>
+            </li>
+            <li>
+              <button
+                onClick={() => setActiveTab('settings')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition ${
+                  activeTab === 'settings' ? 'bg-indigo-50 text-indigo-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                }`}
+              >
+                <Settings className="w-5 h-5" /> Nastavitve
+              </button>
+            </li>
+            {event.paymentStatus !== 'paid' && (
+              <li>
+                <button
+                  onClick={() => navigate('/upgrade')}
+                  className="w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:from-indigo-600 hover:to-purple-600 transition shadow-sm mt-4"
+                >
+                  <span className="flex items-center gap-3">
+                    <Sparkles className="w-5 h-5" /> Nadgradi 
+                  </span>
+                  <ChevronRight className="w-4 h-4 opacity-70" />
+                </button>
+              </li>
+            )}
+          </ul>
+        </nav>
+        
+        <div className="mt-auto p-6">
+          <button
+            onClick={() => auth.signOut()}
+            className="flex items-center gap-2 text-sm text-gray-500 hover:text-red-600 transition"
+          >
+            <LogOut className="w-4 h-4" /> Odjavi se
           </button>
         </div>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-6 md:p-12 overflow-y-auto">
-        <div className="max-w-5xl mx-auto">
-          
-          {event.paymentStatus !== 'paid' && (
-            <div className="mb-8 bg-indigo-50 border border-indigo-100 rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-sm">
-              <div>
-                <h3 className="font-bold text-lg text-gray-900 mb-1">To je Demo predogled</h3>
-                <p className="text-gray-600 text-sm max-w-xl">
-                  Vaš dogodek je trenutno v demo načinu in omejen na maksimalno 5 slik. Za polno izkušnjo nadgradite paket.
-                </p>
-              </div>
-              <button 
-                onClick={() => navigate(`/create?eventId=${event.id}`)} 
-                className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition-colors whitespace-nowrap shadow-sm"
-              >
-                Nadgradi zdaj
-              </button>
-            </div>
-          )}
-
-          {activeTab === 'overview' && (
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="space-y-6"
-            >
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {stats.map((stat, i) => (
-                  <div key={i} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex items-center gap-4">
-                    <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center shrink-0">
-                      <stat.icon className="w-6 h-6 text-indigo-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-500 mb-1">{stat.label}</p>
-                      <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm flex flex-col md:flex-row items-center gap-8">
-                 <div className="shrink-0 bg-white p-4 rounded-3xl shadow-sm border border-gray-100">
-                    <div className="w-[180px] h-[180px] relative" id="raw-qr-code-svg-container">
-                       <QRCodeSVG 
-                         id="raw-qr-code-svg"
-                         value={eventUrl}
-                         size={180}
-                         level="H"
-                         includeMargin={true}
-                       />
-                    </div>
-                 </div>
-                 <div className="flex-1 text-center md:text-left">
-                    <h3 className="font-bold text-2xl text-gray-900 mb-2">QR koda dogodka</h3>
-                    <p className="text-gray-500 mb-6 max-w-md mx-auto md:mx-0">
-                      Natisnite jo in postavite na mize. Gostje jo skenirajo z aplikacijo kamere na telefonu.
-                    </p>
-                    <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
-                       <button
-                         onClick={() => setIsQRModalOpen(true)}
-                         className="px-6 py-3 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 transition-colors shadow-sm flex items-center gap-2"
-                       >
-                         Natisni dizajne
-                       </button>
-                       <button
-                         onClick={handleDownloadRawQR}
-                         className="px-6 py-3 bg-white border border-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors flex items-center gap-2"
-                       >
-                         <Download className="w-5 h-5" />
-                         Prenesi samo kodo
-                       </button>
-                    </div>
-                 </div>
-              </div>
-
-              <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm text-center">
-                 <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                   <ExternalLink className="w-8 h-8 text-blue-600" />
-                 </div>
-                 <h3 className="font-bold text-xl text-gray-900 mb-2">Povezava do galerije</h3>
-                 <p className="text-gray-500 mb-6">Povezavo lahko pošljete tudi tistim, ki ne morejo skenirati kode.</p>
-                 <div className="flex bg-gray-50 p-2 border border-gray-200 rounded-xl max-w-md mx-auto">
-                   <input type="text" readOnly value={eventUrl} className="bg-transparent flex-1 px-3 text-gray-600 outline-none truncate" />
-                   <button 
-                     onClick={() => {
-                        navigator.clipboard.writeText(eventUrl);
-                        alert("Povezava kopirana!");
-                     }}
-                     className="px-4 py-2 bg-white rounded-lg shadow-sm font-medium text-indigo-600 hover:text-indigo-700 transition"
-                   >
-                     Kopiraj
-                   </button>
-                 </div>
-              </div>
-            </motion.div>
-          )}
-
+      <main className="flex-1 max-h-screen overflow-y-auto">
+        <div className="max-w-7xl mx-auto p-4 md:p-8">
           {activeTab === 'gallery' && (
             <motion.div 
                initial={{ opacity: 0, y: 20 }}
@@ -640,21 +644,40 @@ export default function Dashboard() {
                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
                  <div>
                    <h3 className="font-bold text-xl text-gray-900">Vse slike dogodka</h3>
-                   <p className="text-gray-500 text-sm">Gledate {photos.length} slik</p>
+                   <p className="text-gray-500 text-sm">{`Gledate ${photos.length} slik`}</p>
                  </div>
-                 <button
-                   onClick={handleDownloadAll}
-                   disabled={isDownloading || photos.length === 0}
-                   className="px-6 py-3 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 transition shadow-sm disabled:opacity-50 flex items-center gap-2"
-                 >
-                   {isDownloading ? (
-                     <div className="flex items-center gap-2">
-                       <Loader2 className="w-5 h-5 animate-spin" />
-                       <span className="text-sm">{downloadProgress}</span>
-                     </div>
-                   ) : <Download className="w-5 h-5" />}
-                   Prenesi vse (ZIP)
-                 </button>
+                 <div className="flex flex-wrap items-center gap-3">
+                   {photos.filter(f => !isVideo(f)).length > 0 && (
+                     <button
+                       onClick={handleDownloadPhotos}
+                       disabled={isDownloading}
+                       className="px-6 py-3 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 transition shadow-sm disabled:opacity-50 flex items-center gap-2"
+                     >
+                       {isDownloading ? (
+                         <div className="flex items-center gap-2">
+                           <Loader2 className="w-5 h-5 animate-spin" />
+                           <span className="text-sm">{downloadProgress}</span>
+                         </div>
+                       ) : <Download className="w-5 h-5" />}
+                       📸 Prenesi fotografije ({photos.filter(f => !isVideo(f)).length})
+                     </button>
+                   )}
+                   {photos.filter(f => isVideo(f)).length > 0 && (
+                     <button
+                       onClick={handleDownloadVideos}
+                       disabled={isDownloading}
+                       className="px-6 py-3 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 transition shadow-sm disabled:opacity-50 flex items-center gap-2"
+                     >
+                       {isDownloading ? (
+                         <div className="flex items-center gap-2">
+                           <Loader2 className="w-5 h-5 animate-spin" />
+                           <span className="text-sm">{downloadProgress}</span>
+                         </div>
+                       ) : <Download className="w-5 h-5" />}
+                       🎥 Prenesi videe ({photos.filter(f => isVideo(f)).length})
+                     </button>
+                   )}
+                 </div>
                </div>
                
                {downloadError && (
