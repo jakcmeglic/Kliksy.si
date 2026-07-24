@@ -445,31 +445,68 @@ export default function DashboardHr() {
     }
   };
 
+  const getFileSize = async (url: string) => {
+    try {
+      const response = await fetch(url, { method: 'HEAD', mode: 'cors' });
+      const size = response.headers.get('content-length');
+      return size ? parseInt(size) : 50 * 1024 * 1024; // default 50MB if unknown
+    } catch {
+      return 50 * 1024 * 1024; // default 50MB on error
+    }
+  };
+
+  const MAX_BATCH_SIZE = 600 * 1024 * 1024; // 600MB target
+
+  const buildVideoBatches = async (videoFiles: any[]) => {
+    const batches = [];
+    let currentBatch = [];
+    let currentSize = 0;
+
+    for (const video of videoFiles) {
+      const url = video.url || video.downloadURL || video.imageUrl;
+      const fileSize = await getFileSize(url);
+
+      if (currentSize + fileSize > MAX_BATCH_SIZE && currentBatch.length > 0) {
+        batches.push(currentBatch);
+        currentBatch = [video];
+        currentSize = fileSize;
+      } else {
+        currentBatch.push(video);
+        currentSize += fileSize;
+      }
+    }
+
+    if (currentBatch.length > 0) {
+      batches.push(currentBatch);
+    }
+
+    return batches;
+  };
+
   const handleDownloadVideos = async () => {
     const videoFiles = photos.filter(f => isVideo(f));
     if (videoFiles.length === 0) return;
 
     setIsDownloading(true);
     setDownloadError('');
+    setDownloadProgress('Sprawdzanie rozmiarów wideo...');
+
     try {
       const JSZip = (await import('jszip')).default;
       const { saveAs } = await import('file-saver');
       
-      const VIDEO_BATCH_SIZE = 10;
-      const batches = [];
-      for (let i = 0; i < videoFiles.length; i += VIDEO_BATCH_SIZE) {
-        batches.push(videoFiles.slice(i, i + VIDEO_BATCH_SIZE));
-      }
+      const batches = await buildVideoBatches(videoFiles);
       
-      alert(`Videov za prenos: ${videoFiles.length}. Prenos bo razdeljen v ${batches.length} ZIP datotekah.`);
+      alert(`Wideo do pobrania: ${videoFiles.length}. Pobieranie zostanie podzielone na ${batches.length} plików ZIP (500-700MB każdy).`);
       
       let totalAdded = 0;
+      let globalIndex = 0;
       
       for (let b = 0; b < batches.length; b++) {
         const zip = new JSZip();
         const batch = batches[b];
         
-        setDownloadProgress(`Pripravljam ZIP videov ${b + 1}/${batches.length}...`);
+        setDownloadProgress(`Przygotowywanie pliku ZIP z wideo ${b + 1}/${batches.length}...`);
         
         for (let i = 0; i < batch.length; i++) {
           try {
@@ -481,13 +518,15 @@ export default function DashboardHr() {
             const blob = await response.blob();
             
             if (blob.size > 0) {
-              zip.file(`video-${(b * VIDEO_BATCH_SIZE) + i + 1}.mp4`, blob);
+              zip.file(`video-${globalIndex + 1}.mp4`, blob);
               totalAdded++;
+              globalIndex++;
             }
           } catch (err) {
             console.error('Video failed:', err);
+            globalIndex++;
           }
-          setDownloadProgress(`Pripravljam ZIP videov ${b + 1}/${batches.length}: ${i + 1}/${batch.length}...`);
+          setDownloadProgress(`Przygotowywanie pliku ZIP z wideo ${b + 1}/${batches.length}: ${i + 1}/${batch.length} wideo...`);
         }
         
         const zipBlob = await zip.generateAsync({ type: 'blob' });
@@ -501,11 +540,11 @@ export default function DashboardHr() {
       setDownloadProgress('');
       
       if (totalAdded === 0) {
-        alert('Noben video ni bil dodan v ZIP. Preverite konzolo za napake.');
+        alert('Żadne wideo nie zostało dodane do ZIP. Sprawdź konsolę pod kątem błędów.');
       }
     } catch (err: any) {
       console.error('ZIP error:', err);
-      alert('Napaka pri prenosu: ' + err.message);
+      alert('Błąd podczas pobierania: ' + err.message);
     } finally {
       setIsDownloading(false);
     }
