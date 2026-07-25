@@ -6,7 +6,7 @@ function fix(file) {
   // Fix sidebar so it's sticky on desktop and flows on mobile
   content = content.replace(
     /<aside className="w-full md:w-64 bg-white border-r border-gray-100 flex flex-col shadow-sm z-10">/g,
-    `<aside className="w-full md:w-64 md:h-screen md:sticky md:top-0 bg-white border-r border-gray-100 flex flex-col shadow-sm z-10 overflow-y-auto">`
+    `<aside className="w-full md:w-64 md:h-screen md:sticky md:top-0 bg-white border-r border-gray-100 flex flex-col shadow-sm z-10 md:overflow-y-auto">`
   );
 
   // Fix main so it doesn't have its own scroll area

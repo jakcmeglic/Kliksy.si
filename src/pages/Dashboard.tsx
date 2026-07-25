@@ -552,7 +552,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-[#FDFCFB] flex flex-col md:flex-row font-sans text-gray-900">
       {/* Sidebar */}
-      <aside className="w-full md:w-64 bg-white border-r border-gray-100 flex flex-col shadow-sm z-10">
+      <aside className="w-full md:w-64 md:h-screen md:sticky md:top-0 bg-white border-r border-gray-100 flex flex-col shadow-sm z-10 md:overflow-y-auto">
         <div className="p-6 border-b border-gray-100">
           <Link to="/" className="font-bold text-2xl tracking-tight text-gray-900">
             Kliksy<span className="text-indigo-600">.</span>
@@ -676,7 +676,7 @@ export default function Dashboard() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 max-h-screen overflow-y-auto p-4 md:p-8">
+      <main className="flex-1 p-4 md:p-8 min-w-0">
         <div className="max-w-5xl mx-auto">
           {event.paymentStatus !== 'paid' && (
             <div className="mb-8 bg-indigo-50 border border-indigo-100 rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-sm">
