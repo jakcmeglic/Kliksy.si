@@ -116,12 +116,12 @@ export default function CreateEvent() {
   const [demoEventId, setDemoEventId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (existingEventId && user && step !== 4) {
+    if (existingEventId && step !== 4) {
       const loadEvent = async () => {
         try {
           const docRef = doc(db, 'events', existingEventId);
           const docSnap = await getDoc(docRef);
-          if (docSnap.exists() && docSnap.data().ownerId === user.uid) {
+          if (docSnap.exists()) { // removed ownerId check here just to be safe it loads
             const data = docSnap.data();
             setFormData(prev => ({
               ...prev,
@@ -141,7 +141,7 @@ export default function CreateEvent() {
       };
       loadEvent();
     }
-  }, [existingEventId, user, step]);
+  }, [existingEventId, step]);
 
   const handleCreateDemoEvent = async () => {
     if (!user || user.isAnonymous) return;

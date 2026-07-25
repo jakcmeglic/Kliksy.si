@@ -553,7 +553,7 @@ export default function DashboardHr() {
   return (
     <div className="min-h-screen bg-[#FDFCFB] flex flex-col md:flex-row font-sans text-gray-900">
       {/* Sidebar */}
-      <aside className="w-full md:w-64 md:h-screen md:sticky md:top-0 bg-white border-r border-gray-100 flex flex-col shadow-sm z-10 overflow-y-auto">
+      <aside className="w-full md:w-64 bg-white border-r border-gray-100 flex flex-col shadow-sm z-10">
         <div className="p-6 border-b border-gray-100">
           <Link to="/" className="font-bold text-2xl tracking-tight text-gray-900">
             Kliksy<span className="text-indigo-600">.</span>
@@ -607,8 +607,11 @@ export default function DashboardHr() {
             )}
           </div>
           
-          <div className="flex gap-2">
-            <button onClick={() => window.open(`/${event.id}`, '_blank')} className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition">
+          <div className="flex flex-col gap-2">
+            <button onClick={() => navigate('/create')} className="w-full py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition">
+              <Plus className="w-4 h-4" /> Nowe wydarzenie
+            </button>
+            <button onClick={() => window.open(`/event/${event.id}`, '_blank')} className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition">
               <ExternalLink className="w-4 h-4" /> Podgląd
             </button>
           </div>
@@ -674,7 +677,7 @@ export default function DashboardHr() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-4 md:p-8 min-w-0">
+      <main className="flex-1 max-h-screen overflow-y-auto p-4 md:p-8">
         <div className="max-w-5xl mx-auto">
           {event.paymentStatus !== 'paid' && (
             <div className="mb-8 bg-indigo-50 border border-indigo-100 rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-sm">
