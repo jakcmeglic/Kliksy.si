@@ -40,7 +40,7 @@ export const SmartImage = ({ src, alt, className, ...props }: any) => {
         const response = await fetch(src);
         const blob = await response.blob();
         const heic2anyModule = await import('heic2any');
-        const heic2any = heic2anyModule.default || heic2anyModule;
+        const heic2any = (heic2anyModule.default || heic2anyModule) as any;
         const converted = await heic2any({
           blob,
           toType: 'image/jpeg',

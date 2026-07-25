@@ -130,7 +130,7 @@ export default function CreateEventHr() {
               partner1: data.partner1 || '',
               partner2: data.partner2 || '',
               date: data.date || '',
-              plan: data.plan || initialPlan,
+              plan: (data.plan === 'osnovni' ? 'basic' : data.plan === 'napredni' ? 'plus' : data.plan) || initialPlan,
               isCompanyInvoice: data.isCompanyInvoice || false,
             }));
             setStep(4);
@@ -300,7 +300,7 @@ export default function CreateEventHr() {
     setIsUpdatingPrice(false);
   };
 
-  const originalPrice = plans[formData.plan].price;
+  const originalPrice = plans[(formData.plan as "basic"|"plus"|"premium") || "basic"]?.price || 0;
   
   let upsellPrice = 0;
   // Always use self_print logic since home_delivery is removed
@@ -1152,7 +1152,7 @@ export default function CreateEventHr() {
 
                 <div className="bg-gray-50 p-6 rounded-2xl mb-8">
                   <div className="flex justify-between items-center mb-4 pb-4 border-b border-gray-200">
-                    <span className="font-medium">Paket {plans[formData.plan].name}</span>
+                    <span className="font-medium">Paket {plans[(formData.plan as "basic"|"plus"|"premium") || "basic"]?.name || "Basic"}</span>
                     <span className="font-medium">{originalPrice}€</span>
                   </div>
                   

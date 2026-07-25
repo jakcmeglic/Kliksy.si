@@ -553,7 +553,7 @@ export default function DashboardHr() {
   return (
     <div className="min-h-screen bg-[#FDFCFB] flex flex-col md:flex-row font-sans text-gray-900">
       {/* Sidebar */}
-      <aside className="w-full md:w-64 bg-white border-r border-gray-100 flex flex-col shadow-sm z-10">
+      <aside className="w-full md:w-64 md:h-screen md:sticky md:top-0 bg-white border-r border-gray-100 flex flex-col shadow-sm z-10 overflow-y-auto">
         <div className="p-6 border-b border-gray-100">
           <Link to="/" className="font-bold text-2xl tracking-tight text-gray-900">
             Kliksy<span className="text-indigo-600">.</span>
@@ -599,7 +599,7 @@ export default function DashboardHr() {
                 </span>
                 
                 {event.paymentStatus === 'paid' && event.plan !== 'premium' && (
-                  <button onClick={() => navigate('/upgrade')} className="mt-2 text-sm text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1">
+                  <button onClick={() => { if (event.paymentStatus !== 'paid') { navigate(`/create?eventId=${event.id}`); } else { setIsUpgradeModalOpen(true); } }} className="mt-2 text-sm text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1">
                     Nadogradi paket <ChevronRight className="w-4 h-4" />
                   </button>
                 )}
@@ -650,7 +650,7 @@ export default function DashboardHr() {
             {event.paymentStatus !== 'paid' && (
               <li>
                 <button
-                  onClick={() => navigate('/upgrade')}
+                  onClick={() => navigate(`/create?eventId=${event.id}`)}
                   className="w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:from-indigo-600 hover:to-purple-600 transition shadow-sm mt-4"
                 >
                   <span className="flex items-center gap-3">
@@ -665,7 +665,7 @@ export default function DashboardHr() {
         
         <div className="mt-auto p-6">
           <button
-            onClick={() => auth.signOut()}
+            onClick={() => signOut()}
             className="flex items-center gap-2 text-sm text-gray-500 hover:text-red-600 transition"
           >
             <LogOut className="w-4 h-4" /> Odjava
@@ -674,7 +674,7 @@ export default function DashboardHr() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 max-h-screen overflow-y-auto p-4 md:p-8">
+      <main className="flex-1 p-4 md:p-8 min-w-0">
         <div className="max-w-5xl mx-auto">
           {event.paymentStatus !== 'paid' && (
             <div className="mb-8 bg-indigo-50 border border-indigo-100 rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-sm">
@@ -685,7 +685,7 @@ export default function DashboardHr() {
                 </p>
               </div>
               <button 
-                onClick={() => navigate(`/checkout/${event.id}`)} 
+                onClick={() => navigate(`/create?eventId=${event.id}`)}
                 className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition-colors whitespace-nowrap shadow-sm"
               >
                 Nadogradi sada
@@ -876,7 +876,7 @@ export default function DashboardHr() {
                        onClick={(e) => {
                          e.stopPropagation();
                          if(window.confirm('Ali ste prepričani, da želite izbrisati to slikao?')) {
-                           deletePhoto(photo);
+                           handleDeleteImage(photo.id);
                          }
                        }}
                        className="absolute top-2 right-2 p-2 bg-red-500/80 hover:bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all backdrop-blur-md"
