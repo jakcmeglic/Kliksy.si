@@ -125,6 +125,7 @@ export default function Landing() {
             <a href="#kako-deluje" className="hover:text-gray-900 transition-colors">Kako deluje</a>
             <a href="#prednosti-dodatne" className="hover:text-gray-900 transition-colors">Zakaj to potrebuješ</a>
             <a href="#paketi" className="hover:text-gray-900 transition-colors">Cenik</a>
+            <Link to="/blog" className="hover:text-gray-900 transition-colors">Blog</Link>
             <a href="#mnenja" className="hover:text-gray-900 transition-colors">Mnenja</a>
             <a href="#faq" className="hover:text-gray-900 transition-colors">FAQ</a>
           </div>
@@ -164,6 +165,7 @@ export default function Landing() {
                 <a href="#kako-deluje" onClick={() => setIsMobileMenuOpen(false)} className="py-2 hover:text-indigo-600">Kako deluje</a>
                 <a href="#prednosti-dodatne" onClick={() => setIsMobileMenuOpen(false)} className="py-2 hover:text-indigo-600">Zakaj to potrebuješ</a>
                 <a href="#paketi" onClick={() => setIsMobileMenuOpen(false)} className="py-2 hover:text-indigo-600">Cenik</a>
+                <Link to="/blog" onClick={() => setIsMobileMenuOpen(false)} className="py-2 hover:text-indigo-600">Blog</Link>
                 <a href="#mnenja" onClick={() => setIsMobileMenuOpen(false)} className="py-2 hover:text-indigo-600">Mnenja</a>
                 <a href="#faq" onClick={() => setIsMobileMenuOpen(false)} className="py-2 hover:text-indigo-600">FAQ</a>
                 {!user || user.isAnonymous ? (

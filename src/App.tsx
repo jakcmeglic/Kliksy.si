@@ -25,6 +25,8 @@ import PrivacyPl from './pages/PrivacyPl';
 import Cookies from './pages/Cookies';
 import CookiesHr from './pages/CookiesHr';
 import CookiesPl from './pages/CookiesPl';
+import BlogList from './pages/BlogList';
+import BlogArticle from './pages/BlogArticle';
 import { AuthProvider } from './components/AuthProvider';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
@@ -41,6 +43,8 @@ export default function App() {
             <Route path="/create" element={isPl ? <CreateEventPl /> : isHr ? <CreateEventHr /> : <CreateEvent />} />
             <Route path="/event/:id" element={isPl ? <GuestViewPl /> : isHr ? <GuestViewHr /> : <GuestView />} />
             <Route path="/dashboard" element={isPl ? <DashboardPl /> : isHr ? <DashboardHr /> : <Dashboard />} />
+            <Route path="/blog" element={<BlogList />} />
+            <Route path="/blog/photo-booth-najem-cena" element={<BlogArticle />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/login" element={isPl ? <LoginPl /> : isHr ? <LoginHr /> : <Login />} />
             <Route path="/email-test" element={<EmailTest />} />
