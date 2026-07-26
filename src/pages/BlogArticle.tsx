@@ -21,7 +21,7 @@ export default function BlogArticle() {
     "@type": "FAQPage",
     "mainEntity": [
       {"@type": "Question", "name": "Koliko stane najem photo bootha za poroko?", "acceptedAnswer": {"@type": "Answer", "text": "Najem photo bootha za poroko v Sloveniji stane med €300 in €800 za en večer."}},
-      {"@type": "Question", "name": "Kaj je cenejša alternativa photo boothu?", "acceptedAnswer": {"@type": "Answer", "text": "Kliksy je digitalna galerija za poroke ki stane od €39. Gostje skenirajo QR kodo in dodajajo fotografije v skupno galerijo v realnem času."}},
+      {"@type": "Question", "name": "Kaj je cenejša alternativa photo boothu?", "acceptedAnswer": {"@type": "Answer", "text": "Kliksy je digitalna galerija za poroke, ki stane od €39. Gostje skenirajo QR kodo in dodajajo fotografije v skupno galerijo v realnem času."}},
       {"@type": "Question", "name": "Kakšna je razlika med foto boothom in Kliksy?", "acceptedAnswer": {"@type": "Answer", "text": "Photo booth zajame fotografije samo iz enega kota z vrstami čakanja. Kliksy zbere fotografije od vseh gostov iz vseh kotov celotne poroke."}},
       {"@type": "Question", "name": "Koliko stane foto booth za poroko 2026?", "acceptedAnswer": {"@type": "Answer", "text": "Foto booth cena 2026 za poroko se giblje med €300 in €800 za en večer, odvisno od vrste in dodatkov."}}
     ]
@@ -31,7 +31,7 @@ export default function BlogArticle() {
     <div className="min-h-screen bg-[#FDFCFB] font-sans text-gray-900 overflow-x-hidden">
       <Helmet>
         <title>Photo booth najem cena 2026 — Koliko stane in kaj je boljša alternativa? | Kliksy</title>
-        <meta name="description" content="Koliko stane najem photo bootha za poroko v Sloveniji? Cene od €300 do €800. Foto booth, photo booth cena 2026, foto booth cena — odkrijte zakaj je Kliksy 10x cenejša alternativa." />
+        <meta name="description" content="Koliko stane najem photo bootha za poroko v Sloveniji? Cene od €300 do €800. Foto booth, photo booth cena 2026, foto booth cena — odkrijte, zakaj je Kliksy 10x cenejša alternativa." />
         <meta name="keywords" content="photo booth najem cena, photo booth cena, foto booth, foto both, foto booth cena, photo booth cena 2026, foto booth cena 2026, photo booth poroka, najem photo bootha, photo booth alternativa, kliksy, digitalna galerija poroka, qr koda za poroko" />
         <link rel="canonical" href="https://kliksy.si/blog/photo-booth-najem-cena" />
         <meta property="og:title" content="Photo booth najem cena 2026 — Koliko stane in kaj je boljša alternativa?" />
@@ -87,7 +87,7 @@ export default function BlogArticle() {
 
           {/* INTRO BOX */}
           <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-6 md:p-8 mb-12 text-gray-900 font-medium text-lg leading-relaxed shadow-sm">
-            Najem photo bootha za poroko v Sloveniji stane med €300 in €800 za en večer. Ampak ali res dobite vrednost za denar? V tem članku razkrijemo dejanske cene photo bootha, kaj foto booth naredi dobro in kaj ne — ter predstavimo cenejšo alternativo ki zajame celotno poroko, ne samo en kotiček.
+            Najem photo bootha za poroko v Sloveniji stane med €300 in €800 za en večer. Ampak ali res dobite vrednost za denar? V tem članku razkrijemo dejanske cene photo bootha, kaj foto booth naredi dobro in kaj ne — ter predstavimo cenejšo alternativo, ki zajame celotno poroko, ne samo en kotiček.
           </div>
 
           {/* CONTENT */}
@@ -96,7 +96,7 @@ export default function BlogArticle() {
               Koliko stane najem photo bootha za poroko?
             </h2>
             <p className="mb-6">
-              Cena najema photo bootha v Sloveniji je odvisna od več dejavnikov: vrste photo bootha, trajanja najema, vključenih rekvizitov in ali je vključen operater.
+              Cena najema photo bootha v Sloveniji je odvisna od več dejavnikov: vrste photo bootha, trajanja najema, vključenih rekvizitov in od tega, ali je vključen operater.
             </p>
 
             <div className="overflow-x-auto mb-8">
@@ -108,7 +108,7 @@ export default function BlogArticle() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  <tr><td className="p-4">Osnovni odprti Photo booth</td><td className="p-4 font-semibold text-gray-900">€300 – €400</td></tr>
+                  <tr><td className="p-4">Osnovni odprti photo booth</td><td className="p-4 font-semibold text-gray-900">€300 – €400</td></tr>
                   <tr><td className="p-4 bg-gray-50/50">Zaprti photo booth</td><td className="p-4 font-semibold text-gray-900 bg-gray-50/50">€400 – €550</td></tr>
                   <tr><td className="p-4">Ogledalni photo booth</td><td className="p-4 font-semibold text-gray-900">€500 – €700</td></tr>
                   <tr><td className="p-4 bg-gray-50/50">360° video booth</td><td className="p-4 font-semibold text-gray-900 bg-gray-50/50">€600 – €800</td></tr>
@@ -158,8 +158,8 @@ export default function BlogArticle() {
                 </h3>
                 <ul className="space-y-3 text-red-900">
                   <li className="flex gap-2"><span>✗</span> Zajame samo 1 kotiček</li>
-                  <li className="flex gap-2"><span>✗</span> Vrste 5–15 minut čakanja</li>
-                  <li className="flex gap-2"><span>✗</span> Le 30–40% gostov ga obišče</li>
+                  <li className="flex gap-2"><span>✗</span> 5–15 minut čakanja v vrsti</li>
+                  <li className="flex gap-2"><span>✗</span> Le 30–40 % gostov ga obišče</li>
                   <li className="flex gap-2"><span>✗</span> Ne ujame spontanih trenutkov</li>
                   <li className="flex gap-2"><span>✗</span> Cena €300–€800 za en večer</li>
                 </ul>
@@ -172,7 +172,7 @@ export default function BlogArticle() {
             <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 md:p-8 mb-8">
               <h3 className="font-bold text-gray-900 text-xl mb-3">📸 Scenarij: Plačali ste €500 za photo booth</h3>
               <p className="mb-0">
-                Zjutraj po poroki odprete mapo s fotografijami. Dobite 150 fotografij — vsi pred isto ozadju, vsi z istimi rekviziti.
+                Zjutraj po poroki odprete mapo s fotografijami. Dobite 150 fotografij — vse pred istim ozadjem, vse z istimi rekviziti.
               </p>
             </div>
             
@@ -188,7 +188,7 @@ export default function BlogArticle() {
             <div className="bg-orange-50 border border-orange-200 rounded-2xl p-6 mb-12">
               <p className="text-orange-900 font-medium m-0 flex items-start gap-3">
                 <span className="text-2xl leading-none">⚠️</span> 
-                <span>Na poroki z 80 gosti bo photo booth obiskalo le 30–40% gostov. Preostali 60–70% bo fotografiralo s svojimi telefoni — te fotografije pa boste redko kdaj videli.</span>
+                <span>Na poroki z 80 gosti bo photo booth obiskalo le 30–40 % gostov. Preostalih 60–70 % bo fotografiralo s svojimi telefoni — te fotografije pa boste redko kdaj videli.</span>
               </p>
             </div>
 
@@ -196,7 +196,7 @@ export default function BlogArticle() {
               Kliksy — boljša alternativa photo boothu za €39
             </h2>
             <p className="mb-4">
-              Kliksy je slovenska digitalna rešitev ki reši točno te probleme photo bootha — in stane od €39 namesto €400–€800.
+              Kliksy je slovenska digitalna rešitev, ki reši točno te probleme photo bootha — in stane od €39 namesto €400–€800.
             </p>
             <p className="mb-10">
               Deluje preprosto: na vsako mizo postavite majhno kartico s QR kodo. Gostje jo skenirajo s telefonom — brez aplikacije, brez registracije — in dodajo fotografije v skupno galerijo v realnem času.
@@ -253,7 +253,7 @@ export default function BlogArticle() {
                     <td className="p-4 font-bold text-green-600 bg-gray-50/50">✓ Vsi koti</td>
                   </tr>
                   <tr>
-                    <td className="p-4 font-medium text-gray-900">Delež gostov ki sodeluje</td>
+                    <td className="p-4 font-medium text-gray-900">Delež gostov, ki sodelujejo</td>
                     <td className="p-4">30–40%</td>
                     <td className="p-4 font-bold">80–100%</td>
                   </tr>
@@ -283,16 +283,16 @@ export default function BlogArticle() {
 
             <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mt-12 mb-6">Zakaj ni vrst pri Kliksy</h2>
             <p className="mb-4">
-              Pri photo boothu nastane vrsta ker je en aparat in veliko gostov. Na poroki z 80 gosti to pomeni 5–15 minut čakanja.
+              Pri photo boothu nastane vrsta, ker je en aparat in veliko gostov. Na poroki z 80 gosti to pomeni 5–15 minut čakanja.
             </p>
             <p className="mb-10">
-              Pri Kliksy vsak gost fotografira s svojim telefonom — 150 gostov = 150 photo boothov ki delujejo hkrati, povsod, ves čas.
+              Pri Kliksy vsak gost fotografira s svojim telefonom — 150 gostov = 150 photo boothov, ki delujejo hkrati, povsod, ves čas.
             </p>
 
             {/* CTA 3 */}
             <div className="bg-white border border-gray-200 shadow-sm rounded-2xl p-8 text-center my-12">
               <a href="https://kliksy.si" className="inline-block bg-[#5B45FF] text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-indigo-700 transition shadow-md w-full sm:w-auto">
-                🚀 Začni z Kliksy brezplačno
+                🚀 Začni s Kliksy brezplačno
               </a>
               <p className="text-gray-500 text-sm mt-4 font-medium">Setup traja 1 minuto · Ni potrebna kreditna kartica</p>
             </div>
@@ -337,7 +337,7 @@ export default function BlogArticle() {
 
             {/* SAVINGS BOX */}
             <div className="bg-gray-900 text-white rounded-3xl p-8 md:p-10 mb-12 shadow-xl">
-              <h3 className="text-2xl font-bold mb-6 text-center">💰 Koliko prihranite z Kliksy namesto photo bootha?</h3>
+              <h3 className="text-2xl font-bold mb-6 text-center">💰 Koliko prihranite s Kliksy namesto photo bootha?</h3>
               <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12 mb-8 text-xl font-bold">
                 <div className="text-center">
                   <span className="block text-gray-400 text-sm mb-2 uppercase tracking-wider">Photo booth</span>
@@ -369,7 +369,7 @@ export default function BlogArticle() {
                 <p className="text-gray-700 m-0">A: Ne. Gostje samo skenirajo QR kodo — brez aplikacije, brez registracije. Deluje na vsakem telefonu.</p>
               </div>
               <div className="border-b border-gray-200 pb-6">
-                <h3 className="font-bold text-lg text-gray-900 mb-2">Q: Koliko fotografij dobim z Kliksy?</h3>
+                <h3 className="font-bold text-lg text-gray-900 mb-2">Q: Koliko fotografij dobim s Kliksy?</h3>
                 <p className="text-gray-700 m-0">A: Povprečna poroka z 80–100 gosti ustvari 200–400 fotografij. Nekateri pari poročajo o 500+ fotografijah.</p>
               </div>
               <div className="border-b border-gray-200 pb-6">
@@ -378,7 +378,7 @@ export default function BlogArticle() {
               </div>
               <div className="border-b border-gray-200 pb-6">
                 <h3 className="font-bold text-lg text-gray-900 mb-2">Q: Koliko stane foto booth cena 2026?</h3>
-                <p className="text-gray-700 m-0">A: Foto booth cena 2026 se giblje med €300 in €800 za en večer. Kliksy je dostopen alternativa od €39.</p>
+                <p className="text-gray-700 m-0">A: Foto booth cena 2026 se giblje med €300 in €800 za en večer. Kliksy je dostopna alternativa od €39.</p>
               </div>
             </div>
 
@@ -391,7 +391,7 @@ export default function BlogArticle() {
             Preizkusite Kliksy brezplačno
           </h2>
           <p className="text-gray-600 text-lg mb-8 max-w-xl mx-auto">
-            Ustvarite brezplačen demo dogodek in preizkusite kako deluje — brez kreditne kartice, brez obveznosti.
+            Ustvarite brezplačen demo dogodek in preizkusite, kako deluje — brez kreditne kartice, brez obveznosti.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <a href="https://kliksy.si" className="w-full sm:w-auto bg-[#5B45FF] text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-indigo-700 transition shadow-md">
