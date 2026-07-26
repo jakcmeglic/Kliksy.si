@@ -1,3 +1,4 @@
+import { Helmet } from 'react-helmet-async';
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -87,6 +88,21 @@ export default function LandingHr() {
   }, []);
 
   return (
+    <>
+
+      <Helmet>
+        <title>Kliksy — QR kod za vjenčanje | Digitalna foto galerija za goste</title>
+        <meta name="description" content="Postavite QR kod na stolove — gosti skeniraju i sve slike idu u zajedničku galeriju u stvarnom vremenu. Savršen dodatak vjenčanom fotografu. Bez aplikacije. Od €39." />
+        <meta name="keywords" content="qr kod za vjenčanje, digitalna galerija vjenčanje, foto galerija za vjenčanje, vjenčani fotograf, fotografiranje vjenčanja, skupna galerija gostiju, qr kod za slike" />
+        <meta property="og:title" content="Kliksy — QR kod za vjenčanje | Digitalna foto galerija za goste" />
+        <meta property="og:description" content="Postavite QR kod na stolove — gosti skeniraju i sve slike idu u zajedničku galeriju u stvarnom vremenu. Savršen dodatak vjenčanom fotografu. Bez aplikacije. Od €39." />
+        <meta property="og:url" content="https://hr.getkliksy.com" />
+        <meta property="og:type" content="website" />
+        <meta property="og:image" content="https://hr.getkliksy.com/og-image.jpg" />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href="https://hr.getkliksy.com" />
+      </Helmet>
+  
     <div className="min-h-screen bg-[#FDFCFB] selection:bg-indigo-100 selection:text-indigo-900 font-sans text-gray-900 overflow-x-hidden">
       {/* Navigation */}
       <nav className="fixed w-full top-0 z-50 bg-[#FDFCFB]/90 backdrop-blur-md border-b border-gray-100">
@@ -105,7 +121,7 @@ export default function LandingHr() {
             {user && !user.isAnonymous ? (
               <Link to="/dashboard" className="flex shrink-0 items-center justify-center w-10 h-10 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100 hover:ring-2 hover:ring-indigo-500 hover:ring-offset-2 transition-all">
                 {user.photoURL ? (
-                  <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover rounded-full" referrerPolicy="no-referrer" />
+                  <img src={user.photoURL} alt="Profile - qr kod za vjenčanje kliksy digitalna galerija vjenčani fotograf dodatak" className="w-full h-full object-cover rounded-full" referrerPolicy="no-referrer" />
                 ) : (
                   <UserIcon className="w-5 h-5 mx-auto" />
                 )}
@@ -200,28 +216,28 @@ export default function LandingHr() {
               <img 
                 src="https://i.postimg.cc/7hvnkh7X/hf-20260424-062805-2a04f02c-aa0e-4117-8b31-73864659076b.webp" 
                 className="absolute left-0 top-[2%] w-[55%] aspect-[4/3] object-cover rounded shadow-md border-4 sm:border-[6px] border-white transform -rotate-6 z-10 hover:scale-105 hover:z-50 transition-all duration-300" 
-                alt="Zabava" 
+                alt="Zabava - qr kod za vjenčanje kliksy digitalna galerija vjenčani fotograf dodatak" 
               />
               
               {/* Top-right: QR on table (2) */}
               <img 
                 src="https://i.postimg.cc/J0bc48cg/hf-20260424-062820-195d1677-9456-4936-a48d-ba136c48a79a.webp" 
                 className="absolute right-0 top-[8%] w-[52%] aspect-[4/3] object-cover rounded shadow-lg border-4 sm:border-[6px] border-white transform rotate-6 z-20 hover:scale-105 hover:z-50 transition-all duration-300" 
-                alt="QR kod na stolu" 
+                alt="QR kod na stolu - qr kod za vjenčanje kliksy digitalna galerija vjenčani fotograf dodatak" 
               />
               
               {/* Bottom-right: Photobooth (4) */}
               <img 
                 src="https://i.postimg.cc/ZnrFKmFX/hf-20260429-125252-5fda138d-9fbe-41ec-bb70-16fb08cf8414.webp" 
                 className="absolute right-[5%] bottom-[5%] w-[58%] aspect-[4/3] object-cover rounded shadow-xl border-4 sm:border-[6px] border-white transform -rotate-3 z-30 hover:scale-105 hover:z-50 transition-all duration-300" 
-                alt="Photobooth rekviziti" 
+                alt="Photobooth rekviziti - qr kod za vjenčanje kliksy digitalna galerija vjenčani fotograf dodatak" 
               />
               
               {/* Bottom-left: Flyer (3) */}
               <img 
                 src="https://i.postimg.cc/prDYXvY6/hf-20260424-062820-a905e0f9-16e9-4c55-be91-4cde92a15ea0.webp" 
                 className="absolute left-[5%] bottom-0 w-[45%] aspect-[3/4] object-cover rounded shadow-2xl border-4 sm:border-[6px] border-white transform rotate-[-8deg] z-40 hover:scale-105 hover:z-50 transition-all duration-300" 
-                alt="Kliksy letak" 
+                alt="Kliksy letak - qr kod za vjenčanje kliksy digitalna galerija vjenčani fotograf dodatak" 
               />
             </div>
 
@@ -241,7 +257,7 @@ export default function LandingHr() {
              <div className="relative w-full max-w-[600px] right-0 lg:-mr-16">
                 <div className="rounded-[2.5rem] overflow-hidden shadow-2xl relative border-[6px] border-white" style={{boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'}}>
                    {LANDING_IMAGES.heroPhoneMockup ? (
-                     <img src={LANDING_IMAGES.heroPhoneMockup} alt="Wedding group selfie" className="w-full h-auto object-cover aspect-[4/3] relative z-10" />
+                     <img src={LANDING_IMAGES.heroPhoneMockup} alt="Wedding group selfie - qr kod za vjenčanje kliksy digitalna galerija vjenčani fotograf dodatak" className="w-full h-auto object-cover aspect-[4/3] relative z-10" />
                    ) : (
                      <div className="w-full aspect-[4/3] bg-gray-200"></div>
                    )}
@@ -388,7 +404,7 @@ export default function LandingHr() {
                </p>
                <div className="mt-auto w-full max-w-[280px] bg-[#F8F9FA] rounded-[2rem] overflow-hidden shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] mx-auto relative border-[8px] border-white">
                  {LANDING_IMAGES.printQrCode ? (
-                   <img src={LANDING_IMAGES.printQrCode} alt="Natisnite kodo" className="w-full h-[360px] object-cover" />
+                   <img src={LANDING_IMAGES.printQrCode} alt="Natisnite kodo - qr kod za vjenčanje kliksy digitalna galerija vjenčani fotograf dodatak" className="w-full h-[360px] object-cover" />
                  ) : (
                    <div className="w-full h-[360px] bg-gray-200"></div>
                  )}
@@ -410,7 +426,7 @@ export default function LandingHr() {
                </p>
                <div className="mt-auto w-full max-w-[280px] bg-white rounded-[2.5rem] overflow-hidden shadow-[0_20px_40px_-15px_rgba(0,0,0,0.2)] mx-auto border-[10px] border-gray-900 relative">
                  {LANDING_IMAGES.guestTakingPhoto ? (
-                   <img src={LANDING_IMAGES.guestTakingPhoto} alt="Guest taking photo" className="w-full h-[360px] object-cover" />
+                   <img src={LANDING_IMAGES.guestTakingPhoto} alt="Guest taking photo - qr kod za vjenčanje kliksy digitalna galerija vjenčani fotograf dodatak" className="w-full h-[360px] object-cover" />
                  ) : (
                    <div className="w-full h-[360px] p-6 pt-12 flex flex-col bg-white">
                     <p className="text-center font-bold text-lg mb-8">Dodaj svoju fotografiju</p>
@@ -447,7 +463,7 @@ export default function LandingHr() {
                    </div>
                  </div>
                  {LANDING_IMAGES.galleryGrid1 ? (
-                   <img src={LANDING_IMAGES.galleryGrid1} alt="Galerija grid" className="rounded-2xl w-full h-full object-cover"/>
+                   <img src={LANDING_IMAGES.galleryGrid1} alt="Galerija grid - qr kod za vjenčanje kliksy digitalna galerija vjenčani fotograf dodatak" className="rounded-2xl w-full h-full object-cover"/>
                  ) : (
                    <div className="flex-1 rounded-2xl overflow-hidden relative grid grid-cols-2 gap-2 pb-2">
                       <div className="bg-gray-100 rounded-lg overflow-hidden h-32"></div>
@@ -732,9 +748,9 @@ export default function LandingHr() {
             </Link>
           
           <div className="relative w-full flex justify-center gap-3 sm:gap-6 px-4 pb-0 -mb-8 sm:-mb-12 mt-4 z-0">
-             <img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=300" className="w-[100px] sm:w-[180px] h-[120px] sm:h-[200px] object-cover rounded-xl shadow-2xl transform rotate-[-4deg] translate-y-4" alt="Uspomene sa zabave" />
-             <img src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80&w=300" className="w-[120px] sm:w-[220px] h-[140px] sm:h-[240px] object-cover rounded-xl shadow-2xl z-10" alt="Vrhunske uspomene" />
-             <img src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=300" className="w-[100px] sm:w-[180px] h-[120px] sm:h-[200px] object-cover rounded-xl shadow-2xl transform rotate-[4deg] translate-y-4" alt="Prijatelji" />
+             <img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=300" className="w-[100px] sm:w-[180px] h-[120px] sm:h-[200px] object-cover rounded-xl shadow-2xl transform rotate-[-4deg] translate-y-4" alt="Uspomene sa zabave - qr kod za vjenčanje kliksy digitalna galerija vjenčani fotograf dodatak" />
+             <img src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80&w=300" className="w-[120px] sm:w-[220px] h-[140px] sm:h-[240px] object-cover rounded-xl shadow-2xl z-10" alt="Vrhunske uspomene - qr kod za vjenčanje kliksy digitalna galerija vjenčani fotograf dodatak" />
+             <img src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=300" className="w-[100px] sm:w-[180px] h-[120px] sm:h-[200px] object-cover rounded-xl shadow-2xl transform rotate-[4deg] translate-y-4" alt="Prijatelji - qr kod za vjenčanje kliksy digitalna galerija vjenčani fotograf dodatak" />
           </div>
         </div>
       </section>
@@ -799,5 +815,6 @@ export default function LandingHr() {
         </div>
       </footer>
     </div>
+    </>
   );
 }
