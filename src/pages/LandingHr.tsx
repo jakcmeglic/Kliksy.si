@@ -90,6 +90,12 @@ export default function LandingHr() {
   return (
     <>
 
+      <div className="sr-only" aria-hidden="true">
+        <h1>QR kod za vjenčanje — Digitalna foto galerija Kliksy</h1>
+        <h2>Bolja alternativa photo boothu</h2>
+        <h2>Savršen dodatak vjenčanom fotografu</h2>
+        <h2>QR kod za rođendan, krštenje i sve događaje</h2>
+      </div>
       <Helmet>
         <title>Kliksy — QR kod za vjenčanje | Digitalna foto galerija za goste</title>
         <meta name="description" content="Postavite QR kod na stolove — gosti skeniraju i sve slike idu u zajedničku galeriju u stvarnom vremenu. Savršen dodatak vjenčanom fotografu. Bez aplikacije. Od €39." />

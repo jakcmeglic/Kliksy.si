@@ -90,6 +90,14 @@ export default function Landing() {
   return (
     <>
 
+      <div className="sr-only" aria-hidden="true">
+        <h1>QR koda za poroko — Digitalna foto galerija Kliksy</h1>
+        <h2>Boljša alternativa photo boothu in foto boothu</h2>
+        <h2>Popoln dodatek k poročnemu fotografu</h2>
+        <h2>QR koda za rojstni dan, krst in vse dogodke</h2>
+        <h2>Digitalna galerija za poroke — brez aplikacije</h2>
+        <h2>Photo booth cena vs Kliksy — primerjava</h2>
+      </div>
       <Helmet>
         <title>Kliksy — QR koda za poroko | Digitalna foto galerija za goste</title>
         <meta name="description" content="Postavite QR kodo na mize — gostje skenirajo in vse slike gredo v skupno galerijo v realnem času. Popoln dodatek k poročnemu fotografu. Brez aplikacije. Od €39." />

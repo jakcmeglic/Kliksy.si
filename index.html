@@ -1,124 +1,143 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta name="google" content="notranslate">
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Kliksy</title>
-    <!-- Moved Google Fonts from index.css to prevent Firefox SecurityError with html-to-image -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Great+Vibes&family=Montserrat:wght@300;400;500;600;700;900&family=Caveat:wght@400;500;600;700&family=Cinzel:wght@400;600;700&family=Pacifico&family=Space+Grotesk:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" crossorigin="anonymous">
-
-    <!-- Meta Pixel Code -->
-    <script>
-      !function(f,b,e,v,n,t,s)
-      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-      n.queue=[];t=b.createElement(e);t.async=!0;
-      t.src=v;s=b.getElementsByTagName(e)[0];
-      s.parentNode.insertBefore(t,s)}(window, document,'script',
-      'https://connect.facebook.net/en_US/fbevents.js');
-      fbq('init', '1094597618947960');
-      fbq('track', 'PageView');
-    </script>
-    <!-- End Meta Pixel Code -->
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kliksy — QR koda za poroko | Digitalna foto galerija za goste</title>
   
-    <!-- Structured Data -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "Kliksy",
-      "description": "Digitalna foto galerija za poroke in dogodke z QR kodo. Popoln dodatek k poročnemu fotografu — gostje skenirajo QR kodo in vse slike gredo avtomatično v eno skupno galerijo.",
-      "url": "https://kliksy.si",
-      "applicationCategory": "Photography",
-      "operatingSystem": "Web",
-      "inLanguage": "sl",
-      "offers": {
-        "@type": "Offer",
-        "price": "39",
-        "priceCurrency": "EUR"
-      },
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": "5",
-        "reviewCount": "88"
-      }
-    }
-    </script>
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      "mainEntity": [
-        {
-          "@type": "Question",
-          "name": "Kako deluje Kliksy?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Postavite QR kodo na mize — gostje jo skenirajo in slike gredo avtomatično v skupno galerijo v realnem času. Brez aplikacije."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Ali je Kliksy zamenjava za poročnega fotografa?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Ne — Kliksy je popoln dodatek k profesionalnemu poročnemu fotografu. Poročni fotograf ujame ključne trenutke ceremonije in prvega plesa, Kliksy pa zbere spontane fotografije od vseh gostov skozi celotno večer."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Ali rabijo gostje aplikacijo?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Ne — gostje samo skenirajo QR kodo s telefonom. Ni potrebna nobena aplikacija ali registracija."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Koliko stane Kliksy?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Kliksy paketi so na voljo že od €39. Basic paket vključuje 200 fotografij, Pro paket neomejeno fotografij, Premium paket pa neomejeno fotografij in videov."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Za katere dogodke je primeren Kliksy?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Kliksy je primeren za poroke, rojstne dneve, krste, korporativne eventi in vse vrste praznований kjer želi organizator zbrati fotografije od vseh gostov."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Kako dolgo je galerija aktivna?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Odvisno od paketa. Basic paket ima galerijo aktivno 30 dni, Pro in Premium paketa pa trajno."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Kaj je razlika med Kliksy in photo boothom?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Photo booth zajame samo en kotiček večera. Kliksy zbere fotografije od VSEH gostov skozi celotno poroko — vsak kotiček, vsak spontan trenutek, vsaka miza."
-          }
-        }
-      ]
-    }
-    </script>
-</head>
-  <body>
-    <noscript><img height="1" width="1" style="display:none"
-    src="https://www.facebook.com/tr?id=1094597618947960&ev=PageView&noscript=1"
-    /></noscript>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html>
+  <meta name="description" content="Postavite QR kodo na mize — gostje skenirajo in vse slike gredo v skupno galerijo v realnem času. Boljše od photo bootha. Idealno za poroke, rojstne dneve in krste. Brez aplikacije. Od €39.">
+  <meta name="keywords" content="qr koda za poroko, qr koda za dogodke, qr koda za rojstni dan, qr koda za krst, digitalna galerija poroka, foto galerija za poroko, skupna galerija gostov, qr koda za slike, aplikacija za slike na poroki, photo booth alternativa, photo booth poroka, foto booth, foto booth cena, photo booth cena, poročni fotograf, poročni fotograf slovenija, fotografiranje poroke, poročne fotografije, slike z poroke, kako zbrati slike z poroke, digitalna galerija za dogodek, galerija za goste, wedding photo sharing, qr code wedding">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://kliksy.si/">
+  <meta property="og:title" content="Kliksy — QR koda za poroko | Digitalna foto galerija">
+  <meta property="og:description" content="Gostje skenirajo QR kodo in vse slike gredo v eno galerijo v realnem času. Boljše od photo bootha. Brez aplikacije. Od €39.">
+  <meta property="og:url" content="https://kliksy.si">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://kliksy.si/og-image.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Kliksy — QR koda za poroko">
+  <meta name="twitter:description" content="Digitalna foto galerija za poroke. Gostje skenirajo QR kodo — vse slike na enem mestu. Od €39.">
+  
+  <meta name="google" content="notranslate">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Great+Vibes&family=Montserrat:wght@300;400;500;600;700;900&family=Caveat:wght@400;500;600;700&family=Cinzel:wght@400;600;700&family=Pacifico&family=Space+Grotesk:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" crossorigin="anonymous">
 
+  <!-- Meta Pixel Code -->
+  <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '1094597618947960');
+    fbq('track', 'PageView');
+  </script>
+  <!-- End Meta Pixel Code -->
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Kliksy",
+    "description": "Digitalna foto galerija za poroke in dogodke z QR kodo. Popolna alternativa photo boothu — gostje skenirajo QR kodo in vse slike gredo avtomatično v eno skupno galerijo v realnem času. Brez aplikacije.",
+    "url": "https://kliksy.si",
+    "applicationCategory": "Photography",
+    "operatingSystem": "Web",
+    "inLanguage": "sl",
+    "offers": {
+      "@type": "Offer",
+      "price": "39",
+      "priceCurrency": "EUR"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "5",
+      "reviewCount": "88"
+    }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Kaj je QR koda za poroko?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "QR koda za poroko je Kliksy — digitalna foto galerija kjer gostje skenirajo QR kodo na mizi in dodajo fotografije v skupno galerijo v realnem času. Brez aplikacije, brez registracije."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Ali je Kliksy boljši od photo bootha?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Da — Kliksy zbere fotografije od vseh gostov iz vseh kotov poroke, ne samo iz enega kota kot photo booth. Ni vrst, ni čakanja. Cena od €39 namesto €300-800 za photo booth."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Ali Kliksy nadomesti poročnega fotografa?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Ne — Kliksy je popoln dodatek k poročnemu fotografu. Fotograf ujame profesionalne posnetke, Kliksy pa zbere spontane fotografije od vseh gostov."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Za katere dogodke je primeren Kliksy?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Kliksy je primeren za poroke, rojstne dneve, krste, birme, obletnice, korporativne événement in vse vrste prireditev kjer želi organizator zbrati fotografije od vseh gostov."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Koliko stane QR koda za poroko?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Kliksy paketi so na voljo že od €39. Basic paket vključuje 200 fotografij, Pro paket neomejeno fotografij, Premium paket pa neomejeno fotografij in videov."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Kako deluje QR koda za rojstni dan?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Enako kot za poroko — postavite kartice z QR kodo na mize. Gostje skenirajo in dodajo fotografije v skupno galerijo. Zjutraj po prazniku imate vse spomine na enem mestu."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Kakšna je razlika med Kliksy in photo boothom?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Photo booth je na enem mestu in zahteva čakanje v vrsti. Kliksy deluje povsod — vsak gost fotografira s svojim telefonom. 200 gostov = 200 photo boothov hkrati. Cena: Kliksy od €39, photo booth €300-800."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <noscript>
+    <h1>Kliksy — QR koda za poroko in dogodke</h1>
+    <h2>Digitalna foto galerija za poroke, rojstne dneve, krste in dogodke</h2>
+    <p>Postavite QR kodo na mize — gostje skenirajo in vse slike gredo v skupno galerijo v realnem času. Brez aplikacije. Brez registracije. Boljša alternativa photo boothu.</p>
+    <h2>Zakaj Kliksy namesto photo bootha?</h2>
+    <p>Photo booth je na enem mestu. Kliksy zbere fotografije od vseh gostov iz vseh kotov poroke. Ni vrst. Ni čakanja. Cena od €39 namesto €300-800 za photo booth.</p>
+    <h2>Popoln dodatek k poročnemu fotografu</h2>
+    <p>Kliksy ni zamenjava za poročnega fotografa — je popoln dodatek. Poročni fotograf ujame uradne posnetke, Kliksy pa zbere spontane fotografije od vseh gostov.</p>
+    <img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1094597618947960&ev=PageView&noscript=1" />
+  </noscript>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+</html>
