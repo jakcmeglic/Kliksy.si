@@ -315,7 +315,7 @@ async function calculatePrice(plan, discountCode, deliveryMode, standsQuantity, 
 async function startServer() {
   startCronService();
   const app = (0, import_express.default)();
-  const PORT = process.env.PORT && process.env.PORT !== "8080" ? Number(process.env.PORT) : 3e3;
+  const PORT = Number(process.env.PORT) || 3e3;
   app.use(import_express.default.json({ limit: "50mb" }));
   app.use(import_express.default.urlencoded({ limit: "50mb", extended: true }));
   const requestLogs = [];

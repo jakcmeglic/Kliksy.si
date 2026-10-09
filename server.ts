@@ -4,7 +4,7 @@ import express from "express";
 import Stripe from "stripe";
 import path from "path";
 import fs from "fs";
-import { generateInvoicePdfBuffer } from "./src/pdfService.ts";
+import { generateInvoicePdfBuffer } from "./src/pdfService.js";
 
 // Globani handlerji za preprečevanje sesutja aplikacije (pomagajo pri stabilnosti na Hostingerju)
 process.on('uncaughtException', (err) => {
@@ -57,13 +57,12 @@ async function calculatePrice(plan: string, discountCode: string | undefined, de
 }
 
 // Main server initialization
-import { startCronService } from "./src/cronService.ts";
+import { startCronService } from "./src/cronService.js";
 
 async function startServer() {
   startCronService();
   const app = express();
-  // Cloud Run / container environment sets PORT=8080 for Nginx proxy; app runs on 3000
-  const PORT = (process.env.PORT && process.env.PORT !== "8080") ? Number(process.env.PORT) : 3000;
+  const PORT = Number(process.env.PORT) || 3000;
 
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
@@ -653,7 +652,7 @@ async function startServer() {
   app.get("/api/trigger-cron", async (req, res) => {
     try {
       // Temporarily import dynamically to avoid top-level issues if any
-      const { checkAbandonedProfiles } = await import("./src/cronService.ts");
+      const { checkAbandonedProfiles } = await import("./src/cronService.js");
       await checkAbandonedProfiles();
       res.json({ success: true, message: "Cron check completed" });
     } catch (e: any) {
