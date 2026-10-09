@@ -7,11 +7,7 @@ const __dirname = path.dirname(__filename);
 
 const compiledServer = path.join(__dirname, 'dist', 'server.js');
 if (fs.existsSync(compiledServer)) {
-  import('./dist/server.js').catch(err => {
-    console.error('Failed to start compiled server:', err);
-  });
+  await import('./dist/server.js');
 } else {
-  import('./server.ts').catch(err => {
-    console.error('Failed to start server from server.ts:', err);
-  });
+  await import('./server.ts');
 }
