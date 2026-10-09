@@ -3,6 +3,7 @@ import { ZipArchive } from 'archiver';
 import express from "express";
 import Stripe from "stripe";
 import path from "path";
+import fs from "fs";
 import { generateInvoicePdfBuffer } from "./src/pdfService.js";
 
 // Globani handlerji za preprečevanje sesutja aplikacije (pomagajo pri stabilnosti na Hostingerju)
@@ -886,7 +887,23 @@ async function startServer() {
     });
     app.use(vite.middlewares);
   } else {
-    const distPath = path.join(process.cwd(), 'dist');
+    const candidates = [
+
+  path.join(process.cwd(), 'dist'),
+
+  process.cwd(),
+
+  typeof __dirname !== 'undefined' ? __dirname : '',
+
+].filter(Boolean);
+
+const distPath =
+
+  candidates.find((p) => fs.existsSync(path.join(p, 'index.html'))) ||
+
+  candidates[0];
+
+console.log('cwd:', process.cwd(), '| distPath:', distPath);
     
     // Serve static assets with long cache
     app.use(express.static(distPath, {
@@ -908,8 +925,11 @@ async function startServer() {
       res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
       res.setHeader('Pragma', 'no-cache');
       res.setHeader('Expires', '0');
-      res.sendFile(path.join(distPath, 'index.html'));
-    });
+      res.sendFile(path.join(distPath, 'index.html'), (err) => {
+
+  if (err) console.error('sendFile napaka:', err.message);
+
+});
   }
 
   app.listen(PORT, "0.0.0.0", () => {
