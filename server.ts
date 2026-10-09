@@ -7,21 +7,8 @@ import fs from "fs";
 import { fileURLToPath } from "url";
 import { generateInvoicePdfBuffer } from "./src/pdfService.ts";
 
-const getModuleDirname = () => {
-  if (typeof __dirname !== 'undefined' && __dirname) {
-    return __dirname;
-  }
-  try {
-    if (typeof import.meta !== 'undefined' && import.meta && import.meta.url) {
-      return path.dirname(fileURLToPath(import.meta.url));
-    }
-  } catch {
-    // Fallback if import.meta is unavailable
-  }
-  return process.cwd();
-};
-
-const _currentDir = getModuleDirname();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Globani handlerji za preprečevanje sesutja aplikacije (pomagajo pri stabilnosti na Hostingerju)
 process.on('uncaughtException', (err) => {
@@ -912,15 +899,12 @@ async function startServer() {
   const attachStaticServing = () => {
     // Detect dist directory across common deployment environments (Hostinger, Cloud Run, Docker, cPanel)
     const possibleDirs = [
-      path.join(_currentDir, 'dist'),
+      path.join(__dirname, 'dist'),
+      __dirname,
       path.join(process.cwd(), 'dist'),
-      _currentDir,
       process.cwd()
     ];
-    // Find directory containing index.html, preferring directories with assets/ or named 'dist'
-    const distPath = possibleDirs.find(d => 
-      fs.existsSync(path.join(d, 'index.html')) && (fs.existsSync(path.join(d, 'assets')) || d.endsWith('dist'))
-    ) || possibleDirs.find(d => fs.existsSync(path.join(d, 'index.html'))) || path.join(process.cwd(), 'dist');
+    const distPath = possibleDirs.find(d => fs.existsSync(path.join(d, 'index.html'))) || path.join(process.cwd(), 'dist');
     console.log(`Serving static files from: ${distPath}`);
 
     // Serve static assets with long cache
