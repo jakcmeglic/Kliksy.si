@@ -930,6 +930,7 @@ console.log('cwd:', process.cwd(), '| distPath:', distPath);
   if (err) console.error('sendFile napaka:', err.message);
 
 });
+    });
   }
 
   app.listen(PORT, "0.0.0.0", () => {
