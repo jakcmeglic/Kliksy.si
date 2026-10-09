@@ -4,7 +4,11 @@ import express from "express";
 import Stripe from "stripe";
 import path from "path";
 import fs from "fs";
+import { fileURLToPath } from "url";
 import { generateInvoicePdfBuffer } from "./src/pdfService.ts";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Globani handlerji za preprečevanje sesutja aplikacije (pomagajo pri stabilnosti na Hostingerju)
 process.on('uncaughtException', (err) => {
@@ -62,8 +66,20 @@ import { startCronService } from "./src/cronService.ts";
 async function startServer() {
   startCronService();
   const app = express();
-  // Cloud Run / container environment sets PORT=8080 for Nginx proxy; app runs on 3000
-  const PORT = (process.env.PORT && process.env.PORT !== "8080") ? Number(process.env.PORT) : 3000;
+  
+  // In AI Studio dev container, Nginx listens on 8080 and proxies to app on 3000.
+  // In Cloud Run production, Cloud Run listens on PORT (usually 8080) and sends traffic directly to app.
+  const isDevContainer = Boolean(process.env.CONTROL_PLANE_PORT || process.env.NGINX_PORT);
+
+  let PORT = 3000;
+  const portArgIndex = process.argv.indexOf("--port");
+  if (portArgIndex !== -1 && process.argv[portArgIndex + 1]) {
+    PORT = Number(process.argv[portArgIndex + 1]);
+  } else if (isDevContainer) {
+    PORT = Number(process.env.DEFAULT_APP_PORT) || 3000;
+  } else if (process.env.PORT) {
+    PORT = Number(process.env.PORT);
+  }
 
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
@@ -920,9 +936,9 @@ async function startServer() {
 
   // Determine if we should run Vite dev server or serve production files
   const isDevMode = 
+    isDevContainer &&
     process.env.NODE_ENV !== "production" &&
     !process.env.IS_PRODUCTION &&
-    (typeof __filename === 'undefined' || (!__filename.endsWith('.cjs') && !__filename.endsWith('server.js'))) &&
     fs.existsSync(path.join(process.cwd(), 'vite.config.ts'));
 
   if (isDevMode) {
