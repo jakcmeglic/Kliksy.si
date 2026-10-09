@@ -1,9 +1,11 @@
-var __create = Object.create;
 var __defProp = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
-var __getProtoOf = Object.getPrototypeOf;
-var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __require = /* @__PURE__ */ ((x) => typeof require !== "undefined" ? require : typeof Proxy !== "undefined" ? new Proxy(x, {
+  get: (a, b) => (typeof require !== "undefined" ? require : a)[b]
+}) : x)(function(x) {
+  if (typeof require !== "undefined") return require.apply(this, arguments);
+  throw Error('Dynamic require of "' + x + '" is not supported');
+});
 var __esm = (fn, res) => function __init() {
   return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
 };
@@ -11,22 +13,6 @@ var __export = (target, all) => {
   for (var name in all)
     __defProp(target, name, { get: all[name], enumerable: true });
 };
-var __copyProps = (to, from, except, desc) => {
-  if (from && typeof from === "object" || typeof from === "function") {
-    for (let key of __getOwnPropNames(from))
-      if (!__hasOwnProp.call(to, key) && key !== except)
-        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
-  }
-  return to;
-};
-var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
-  // If the importer is in node compatibility mode or this is not an ESM
-  // file that has been converted to a CommonJS file using a Babel-
-  // compatible transform (i.e. "__esModule" has not been set), then set
-  // "default" to the CommonJS "module.exports" for node compatibility.
-  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
-  mod
-));
 
 // src/cronService.ts
 var cronService_exports = {};
@@ -37,13 +23,17 @@ __export(cronService_exports, {
   sendTwoDaysFollowUpEmail: () => sendTwoDaysFollowUpEmail,
   startCronService: () => startCronService
 });
+import { initializeApp, getApps, getApp } from "firebase/app";
+import { getFirestore, collection, getDocs, updateDoc, query, where } from "firebase/firestore";
+import * as fs from "fs";
+import * as path from "path";
 function initFirebase() {
   if (db) return db;
   const configPath = path.join(process.cwd(), "firebase-applet-config.json");
   if (fs.existsSync(configPath)) {
     const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
-    const app = (0, import_app.getApps)().length === 0 ? (0, import_app.initializeApp)(config) : (0, import_app.getApp)();
-    db = (0, import_firestore.getFirestore)(app, config.firestoreDatabaseId);
+    const app = getApps().length === 0 ? initializeApp(config) : getApp();
+    db = getFirestore(app, config.firestoreDatabaseId);
   }
   return db;
 }
@@ -68,7 +58,7 @@ async function checkAbandonedProfiles() {
     const twoDaysAgo = now - 2 * 24 * 60 * 60 * 1e3;
     const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1e3;
     const cutoffDate = (/* @__PURE__ */ new Date("2026-05-29T00:00:00Z")).getTime();
-    const usersSnap = await (0, import_firestore.getDocs)((0, import_firestore.collection)(db, "users"));
+    const usersSnap = await getDocs(collection(db, "users"));
     const users = usersSnap.docs.map((d) => ({ id: d.id, ref: d.ref, ...d.data() }));
     const candidates2Days = users.filter((u) => {
       let createdTime = 0;
@@ -87,16 +77,16 @@ async function checkAbandonedProfiles() {
     });
     for (const user of candidates2Days) {
       if (!user.email) continue;
-      const eventsSnap = await (0, import_firestore.getDocs)((0, import_firestore.query)(
-        (0, import_firestore.collection)(db, "events"),
-        (0, import_firestore.where)("ownerId", "==", user.id),
-        (0, import_firestore.where)("paymentStatus", "==", "paid")
+      const eventsSnap = await getDocs(query(
+        collection(db, "events"),
+        where("ownerId", "==", user.id),
+        where("paymentStatus", "==", "paid")
       ));
       if (eventsSnap.empty) {
         await sendTwoDaysFollowUpEmail(user.email);
         console.log(`Sent 2-day abandoned follow-up to ${user.email}`);
       }
-      await (0, import_firestore.updateDoc)(user.ref, { abandonedEmailSent: true }).catch((e) => {
+      await updateDoc(user.ref, { abandonedEmailSent: true }).catch((e) => {
         console.error("Failed to update abandonedEmailSent flag:", e);
       });
     }
@@ -117,16 +107,16 @@ async function checkAbandonedProfiles() {
     });
     for (const user of candidates7Days) {
       if (!user.email) continue;
-      const eventsSnap = await (0, import_firestore.getDocs)((0, import_firestore.query)(
-        (0, import_firestore.collection)(db, "events"),
-        (0, import_firestore.where)("ownerId", "==", user.id),
-        (0, import_firestore.where)("paymentStatus", "==", "paid")
+      const eventsSnap = await getDocs(query(
+        collection(db, "events"),
+        where("ownerId", "==", user.id),
+        where("paymentStatus", "==", "paid")
       ));
       if (eventsSnap.empty) {
         await sendSevenDaysFollowUpEmail(user.email);
         console.log(`Sent 7-day abandoned follow-up to ${user.email}`);
       }
-      await (0, import_firestore.updateDoc)(user.ref, { abandonedTwoDaysEmailSent: true }).catch((e) => {
+      await updateDoc(user.ref, { abandonedTwoDaysEmailSent: true }).catch((e) => {
         console.error("Failed to update abandonedTwoDaysEmailSent flag:", e);
       });
     }
@@ -185,30 +175,25 @@ async function sendSevenDaysFollowUpEmail(email) {
     `
   });
 }
-var import_app, import_firestore, fs, path, db;
+var db;
 var init_cronService = __esm({
   "src/cronService.ts"() {
-    import_app = require("firebase/app");
-    import_firestore = require("firebase/firestore");
-    fs = __toESM(require("fs"), 1);
-    path = __toESM(require("path"), 1);
     db = null;
   }
 });
 
 // server.ts
-var import_archiver = require("archiver");
-var import_express = __toESM(require("express"), 1);
-var import_stripe = __toESM(require("stripe"), 1);
-var import_path = __toESM(require("path"), 1);
-var import_fs = __toESM(require("fs"), 1);
+import { ZipArchive } from "archiver";
+import express from "express";
+import Stripe from "stripe";
+import path2 from "path";
 
 // src/pdfService.ts
-var import_pdfkit = __toESM(require("pdfkit"), 1);
+import PDFDocument from "pdfkit";
 function generateInvoicePdfBuffer(invoiceData) {
   return new Promise((resolve, reject) => {
     try {
-      const doc2 = new import_pdfkit.default({ margin: 50 });
+      const doc2 = new PDFDocument({ margin: 50 });
       const buffers = [];
       doc2.on("data", buffers.push.bind(buffers));
       doc2.on("end", () => {
@@ -314,10 +299,10 @@ async function calculatePrice(plan, discountCode, deliveryMode, standsQuantity, 
 }
 async function startServer() {
   startCronService();
-  const app = (0, import_express.default)();
-  const PORT = Number(process.env.PORT) || 3e3;
-  app.use(import_express.default.json({ limit: "50mb" }));
-  app.use(import_express.default.urlencoded({ limit: "50mb", extended: true }));
+  const app = express();
+  const PORT = 3e3;
+  app.use(express.json({ limit: "50mb" }));
+  app.use(express.urlencoded({ limit: "50mb", extended: true }));
   const requestLogs = [];
   app.use((req, res, next) => {
     const logEntry = `[REQUEST] ${req.method} ${req.url} (Host: ${req.headers.host})`;
@@ -906,7 +891,7 @@ Znesek: ${Number(amountPaid || 0).toFixed(2)}\u20AC`
       if (!stripeKey) {
         throw new Error("STRIPE_SECRET_KEY is not configured limit.");
       }
-      const stripe = new import_stripe.default(stripeKey, { apiVersion: "2025-02-24.acacia" });
+      const stripe = new Stripe(stripeKey, { apiVersion: "2025-02-24.acacia" });
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ["card"],
         line_items: [
@@ -948,7 +933,7 @@ Znesek: ${Number(amountPaid || 0).toFixed(2)}\u20AC`
       if (!stripeKey) {
         throw new Error("STRIPE_SECRET_KEY is not configured on the server. Please add it to your environment variables.");
       }
-      const stripe = new import_stripe.default(stripeKey, { apiVersion: "2025-02-24.acacia" });
+      const stripe = new Stripe(stripeKey, { apiVersion: "2025-02-24.acacia" });
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ["card"],
         line_items: [
@@ -986,7 +971,7 @@ Znesek: ${Number(amountPaid || 0).toFixed(2)}\u20AC`
       if (!stripeKey) {
         throw new Error("STRIPE_SECRET_KEY is not configured on the server. Please add it to your environment variables.");
       }
-      const stripe = new import_stripe.default(stripeKey, { apiVersion: "2025-02-24.acacia" });
+      const stripe = new Stripe(stripeKey, { apiVersion: "2025-02-24.acacia" });
       const paymentIntent = await stripe.paymentIntents.create({
         amount,
         currency,
@@ -1013,7 +998,7 @@ Znesek: ${Number(amountPaid || 0).toFixed(2)}\u20AC`
       const safeEventName = (eventName || "Dogodek").replace(/[^a-zA-Z0-9_-]/g, "_");
       res.setHeader("Content-Type", "application/zip");
       res.setHeader("Content-Disposition", `attachment; filename="Kliksy-${safeEventName}.zip"`);
-      const archive = new import_archiver.ZipArchive({
+      const archive = new ZipArchive({
         zlib: { level: 0 }
         // No compression for speed and low CPU
       });
@@ -1027,7 +1012,13 @@ Znesek: ${Number(amountPaid || 0).toFixed(2)}\u20AC`
       });
       archive.pipe(res);
       let fetchedCount = 0;
+      const { Readable } = __require("stream");
+      let clientDisconnected = false;
+      req.on("close", () => {
+        clientDisconnected = true;
+      });
       for (let i = 0; i < parsedPhotos.length; i++) {
+        if (clientDisconnected) break;
         const photo = parsedPhotos[i];
         try {
           if (photo && photo.url && photo.url.startsWith("http")) {
@@ -1044,8 +1035,12 @@ Znesek: ${Number(amountPaid || 0).toFixed(2)}\u20AC`
               }
               const prefix = photo.type === "video" ? "video" : "photo";
               const fileName = `${prefix}-${i + 1}.${extension}`;
-              const arrayBuffer = await response.arrayBuffer();
-              archive.append(Buffer.from(arrayBuffer), { name: fileName });
+              await new Promise((resolve) => {
+                const nodeStream = Readable.fromWeb(response.body);
+                nodeStream.on("end", resolve);
+                nodeStream.on("error", resolve);
+                archive.append(nodeStream, { name: fileName });
+              });
               fetchedCount++;
             }
           }
@@ -1053,29 +1048,61 @@ Znesek: ${Number(amountPaid || 0).toFixed(2)}\u20AC`
           console.error(`Failed to fetch photo ${i} for zip:`, e.message);
         }
       }
-      await archive.finalize();
+      if (!clientDisconnected) {
+        await archive.finalize();
+      }
     } catch (err) {
       console.error("Error in download-zip endpoint:", err);
       if (!res.headersSent) {
-        res.status(500).send("Error generating zip: " + (err.stack || err.message || err));
+        res.status(500).send("Error generating zip");
       }
+    }
+  });
+  app.get("/api/proxy-image", async (req, res) => {
+    try {
+      const url = req.query.url;
+      if (!url || !url.includes("firebasestorage.googleapis.com")) {
+        res.status(400).send("Invalid or missing url");
+        return;
+      }
+      const response = await fetch(url);
+      if (!response.ok) {
+        res.status(response.status).send(`Failed to fetch image: ${response.statusText}`);
+        return;
+      }
+      res.set("Content-Type", response.headers.get("content-type") || "application/octet-stream");
+      const contentLength = response.headers.get("content-length");
+      if (contentLength) {
+        res.set("Content-Length", contentLength);
+      }
+      if (response.body) {
+        const readable = __require("stream").Readable.fromWeb(response.body);
+        readable.pipe(res);
+      } else {
+        const arrayBuffer = await response.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        res.send(buffer);
+      }
+    } catch (error) {
+      console.error("Proxy error:", error);
+      res.status(500).send("Proxy error: " + error.message);
     }
   });
   app.all("/api/*", (req, res) => {
     res.status(404).json({ error: `API route not found: ${req.method} ${req.url}` });
   });
-  const attachStaticServing = () => {
-    const possibleDirs = [
-      import_path.default.join(__dirname, "dist"),
-      __dirname,
-      import_path.default.join(process.cwd(), "dist"),
-      process.cwd()
-    ];
-    const distPath = possibleDirs.find((d) => import_fs.default.existsSync(import_path.default.join(d, "index.html"))) || import_path.default.join(process.cwd(), "dist");
-    console.log(`Serving static files from: ${distPath}`);
-    app.use(import_express.default.static(distPath, {
-      setHeaders: (res, filePath) => {
-        if (filePath.endsWith(".html")) {
+  if (process.env.NODE_ENV !== "production") {
+    const { createServer: createViteServer } = await import("vite");
+    const vite = await createViteServer({
+      server: { middlewareMode: true },
+      appType: "spa"
+    });
+    app.use(vite.middlewares);
+  } else {
+    const distPath = path2.join(process.cwd(), "dist");
+    app.use(express.static(distPath, {
+      setHeaders: (res, path3) => {
+        if (path3.endsWith(".html")) {
           res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
           res.setHeader("Pragma", "no-cache");
           res.setHeader("Expires", "0");
@@ -1085,33 +1112,11 @@ Znesek: ${Number(amountPaid || 0).toFixed(2)}\u20AC`
       }
     }));
     app.get("*", (req, res) => {
-      const indexPath = import_path.default.join(distPath, "index.html");
-      if (import_fs.default.existsSync(indexPath)) {
-        res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-        res.setHeader("Pragma", "no-cache");
-        res.setHeader("Expires", "0");
-        res.sendFile(indexPath);
-      } else {
-        res.status(404).send("Not Found: index.html missing from " + distPath);
-      }
+      res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+      res.setHeader("Pragma", "no-cache");
+      res.setHeader("Expires", "0");
+      res.sendFile(path2.join(distPath, "index.html"));
     });
-  };
-  const isDevMode = process.env.NODE_ENV !== "production" && !process.env.IS_PRODUCTION && (typeof __filename === "undefined" || !__filename.endsWith(".cjs") && !__filename.endsWith("server.js")) && import_fs.default.existsSync(import_path.default.join(process.cwd(), "vite.config.ts"));
-  if (isDevMode) {
-    try {
-      const { createServer: createViteServer } = await import("vite");
-      const vite = await createViteServer({
-        server: { middlewareMode: true },
-        appType: "spa"
-      });
-      app.use(vite.middlewares);
-      console.log("Vite dev middleware active");
-    } catch (viteErr) {
-      console.warn("Failed to start Vite middleware, falling back to static files:", viteErr);
-      attachStaticServing();
-    }
-  } else {
-    attachStaticServing();
   }
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on http://localhost:${PORT}`);
@@ -1126,4 +1131,3 @@ Znesek: ${Number(amountPaid || 0).toFixed(2)}\u20AC`
   });
 }
 startServer();
-//# sourceMappingURL=server.cjs.map
