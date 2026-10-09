@@ -202,6 +202,7 @@ var import_express = __toESM(require("express"), 1);
 var import_stripe = __toESM(require("stripe"), 1);
 var import_path = __toESM(require("path"), 1);
 var import_fs = __toESM(require("fs"), 1);
+var import_url = require("url");
 
 // src/pdfService.ts
 var import_pdfkit = __toESM(require("pdfkit"), 1);
@@ -272,6 +273,20 @@ function generateInvoicePdfBuffer(invoiceData) {
 
 // server.ts
 init_cronService();
+var import_meta = {};
+var getModuleDirname = () => {
+  if (typeof __dirname !== "undefined" && __dirname) {
+    return __dirname;
+  }
+  try {
+    if (typeof import_meta !== "undefined" && import_meta && import_meta.url) {
+      return import_path.default.dirname((0, import_url.fileURLToPath)(import_meta.url));
+    }
+  } catch {
+  }
+  return process.cwd();
+};
+var _currentDir = getModuleDirname();
 process.on("uncaughtException", (err) => {
   console.error("Uncaught Exception:", err);
 });
@@ -315,7 +330,16 @@ async function calculatePrice(plan, discountCode, deliveryMode, standsQuantity, 
 async function startServer() {
   startCronService();
   const app = (0, import_express.default)();
-  const PORT = process.env.PORT && process.env.PORT !== "8080" ? Number(process.env.PORT) : 3e3;
+  const isDevContainer = Boolean(process.env.CONTROL_PLANE_PORT || process.env.NGINX_PORT);
+  let PORT = 3e3;
+  const portArgIndex = process.argv.indexOf("--port");
+  if (portArgIndex !== -1 && process.argv[portArgIndex + 1]) {
+    PORT = Number(process.argv[portArgIndex + 1]);
+  } else if (isDevContainer) {
+    PORT = Number(process.env.DEFAULT_APP_PORT) || 3e3;
+  } else if (process.env.PORT) {
+    PORT = Number(process.env.PORT);
+  }
   app.use(import_express.default.json({ limit: "50mb" }));
   app.use(import_express.default.urlencoded({ limit: "50mb", extended: true }));
   const requestLogs = [];
@@ -1066,12 +1090,14 @@ Znesek: ${Number(amountPaid || 0).toFixed(2)}\u20AC`
   });
   const attachStaticServing = () => {
     const possibleDirs = [
-      import_path.default.join(__dirname, "dist"),
-      __dirname,
+      import_path.default.join(_currentDir, "dist"),
       import_path.default.join(process.cwd(), "dist"),
+      _currentDir,
       process.cwd()
     ];
-    const distPath = possibleDirs.find((d) => import_fs.default.existsSync(import_path.default.join(d, "index.html"))) || import_path.default.join(process.cwd(), "dist");
+    const distPath = possibleDirs.find(
+      (d) => import_fs.default.existsSync(import_path.default.join(d, "index.html")) && (import_fs.default.existsSync(import_path.default.join(d, "assets")) || d.endsWith("dist"))
+    ) || possibleDirs.find((d) => import_fs.default.existsSync(import_path.default.join(d, "index.html"))) || import_path.default.join(process.cwd(), "dist");
     console.log(`Serving static files from: ${distPath}`);
     app.use(import_express.default.static(distPath, {
       setHeaders: (res, filePath) => {
@@ -1096,7 +1122,7 @@ Znesek: ${Number(amountPaid || 0).toFixed(2)}\u20AC`
       }
     });
   };
-  const isDevMode = process.env.NODE_ENV !== "production" && !process.env.IS_PRODUCTION && (typeof __filename === "undefined" || !__filename.endsWith(".cjs") && !__filename.endsWith("server.js")) && import_fs.default.existsSync(import_path.default.join(process.cwd(), "vite.config.ts"));
+  const isDevMode = isDevContainer && process.env.NODE_ENV !== "production" && !process.env.IS_PRODUCTION && import_fs.default.existsSync(import_path.default.join(process.cwd(), "vite.config.ts"));
   if (isDevMode) {
     try {
       const { createServer: createViteServer } = await import("vite");
