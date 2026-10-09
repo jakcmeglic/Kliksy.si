@@ -1,14 +1,17 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Shield, Mail, Phone, ExternalLink } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 
 export default function Privacy() {
   return (
     <div className="min-h-screen bg-[#FDFCFB] font-sans text-gray-900 pb-24">
-      <title>Politika zasebnosti | Kliksy.si</title>
-      <meta name="description" content="Politika zasebnosti in obvestilo o obdelavi osebnih podatkov v okviru spletne storitve Kliksy.si." />
-      <meta name="robots" content="index, follow" />
-      <link rel="canonical" href="https://kliksy.si/zasebnost" />
+      <Helmet>
+        <title>Politika zasebnosti | Kliksy.si</title>
+        <meta name="description" content="Politika zasebnosti in obvestilo o obdelavi osebnih podatkov v okviru spletne storitve Kliksy.si." />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href="https://kliksy.si/zasebnost" />
+      </Helmet>
 
       {/* Header Container */}
       <div className="border-b border-gray-100 bg-white/70 backdrop-blur-md sticky top-0 z-10">
