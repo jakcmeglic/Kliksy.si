@@ -80,29 +80,19 @@ async function startServer() {
   startCronService();
   const app = express();
   
-  // Cloud Run sets K_SERVICE and routes traffic to PORT (usually 8080)
-  const isCloudRun = Boolean(process.env.K_SERVICE || process.env.K_REVISION || process.env.K_CONFIGURATION);
-  const isProduction = isCloudRun || process.env.NODE_ENV === "production" || Boolean(process.env.IS_PRODUCTION);
-
-  // In AI Studio dev container (only when NOT in Cloud Run / production), Nginx listens on 8080 and proxies to 3000.
-  const isDevContainer = !isProduction && Boolean(process.env.CONTROL_PLANE_PORT || process.env.NGINX_PORT);
+  // In AI Studio dev container, Nginx listens on 8080 and proxies to app on 3000.
+  // In Cloud Run production, Cloud Run listens on PORT (usually 8080) and sends traffic directly to app.
+  const isDevContainer = Boolean(process.env.CONTROL_PLANE_PORT || process.env.NGINX_PORT);
 
   let PORT = 3000;
   const portArgIndex = process.argv.indexOf("--port");
   if (portArgIndex !== -1 && process.argv[portArgIndex + 1]) {
     PORT = Number(process.argv[portArgIndex + 1]);
-  } else if (isCloudRun && process.env.PORT) {
-    PORT = Number(process.env.PORT);
   } else if (isDevContainer) {
     PORT = Number(process.env.DEFAULT_APP_PORT) || 3000;
   } else if (process.env.PORT) {
     PORT = Number(process.env.PORT);
   }
-
-  // Dedicated health check endpoints for Cloud Run startup/liveness/readiness probes
-  app.get(["/_healthz", "/healthz", "/health", "/_ah/health"], (req, res) => {
-    res.status(200).send("OK");
-  });
 
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
