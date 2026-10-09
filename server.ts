@@ -3,6 +3,7 @@ import { ZipArchive } from 'archiver';
 import express from "express";
 import Stripe from "stripe";
 import path from "path";
+import fs from "fs";
 import { generateInvoicePdfBuffer } from "./src/pdfService.js";
 
 // Globani handlerji za preprečevanje sesutja aplikacije (pomagajo pri stabilnosti na Hostingerju)
@@ -61,7 +62,7 @@ import { startCronService } from "./src/cronService.js";
 async function startServer() {
   startCronService();
   const app = express();
-  const PORT = 3000;
+  const PORT = Number(process.env.PORT) || 3000;
 
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
@@ -877,27 +878,26 @@ async function startServer() {
     res.status(404).json({ error: `API route not found: ${req.method} ${req.url}` });
   });
 
-  // Vite middleware for development
-  if (process.env.NODE_ENV !== "production") {
-    const { createServer: createViteServer } = await import("vite");
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: "spa",
-    });
-    app.use(vite.middlewares);
-  } else {
-    const distPath = path.join(process.cwd(), 'dist');
-    
+  // Function to attach static file serving and SPA fallback
+  const attachStaticServing = () => {
+    // Detect dist directory across common deployment environments (Hostinger, Cloud Run, Docker, cPanel)
+    const possibleDirs = [
+      path.join(__dirname, 'dist'),
+      __dirname,
+      path.join(process.cwd(), 'dist'),
+      process.cwd()
+    ];
+    const distPath = possibleDirs.find(d => fs.existsSync(path.join(d, 'index.html'))) || path.join(process.cwd(), 'dist');
+    console.log(`Serving static files from: ${distPath}`);
+
     // Serve static assets with long cache
     app.use(express.static(distPath, {
-      setHeaders: (res, path) => {
-        if (path.endsWith('.html')) {
-          // Don't cache HTML files
+      setHeaders: (res, filePath) => {
+        if (filePath.endsWith('.html')) {
           res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
           res.setHeader('Pragma', 'no-cache');
           res.setHeader('Expires', '0');
         } else {
-          // Cache other static assets for 1 year
           res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
         }
       }
@@ -905,11 +905,40 @@ async function startServer() {
 
     // Fallback for SPA routing - never cache index.html
     app.get('*', (req, res) => {
-      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-      res.setHeader('Pragma', 'no-cache');
-      res.setHeader('Expires', '0');
-      res.sendFile(path.join(distPath, 'index.html'));
+      const indexPath = path.join(distPath, 'index.html');
+      if (fs.existsSync(indexPath)) {
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+        res.sendFile(indexPath);
+      } else {
+        res.status(404).send('Not Found: index.html missing from ' + distPath);
+      }
     });
+  };
+
+  // Determine if we should run Vite dev server or serve production files
+  const isDevMode = 
+    process.env.NODE_ENV !== "production" &&
+    !process.env.IS_PRODUCTION &&
+    (typeof __filename === 'undefined' || (!__filename.endsWith('.cjs') && !__filename.endsWith('server.js'))) &&
+    fs.existsSync(path.join(process.cwd(), 'vite.config.ts'));
+
+  if (isDevMode) {
+    try {
+      const { createServer: createViteServer } = await import("vite");
+      const vite = await createViteServer({
+        server: { middlewareMode: true },
+        appType: "spa",
+      });
+      app.use(vite.middlewares);
+      console.log("Vite dev middleware active");
+    } catch (viteErr) {
+      console.warn("Failed to start Vite middleware, falling back to static files:", viteErr);
+      attachStaticServing();
+    }
+  } else {
+    attachStaticServing();
   }
 
   app.listen(PORT, "0.0.0.0", () => {
