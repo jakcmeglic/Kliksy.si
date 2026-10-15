@@ -49,8 +49,12 @@ export default function App() {
             <Route path="/login" element={isPl ? <LoginPl /> : isHr ? <LoginHr /> : <Login />} />
             <Route path="/email-test" element={<EmailTest />} />
             <Route path="/pogoji-uporabe" element={isPl ? <TermsPl /> : isHr ? <TermsHr /> : <Terms />} />
+            <Route path="/pogoji-uporabe/" element={isPl ? <TermsPl /> : isHr ? <TermsHr /> : <Terms />} />
             <Route path="/zasebnost" element={isPl ? <PrivacyPl /> : isHr ? <PrivacyHr /> : <Privacy />} />
+            <Route path="/zasebnost/" element={isPl ? <PrivacyPl /> : isHr ? <PrivacyHr /> : <Privacy />} />
             <Route path="/piskotki" element={isPl ? <CookiesPl /> : isHr ? <CookiesHr /> : <Cookies />} />
+            <Route path="/piskotki/" element={isPl ? <CookiesPl /> : isHr ? <CookiesHr /> : <Cookies />} />
+            <Route path="*" element={isPl ? <LandingPl /> : isHr ? <LandingHr /> : <Landing />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>
