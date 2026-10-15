@@ -74,9 +74,17 @@ export const signUpWithEmail = async (email: string, pass: string, lang = 'sl') 
   auth.languageCode = lang;
   try {
     const result = await createUserWithEmailAndPassword(auth, email, pass);
-    await sendEmailVerification(result.user, {
-      url: window.location.origin + '/login',
-    });
+    try {
+      const continueUrl = typeof window !== 'undefined' && window.location.origin
+        ? `${window.location.origin}/login`
+        : 'https://kliksy.si/login';
+      await sendEmailVerification(result.user, {
+        url: continueUrl,
+      });
+    } catch (verifError) {
+      console.warn("sendEmailVerification with continueUrl failed, retrying without settings:", verifError);
+      await sendEmailVerification(result.user);
+    }
     await createUserProfile(result.user);
     await signOut(auth); // Sign them out right away, force them to verify
     return result.user;
