@@ -800,6 +800,7 @@ export default function Landing() {
               <h4 className="font-extrabold text-gray-900 mb-6 text-[15px]">Pravno</h4>
               <ul className="space-y-4 text-gray-500 font-medium text-[15px]">
                 <li><Link to="/pogoji-uporabe" className="hover:text-gray-900 transition-colors">Pogoji uporabe</Link></li>
+                <li><Link to="/politika-zasebnosti" className="hover:text-gray-900 transition-colors">Politika zasebnosti</Link></li>
                 <li><Link to="/zasebnost" className="hover:text-gray-900 transition-colors">Zasebnost</Link></li>
                 <li><Link to="/piskotki" className="hover:text-gray-900 transition-colors">Piškotki</Link></li>
               </ul>

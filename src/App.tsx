@@ -52,6 +52,8 @@ export default function App() {
             <Route path="/pogoji-uporabe/" element={isPl ? <TermsPl /> : isHr ? <TermsHr /> : <Terms />} />
             <Route path="/zasebnost" element={isPl ? <PrivacyPl /> : isHr ? <PrivacyHr /> : <Privacy />} />
             <Route path="/zasebnost/" element={isPl ? <PrivacyPl /> : isHr ? <PrivacyHr /> : <Privacy />} />
+            <Route path="/politika-zasebnosti" element={isPl ? <PrivacyPl /> : isHr ? <PrivacyHr /> : <Privacy />} />
+            <Route path="/politika-zasebnosti/" element={isPl ? <PrivacyPl /> : isHr ? <PrivacyHr /> : <Privacy />} />
             <Route path="/piskotki" element={isPl ? <CookiesPl /> : isHr ? <CookiesHr /> : <Cookies />} />
             <Route path="/piskotki/" element={isPl ? <CookiesPl /> : isHr ? <CookiesHr /> : <Cookies />} />
             <Route path="*" element={isPl ? <LandingPl /> : isHr ? <LandingHr /> : <Landing />} />
